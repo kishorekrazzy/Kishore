@@ -218,3 +218,42 @@
     color: var(--ink);
   }
 }
+
+/* ── PixelCard on the showcase plates ──
+   The component ships a 300x400 bordered card with its own aspect ratio and
+   grid centring. None of that suits a 480x280 marquee plate, so the card
+   styles win here and the component keeps only its behaviour. */
+.bn-card.pixel-card {
+  width: 480px;
+  height: 280px;
+  aspect-ratio: auto;
+  display: block;
+  place-items: initial;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ink-rgb), 0.06);
+}
+.bn-card.pixel-card::before { content: none; }
+
+/* Children paint after the canvas in DOM order, so without this the pixels
+   would sit behind the photo instead of dusting across it. */
+.bn-card .bn-img,
+.bn-card .bn-overlay {
+  position: absolute;
+  inset: 0;
+}
+.bn-card .pixel-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.bn-card .bn-label { z-index: 4; }
+
+/* The marquee comment above promised "pause on hover" but no rule ever
+   implemented it. It matters now: without this the plate slides out from
+   under the cursor while its pixels are still dusting in, so the effect
+   is never seen for more than a moment. */
+@media (hover: hover) and (pointer: fine) {
+  .bn-marquee-wrap:hover .bn-track { animation-play-state: paused; }
+}

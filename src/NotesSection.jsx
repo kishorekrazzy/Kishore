@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import ScrollReveal from './ScrollReveal';
 import './NotesSection.css';
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -155,7 +156,16 @@ export default function NotesSection() {
           <div className="nt-head-line" />
         </div>
         <h2 className="nt-title">Working <span className="nt-title-accent">notes</span></h2>
-        <p className="nt-sub">Short pieces on colour, cutting, prompting and weight.</p>
+        <ScrollReveal
+          as="div"
+          containerClassName="sr-plain"
+          textClassName="nt-sub sr-plain"
+          baseOpacity={0.12}
+          baseRotation={0}
+          blurStrength={5}
+        >
+          Short pieces on colour, cutting, prompting and weight.
+        </ScrollReveal>
       </div>
 
       <ol className="nt-list">

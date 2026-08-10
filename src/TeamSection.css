@@ -163,32 +163,40 @@
 
 /* ── SECTION HEADER ─────────────────────────────────────────── */
 
+/* Laid out like the member block below it — title, then a rule beneath —
+   rather than a label with a line running off to the side. */
 .ts-section-header {
   position: absolute;
-  top: 44px;
+  top: 40px;
   left: 88px;
   display: flex;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
   z-index: 20;
 }
 
+/* Matched to the member name's treatment (.ts-role, clamp(2.2rem, 4vw,
+   4.4rem)) and kept a step under it, so the section header reads as the
+   same kind of type without outshouting the name beside it. */
 .ts-sh-title {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.42em;
+  font-size: clamp(2rem, 3.8vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--ink);
 }
 
 .ts-sh-line {
   height: 1px;
-  width: 120px;
-  background: rgba(var(--ink-rgb), 0.1);
+  width: clamp(120px, 16vw, 220px);
+  flex: none;
+  background: rgba(var(--ink-rgb), 0.18);
 }
 
 @media (max-width: 960px) {
-  .ts-section-header { top: 28px; left: 28px; }
+  .ts-section-header { top: 28px; left: 28px; gap: 10px; }
 }
 
 /* ── INNER LAYOUT ─────────────────────────────────────────────── */

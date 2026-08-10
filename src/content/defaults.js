@@ -148,6 +148,23 @@ export const DEFAULT_CONTENT = {
     doneBody: "It landed. I'll come back to you at the address you gave.",
   },
 
+
+  /* The ⚠ easter egg in the nav — a scatter of fake browser windows and a
+     system alert, styled after an investigation board. */
+  warning: {
+    dialogTitle: 'Unsecured Connection',
+    dialogBody: 'Someone has been reading this portfolio for an unusual length of time. Their session has been logged, traced and — frankly — appreciated.',
+    okLabel: 'OK',
+    tabs: [
+      { url: 'search.locations',   caption: 'Last known position' },
+      { url: 'wanted.poster.jpg',  caption: 'Subject identified'  },
+      { url: 'archive.reel.mov',   caption: 'Footage recovered'   },
+      { url: 'signal.feed',        caption: 'Feed intercepted'    },
+      { url: 'traces.log',         caption: 'Trace active'        },
+      { url: 'profile.render',     caption: 'Match confirmed'     },
+    ],
+  },
+
   /* ── Image registry ────────────────────────────────────────────────
      Every image URL on the site that is not already a field above, as
      flat arrays of strings keyed by where it appears.
@@ -161,6 +178,15 @@ export const DEFAULT_CONTENT = {
      The dashboard discovers these automatically; nothing here needs a
      SCHEMA entry. */
   images: {
+    // Warning stack — browser window plates
+    warning: [
+      'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=80',
+    ],
     // AI Images — hero strip
     aiHero: [
       'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1600&q=80',
@@ -310,6 +336,7 @@ export const DEFAULT_CONTENT = {
 };
 
 export const IMAGE_GROUP_LABELS = {
+  'warning': 'Warning stack — windows',
   'aiHero': 'AI Images \u2014 hero strip',
   'aboutMe': 'About Me \u2014 gallery',
   'team': 'Syndicate \u2014 members',
@@ -410,6 +437,19 @@ export const SCHEMA = [
       { path: 'bento.title',       label: 'Title',        type: 'text' },
       { path: 'bento.titleAccent', label: 'Accent word',  type: 'text' },
       { path: 'bento.sub',         label: 'Subtitle',     type: 'text' },
+    ],
+  },
+  {
+    id: 'warning',
+    title: 'Warning pop-up (⚠ nav button)',
+    fields: [
+      { path: 'warning.dialogTitle', label: 'Alert title', type: 'text' },
+      { path: 'warning.dialogBody',  label: 'Alert message', type: 'multiline' },
+      { path: 'warning.okLabel',     label: 'Button label', type: 'text' },
+      ...Array.from({ length: 6 }, (_, i) => ([
+        { path: `warning.tabs.${i}.url`,     label: `Window ${i + 1} — address bar`, type: 'text' },
+        { path: `warning.tabs.${i}.caption`, label: `Window ${i + 1} — caption`,     type: 'text' },
+      ])).flat(),
     ],
   },
   {

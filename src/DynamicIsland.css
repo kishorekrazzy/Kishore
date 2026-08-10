@@ -183,6 +183,7 @@
 .di-nav > li:nth-child(4) { animation-delay: 0.28s; }
 .di-nav > li:nth-child(5) { animation-delay: 0.32s; }
 .di-nav > li:nth-child(6) { animation-delay: 0.36s; }
+.di-nav > li:nth-child(7) { animation-delay: 0.40s; }
 @keyframes diItemIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0);   }
@@ -295,4 +296,202 @@
   .di-mark { transition-duration: 0.18s; transition-timing-function: ease; }
   .di-dot  { animation: none; opacity: 0.9; }
   .di-roll--go .di-roll-col { animation-duration: 0.01ms; }
+}
+
+/* The ⚠ button sits with the links but reads as a control, not a link —
+   no underline sweep, and it warms to the section accent on hover. */
+.di-warn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(var(--ink-rgb), 0.06);
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .di-warn:hover {
+    background: var(--acc);
+    color: var(--acc-ink);
+    transform: scale(1.08);
+  }
+}
+.di-warn:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MUSIC — Apple-Music-style activity
+
+   Playing music hands the island's space to the track: the resting pill
+   shows an equaliser and the title instead of the section, and hovering
+   opens a second row with the artwork, transport and a scrubber.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Room for the mute button on the right while collapsed. */
+.di--music .di-pill { --di-w: clamp(212px, 19vw, 250px); }
+.di--music .di-now  { right: 42px; justify-content: flex-start; }
+
+/* While a track plays the island IS the player — opening it shows the
+   music and nothing else. The nav is what you get when the music stops. */
+.di--music.di--open .di-nav,
+.di--music.di:focus-within .di-nav { display: none; }
+
+.di--music.di--open .di-pill,
+.di--music.di:focus-within .di-pill {
+  --di-w: min(452px, 94vw);
+  --di-h: 74px;
+  border-radius: 22px;
+}
+
+/* Collapsed, the mute button is the only control; open, it joins the row
+   and stops floating over it. */
+.di--music.di--open .di-mute,
+.di--music.di:focus-within .di-mute { display: none; }
+
+/* ── Equaliser ── */
+.di-bars { display: flex; align-items: flex-end; gap: 2px; height: 11px; flex-shrink: 0; }
+.di-bars i {
+  width: 2px;
+  background: var(--acc);
+  border-radius: 1px;
+  animation: diEq 900ms ease-in-out infinite;
+}
+.di-bars i:nth-child(1) { height: 40%; animation-delay: 0ms;   }
+.di-bars i:nth-child(2) { height: 90%; animation-delay: 140ms; }
+.di-bars i:nth-child(3) { height: 60%; animation-delay: 280ms; }
+.di-bars i:nth-child(4) { height: 80%; animation-delay: 90ms;  }
+@keyframes diEq {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1);    }
+}
+
+/* ── Mute ── */
+.di-mute {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(var(--ink-rgb), 0.08);
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .di-mute:hover { background: rgba(var(--ink-rgb), 0.16); transform: translateY(-50%) scale(1.08); }
+}
+.di-mute:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+/* Once open the player row owns the transport, so the floating mute moves
+   out of the link row's way rather than overlapping it. */
+.di--open .di-mute { top: 27px; }
+
+/* ── Player row ── */
+.di-music {
+  position: absolute;
+  left: 52px;      /* clears the mark */
+  right: 14px;
+  top: 0;
+  bottom: 0;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.3s ease;
+}
+.di--open .di-music,
+.di:focus-within .di-music {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 0.3s ease 0.18s, transform 0.44s cubic-bezier(0.22, 1, 0.36, 1) 0.18s;
+}
+
+.di-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(var(--shade-rgb), 0.5);
+}
+
+.di-track { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.di-track-title,
+.di-track-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.di-track-title  { font-size: 0.68rem; font-weight: 600; color: var(--ink); }
+.di-track-artist { font-size: 0.58rem; color: var(--ink-3); }
+
+.di-transport { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.di-transport button {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-2);
+  font-size: 0.66rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .di-transport button:hover { background: rgba(var(--ink-rgb), 0.1); color: var(--ink); }
+}
+.di-transport button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.di-mute-inline { font-size: 0.72rem; margin-left: 2px; }
+
+/* Emoji should render in colour, not as a monochrome text glyph. */
+.di-warn span,
+.di-mute span,
+.di-mute-inline {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.di-time {
+  flex-shrink: 0;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.52rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.di-scrub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(var(--ink-rgb), 0.12);
+  overflow: hidden;
+}
+.di-scrub i { display: block; height: 100%; background: var(--acc); transition: width 0.25s linear; }
+
+@media (max-width: 720px) {
+  .di--music.di--open .di-pill,
+  .di--music.di:focus-within .di-pill { --di-w: 94vw; --di-h: 70px; }
+  .di-time { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .di-bars i { animation: none; transform: scaleY(0.7); }
 }

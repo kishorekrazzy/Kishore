@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ScrollReveal from './ScrollReveal';
 import './ContactSection.css';
 import { useContent } from './content/store';
 
@@ -121,9 +122,16 @@ export default function ContactSection() {
           <h2 className="ct-title">
             {t('title', "Let's build")}<br /><span className="ct-title-accent">{t('titleAccent', 'something.')}</span>
           </h2>
-          <p className="ct-lede">
+          <ScrollReveal
+            as="div"
+            containerClassName="sr-plain"
+            textClassName="ct-lede sr-plain"
+            baseOpacity={0.12}
+            baseRotation={2}
+            blurStrength={5}
+          >
             {t('lede', 'Briefs, half-formed ideas and "is this even possible" all welcome. I read everything and reply to anything real.')}
-          </p>
+          </ScrollReveal>
 
           <button className="ct-email" onClick={copyEmail}>
             <span className="ct-email-label">{copied ? 'Copied to clipboard' : EMAIL}</span>

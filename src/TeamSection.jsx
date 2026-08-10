@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ScrollReveal from './ScrollReveal';
 import { useContent, withImages } from './content/store';
 import { CardSwap, Card } from './CardSwap';
 import './TeamSection.css';
@@ -132,14 +133,34 @@ export default function TeamSection() {
               — {member.tagline}
             </span>
 
-            <h2 className="ts-role">{member.role}</h2>
+            <ScrollReveal
+              as="h2"
+              key={`role-${member.role}`}
+              containerClassName="sr-plain"
+              textClassName="ts-role sr-plain"
+              baseOpacity={0.08}
+              baseRotation={3}
+              blurStrength={7}
+            >
+              {member.role}
+            </ScrollReveal>
 
             <div
               className="ts-rule"
               style={{ background: `linear-gradient(90deg, ${member.accent}90, transparent)` }}
             />
 
-            <p className="ts-bio">{member.bio}</p>
+            <ScrollReveal
+              as="div"
+              key={`bio-${member.role}`}
+              containerClassName="sr-plain"
+              textClassName="ts-bio sr-plain"
+              baseOpacity={0.12}
+              baseRotation={0}
+              blurStrength={5}
+            >
+              {member.bio}
+            </ScrollReveal>
 
             <div className="ts-skills">
               {member.skills.map((skill) => (

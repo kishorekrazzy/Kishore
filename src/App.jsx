@@ -18,6 +18,8 @@ const SkillsPage       = lazy(() => import('./SkillsPage'));
 // The admin dashboard pulls in Firebase Auth — it must never land in a
 // visitor's bundle.
 const AdminDashboard   = lazy(() => import('./admin/AdminDashboard'));
+// Only downloaded if somebody actually presses the ⚠ button.
+const WarningStack     = lazy(() => import('./WarningStack'));
 import MacDock from './MacDock';
 import { MusicWindowManager }      from './MusicWindow';
 import { NotesWindowManager }      from './NotesWindow';
@@ -28,6 +30,7 @@ import NotesSection from './NotesSection';
 import ContactSection from './ContactSection';
 import DynamicIsland from './DynamicIsland';
 import WarpText from './WarpText';
+import ErrorBoundary from './ErrorBoundary';
 import { useContent } from './content/store';
 
 // ── 4 HERO SECTION DATA ─────────────────────────────────────────────
@@ -340,6 +343,7 @@ export default function App() {
   const setShowAIImages  = openPage('ai');
   const setShowWebsite   = openPage('web');
   const setShowSkills    = openPage('skills');
+  const [showWarning, setShowWarning] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const rafRef = useRef(null);
@@ -548,8 +552,12 @@ export default function App() {
 
           {/* Stacked video backgrounds — data-section drives per-section CSS filter */}
           <div className="video-bg-wrap" ref={bgRef} data-section={activeSection.id}>
+            {/* Keyed by position, not by URL. The plates are CMS-editable
+                now, so two sections can legitimately share an image — and a
+                duplicate key makes React omit or duplicate a plate. The list
+                is fixed-length and ordered, so the index is the stable id. */}
             {heroSections.map(({ image: src }, i) => (
-              <div key={src} className={`video-bg${activeSection.image === src ? ' video-bg--active' : ''}`}>
+              <div key={i} className={`video-bg${i === activeIdx ? ' video-bg--active' : ''}`}>
                 {/* The first plate is the LCP element, so it loads eagerly at
                     high priority; the other three are lazy and only decode
                     once the visitor switches to them. */}
@@ -572,7 +580,12 @@ export default function App() {
           <div className="edge-top" aria-hidden="true" />
           <div className="edge-bottom" aria-hidden="true" />
 
-          <DynamicIsland onRoomClick={() => setShowRoomPage(true)} />
+          <ErrorBoundary name="Island" silent>
+            <DynamicIsland
+              onRoomClick={() => setShowRoomPage(true)}
+              onWarnClick={() => setShowWarning(true)}
+            />
+          </ErrorBoundary>
 
           {/* Hero text — moves with parallax */}
           <main className="hero" ref={heroRef} id="home">
@@ -601,16 +614,24 @@ export default function App() {
           height: '220px', flexShrink: 0, pointerEvents: 'none',
           background: 'linear-gradient(to bottom, transparent 0%, var(--bg) 75%)',
         }} />
-        <AboutSection />
-        <TeamSection />
-        <BentoSection
-          onAboutClick={() => setShowAboutMe(true)}
-          onVideoClick={() => setShowVideoPage(true)}
-          onAIClick={() => setShowAIImages(true)}
-          onWebsiteClick={() => setShowWebsite(true)}
-          onSkillsClick={() => setShowSkills(true)}
-        />
-        <BannerSection />
+        <ErrorBoundary name="About">
+          <AboutSection />
+        </ErrorBoundary>
+        <ErrorBoundary name="Syndicate">
+          <TeamSection />
+        </ErrorBoundary>
+        <ErrorBoundary name="Work">
+          <BentoSection
+            onAboutClick={() => setShowAboutMe(true)}
+            onVideoClick={() => setShowVideoPage(true)}
+            onAIClick={() => setShowAIImages(true)}
+            onWebsiteClick={() => setShowWebsite(true)}
+            onSkillsClick={() => setShowSkills(true)}
+          />
+        </ErrorBoundary>
+        <ErrorBoundary name="Showcase">
+          <BannerSection />
+        </ErrorBoundary>
 
         <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: 'var(--bg)', flexShrink: 0 }}>
           <video autoPlay loop muted playsInline preload="auto"
@@ -619,15 +640,30 @@ export default function App() {
           </video>
           <div className="seam" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '140px', background: 'linear-gradient(to bottom, var(--bg) 0%, transparent 100%)', pointerEvents: 'none' }} />
         </div>
-        <NotesSection />
-        <WidgetsSection
-          onAboutClick={() => setShowAboutMe(true)}
-          onSkillsClick={() => setShowSkills(true)}
-        />
-        <ContactSection />
+        <ErrorBoundary name="Notes">
+          <NotesSection />
+        </ErrorBoundary>
+        <ErrorBoundary name="Personal OS">
+          <WidgetsSection
+            onAboutClick={() => setShowAboutMe(true)}
+            onSkillsClick={() => setShowSkills(true)}
+          />
+        </ErrorBoundary>
+        <ErrorBoundary name="Contact">
+          <ContactSection />
+        </ErrorBoundary>
       </div>
 
+      {showWarning && (
+        <ErrorBoundary name="Warning" silent>
+          <Suspense fallback={null}>
+            <WarningStack onClose={() => setShowWarning(false)} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+
       {anySubPage && (
+        <ErrorBoundary name="Sub-page">
         <Suspense fallback={<PageSkeleton />}>
           {showAboutMe && <AboutMePage onBack={() => setShowAboutMe(false)} />}
           {showVideoPage && <VideoEditingPage onBack={() => setShowVideoPage(false)} />}
@@ -636,6 +672,7 @@ export default function App() {
           {showWebsite && <WebsitePage onBack={() => setShowWebsite(false)} />}
           {showSkills  && <SkillsPage  onBack={() => setShowSkills(false)}  />}
         </Suspense>
+        </ErrorBoundary>
       )}
     </MusicProvider>
   );

@@ -705,15 +705,31 @@
 /* The card heading is one line rather than the three stacked words, so it
    needs its own size — the stacked rule would leave it marooned. */
 .abt-heading--card {
+  /* .abt-heading is a flex column — it was built to stack three
+     .abt-h-line spans. Word spans dropped into it become flex items and
+     each takes its own line, so the card title has to go back to normal
+     inline flow and wrap on its own. */
+  display: block;
   font-size: clamp(1.9rem, 3.4vw, 3.1rem);
   line-height: 1.05;
 }
-.abt-heading--card .split-parent { display: inline-block; }
 
-/* GSAP writes inline transforms on every char; the rotateX needs a stage
-   with depth or it reads as a flat squash. */
-.abt-heading--card,
-.abt-bio--card { perspective: 800px; }
+/* Swapped-in copy replays the section's own word reveal. It has to be an
+   animation, not the .abt-ch transition: a freshly mounted span already
+   matches the .abt-revealed rule, so a transition has no starting frame
+   to run from and the text would simply appear. */
+@keyframes abtWordIn {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.abt-card-copy .abt-ch {
+  opacity: 0;
+  transition: none;
+  animation: abtWordIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .abt-card-copy .abt-ch { animation-duration: 0.01ms; }
+}
 
 .abt-clear {
   display: inline-flex;

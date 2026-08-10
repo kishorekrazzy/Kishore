@@ -1073,3 +1073,28 @@ html, body {
   .sk { animation: none; background: var(--surface-2); }
   .pg-skel, .pg-skel-card { animation: none; }
 }
+
+/* ── Error boundary fallback ──
+   Shown in place of a section that threw. Deliberately plain and short:
+   it should read as a gap, not as a crash report. */
+.eb-fallback {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  background: var(--bg);
+  color: var(--ink-3);
+  font-size: 0.84rem;
+  text-align: center;
+}
+.eb-fallback button {
+  padding: 8px 18px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+.eb-fallback button:hover { border-color: var(--line-hard); color: var(--ink); }

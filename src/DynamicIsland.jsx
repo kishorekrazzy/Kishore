@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import './DynamicIsland.css';
 import ThemeToggle from './ThemeToggle';
 import { useContent } from './content/store';
+import { useMusicPlayer, fmt } from './MusicContext';
 
 /* ══════════════════════════════════════════════════════════════════════
    DYNAMIC ISLAND NAV
@@ -100,7 +101,7 @@ function RollingText({ text }) {
 }
 
 // ── COMPONENT ────────────────────────────────────────────────────────
-export default function DynamicIsland({ onRoomClick }) {
+export default function DynamicIsland({ onRoomClick, onWarnClick }) {
   const LOGO_SRC = useContent('nav.logo',  DEFAULT_LOGO);
   const LINKS    = useContent('nav.links', DEFAULT_LINKS);
 
@@ -116,6 +117,23 @@ export default function DynamicIsland({ onRoomClick }) {
      With neither true it is the resting pill: mark, live dot, and the
      section you are in. Scrolling does not change the size at all — it
      only rolls the section name over. */
+  /* Music. When a track is playing the resting island stops showing the
+     section name and shows the track instead — the same way the real
+     Dynamic Island hands its space to whatever activity is live. */
+  const { song, playing, setPlaying, progress, duration, prev, next, volume, setVolume } = useMusicPlayer();
+  const [preMuteVol, setPreMuteVol] = useState(0.72);
+  const muted = volume === 0;
+
+  const toggleMute = useCallback((e) => {
+    e.stopPropagation();
+    if (volume === 0) {
+      setVolume(preMuteVol || 0.72);
+    } else {
+      setPreMuteVol(volume);
+      setVolume(0);
+    }
+  }, [volume, preMuteVol, setVolume]);
+
   const [pinned, setPinned] = useState(false);
   const [hover, setHover]   = useState(false);
 
@@ -177,7 +195,7 @@ export default function DynamicIsland({ onRoomClick }) {
 
   return (
     <nav
-      className={`di${open ? ' di--open' : ''}${pinned ? ' di--pinned' : ''}`}
+      className={`di${open ? ' di--open' : ''}${pinned ? ' di--pinned' : ''}${playing ? ' di--music' : ''}`}
       role="navigation"
       aria-label="Primary navigation"
       /* data-hue is what recolours the island: theme.css maps it to --h,
@@ -211,11 +229,33 @@ export default function DynamicIsland({ onRoomClick }) {
             : 'K'}
         </button>
 
-        {/* Collapsed face — live dot + rolling section name */}
+        {/* Collapsed face — the track if one is playing, else the section */}
         <div className="di-now" aria-hidden={open ? 'true' : undefined}>
-          <span className="di-dot" aria-hidden="true" />
-          <RollingText text={section.label} />
+          {playing ? (
+            <>
+              <span className="di-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+              <RollingText text={(song?.title || 'Now playing').toUpperCase()} />
+            </>
+          ) : (
+            <>
+              <span className="di-dot" aria-hidden="true" />
+              <RollingText text={section.label} />
+            </>
+          )}
         </div>
+
+        {/* Mute lives outside both faces so it stays reachable while the
+            island is collapsed — the one control you want mid-scroll. */}
+        {playing && (
+          <button
+            className="di-mute"
+            onClick={toggleMute}
+            aria-label={muted ? 'Unmute music' : 'Mute music'}
+            title={muted ? 'Unmute' : 'Mute'}
+          >
+            <span aria-hidden="true">{muted ? '🔇' : '🔊'}</span>
+          </button>
+        )}
 
         {/* Expanded face — the actual nav */}
         <ul className="di-nav">
@@ -235,8 +275,48 @@ export default function DynamicIsland({ onRoomClick }) {
               Room
             </button>
           </li>
+          <li>
+            <button
+              className="di-warn"
+              onClick={() => { dismiss(); onWarnClick?.(); }}
+              tabIndex={open ? 0 : -1}
+              aria-label="Open security notice"
+              title="Security notice"
+            >
+              <span aria-hidden="true">⚠️</span>
+            </button>
+          </li>
           <li className="di-theme"><ThemeToggle /></li>
         </ul>
+
+        {/* Expanded music row — only present while something is playing, so
+            the island keeps its short shape the rest of the time. */}
+        {playing && (
+          <div className="di-music" aria-label="Now playing">
+            {song?.art && <img className="di-art" src={song.art} alt="" draggable="false" />}
+            <div className="di-track">
+              <span className="di-track-title">{song?.title}</span>
+              <span className="di-track-artist">{song?.artist}</span>
+            </div>
+            <div className="di-transport">
+              <button onClick={prev} aria-label="Previous track" tabIndex={open ? 0 : -1}>⏮</button>
+              <button onClick={() => setPlaying((p) => !p)} aria-label="Pause" tabIndex={open ? 0 : -1}>⏸</button>
+              <button onClick={next} aria-label="Next track" tabIndex={open ? 0 : -1}>⏭</button>
+              <button
+                className="di-mute-inline"
+                onClick={toggleMute}
+                aria-label={muted ? 'Unmute music' : 'Mute music'}
+                tabIndex={open ? 0 : -1}
+              >
+                {muted ? '🔇' : '🔊'}
+              </button>
+            </div>
+            <span className="di-time">{fmt(progress)} / {fmt(duration)}</span>
+            <div className="di-scrub" aria-hidden="true">
+              <i style={{ width: `${duration ? (progress / duration) * 100 : 0}%` }} />
+            </div>
+          </div>
+        )}
 
       </div>
     </nav>

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import ScrollReveal from './ScrollReveal';
 import { DeferredLottie } from './components/DeferredLottie';
 import { Play } from 'lucide-react';
 import './BentoSection.css';
@@ -195,7 +196,16 @@ export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, on
         <h2 className="bento-head-title">
           {head.title} <span className="bento-head-accent">{head.titleAccent}</span>
         </h2>
-        <p className="bento-head-sub">{head.sub}</p>
+        <ScrollReveal
+          as="div"
+          containerClassName="sr-plain"
+          textClassName="bento-head-sub sr-plain"
+          baseOpacity={0.12}
+          baseRotation={0}
+          blurStrength={5}
+        >
+          {head.sub}
+        </ScrollReveal>
       </div>
 
       {/* ── GRID ── */}

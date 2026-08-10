@@ -269,6 +269,19 @@ export default function AboutSection() {
   const showPopup = useCallback((src) => { setPopupSrc(src); setPopupVisible(true);  }, []);
   const hidePopup = useCallback(()      => { setPopupVisible(false); },                  []);
 
+  /* Card copy uses the section's own .abt-ch word reveal rather than a
+     scroll-triggered split. The original effect is a CSS transition gated
+     on .abt-revealed, which cannot replay for content that swaps in after
+     the section has already revealed — so .abt-card-copy runs the same
+     fade-and-rise as a keyframe animation instead, and the key below
+     remounts the spans so it restarts on every pick. */
+  const renderWords = (text, step = 0.022, base = 0) =>
+    String(text || '').split(' ').map((word, wi, all) => (
+      <span key={wi} className="abt-ch" style={{ '--d': `${(base + wi * step).toFixed(3)}s` }}>
+        {word}{wi < all.length - 1 ? ' ' : ''}
+      </span>
+    ));
+
   // Word renderer — marks popup keywords as special
   const renderBio = (text, pi) => {
     const words = text.split(' ');
@@ -412,52 +425,30 @@ export default function AboutSection() {
           <p className="abt-eyebrow" aria-hidden="true">{eyebrow}</p>
 
           {active ? (
-            /* An image is selected. Both the heading and the copy below it
-               swap to that image's notes and split back in, character by
-               character for the heading and word by word for the body —
-               chars on a paragraph would stagger for far too long.
-
-               The key is what makes it replay: SplitText latches
-               animationCompletedRef after its first run and refuses to
-               animate again, so each pick has to mount a fresh instance. */
+            /* An image is selected. The heading and the copy below it swap
+               to that image's notes and reveal word by word, using the same
+               .abt-ch treatment the section's own paragraphs use.
+ */
             <>
-              <h2 className="abt-heading abt-heading--card" id="about-heading">
-                <SplitText
-                  key={`t-${activeIdx}`}
-                  tag="span"
-                  className="abt-h-line"
-                  text={active.title || active.label}
-                  splitType="chars"
-                  delay={26}
-                  duration={0.7}
-                  ease="power3.out"
-                  from={{ opacity: 0, y: 46, rotateX: -70 }}
-                  to={{ opacity: 1, y: 0, rotateX: 0 }}
-                  threshold={0.02}
-                  rootMargin="0px"
-                  textAlign="left"
-                />
+              <h2
+                key={`t-${activeIdx}`}
+                className="abt-heading abt-heading--card abt-card-copy"
+                id="about-heading"
+              >
+                {renderWords(active.title || active.label, 0.045)}
               </h2>
 
               <div className="abt-rule" aria-hidden="true" />
 
               <div className="abt-bio abt-bio--card" aria-label={active.blurb}>
                 <div className="abt-streak" aria-hidden="true" />
-                <SplitText
+                <p
                   key={`b-${activeIdx}`}
-                  tag="p"
-                  className="abt-para"
-                  text={active.blurb || ''}
-                  splitType="words"
-                  delay={16}
-                  duration={0.55}
-                  ease="power3.out"
-                  from={{ opacity: 0, y: 18 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0.02}
-                  rootMargin="0px"
-                  textAlign="left"
-                />
+                  className="abt-para abt-card-copy"
+                  aria-hidden="true"
+                >
+                  {renderWords(active.blurb, 0.018, 0.16)}
+                </p>
                 <button className="abt-clear" onClick={() => setActiveIdx(null)}>
                   ← Back to about
                 </button>
@@ -475,6 +466,11 @@ export default function AboutSection() {
 
               <div className="abt-bio" aria-label="Biography">
                 <div className="abt-streak" aria-hidden="true" />
+                {/* Deliberately NOT ScrollReveal: these paragraphs already
+                    stagger in per word, and renderBio wraps the popup
+                    keywords ("Kish", "AI-driven", "cinematic") that show a
+                    cursor image on hover. ScrollReveal only takes a plain
+                    string, so using it here would delete that. */}
                 {PARAGRAPHS.map((para, pi) => (
                   <p key={pi} className="abt-para" aria-label={para}>
                     {renderBio(para, pi)}

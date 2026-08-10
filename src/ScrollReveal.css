@@ -1,0 +1,43 @@
+.scroll-reveal {
+  margin: 20px 0;
+}
+
+.scroll-reveal-text {
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.word {
+  display: inline-block;
+}
+
+/* ── Inheriting variant ──
+   The component ships as an <h2> with its own type scale and margin. Every
+   place it is used here already has settled typography, so this variant
+   strips the component's opinions and lets the host rule win. Applied via
+   containerClassName / textClassName at each call site. */
+.sr-plain,
+.sr-plain .scroll-reveal-text,
+.scroll-reveal-text.sr-plain {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  font-family: inherit;
+  text-transform: inherit;
+}
+
+/* Blur on many words at once is expensive; hint the compositor and drop it
+   the moment the animation is done with it. */
+.scroll-reveal .word { will-change: opacity, filter; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal .word {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .scroll-reveal { transform: none !important; }
+}

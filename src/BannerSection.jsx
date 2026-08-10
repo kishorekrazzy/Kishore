@@ -1,5 +1,6 @@
 import './BannerSection.css';
 import { useContent, withImages } from './content/store';
+import PixelCard from './PixelCard';
 
 const DEFAULT_BANNERS = [
   { src: 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1600&q=80',   label: 'Visual Story' },
@@ -36,7 +37,18 @@ export default function BannerSection() {
       <div className="bn-marquee-wrap" aria-hidden="true">
         <div className="bn-track">
           {TRACK.map((b, i) => (
-            <div key={i} className="bn-card">
+            /* PixelCard owns the hover: it paints a canvas of pixels over
+               the plate on mouseenter and dissolves them on leave. The card
+               keeps its own .bn-card styling — see BannerSection.css, where
+               the component's opinionated defaults are neutralised. */
+            <PixelCard
+              key={i}
+              className="bn-card"
+              gap={6}
+              speed={45}
+              colors="#ffffff,#cbd5e1,#64748b"
+              noFocus
+            >
               <img
                 src={b.src}
                 alt={b.label}
@@ -46,7 +58,7 @@ export default function BannerSection() {
               />
               <div className="bn-overlay" />
               <span className="bn-label">{b.label}</span>
-            </div>
+            </PixelCard>
           ))}
         </div>
       </div>
