@@ -1,0 +1,155 @@
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION LIST — animate-ui pattern, plain CSS + Motion
+   prefix: nl-
+═══════════════════════════════════════════════════════════ */
+
+.nl-wrap {
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 26, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* ── Card stack ─────────────────────────────────────────── */
+
+.nl-cards {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.nl-card {
+  position: relative;
+  background: rgba(36, 36, 44, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 10px 13px;
+  transform-origin: top center;
+  transition: box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nl-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* ── Card content ───────────────────────────────────────── */
+
+.nl-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.nl-title {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nl-badge-count {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.38);
+  flex-shrink: 0;
+}
+
+.nl-card-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.nl-time {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nl-dot {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.nl-subtitle {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+.nl-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.nl-count-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nl-footer-label-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.nl-footer-label,
+.nl-footer-view {
+  grid-row: 1;
+  grid-column: 1;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.nl-footer-view {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nl-footer-view:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}

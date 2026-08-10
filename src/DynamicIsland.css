@@ -1,0 +1,298 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DYNAMIC ISLAND NAV
+
+   One element that changes size. The two faces — collapsed status, and
+   the expanded nav — are stacked on top of each other and cross-faded,
+   so the pill morphs between them instead of reflowing.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* A full-width centring strip rather than a centred fixed box: the pill's
+   width is mid-transition on every frame, and translateX(-50%) of a width
+   that is still changing drifts. Flex centring re-centres each frame for
+   free. The strip itself is click-through so it never eats hero clicks. */
+.di {
+  position: fixed;
+  top: 18px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The spring is what sells it as an island rather than a resizing div:
+   it overshoots slightly on the way open and settles back. */
+.di-pill {
+  --di-w: clamp(172px, 15vw, 204px);
+  --di-h: 46px;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: var(--di-w);
+  height: var(--di-h);
+  padding-left: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: auto;
+
+  background: rgba(var(--ground-rgb), 0.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  box-shadow:
+    0 8px 30px rgba(var(--shade-rgb), 0.45),
+    inset 0 1px 0 rgba(var(--ink-rgb), 0.06);
+
+  transition:
+    width      0.58s cubic-bezier(0.32, 1.42, 0.44, 1),
+    height     0.58s cubic-bezier(0.32, 1.42, 0.44, 1),
+    box-shadow 0.45s ease,
+    border-color 0.45s ease;
+  will-change: width, height;
+}
+
+.di--open .di-pill,
+.di:focus-within .di-pill {
+  --di-w: min(660px, 94vw);
+  --di-h: 54px;
+  border-color: rgba(var(--ink-rgb), 0.14);
+  box-shadow:
+    0 16px 48px rgba(var(--shade-rgb), 0.55),
+    inset 0 1px 0 rgba(var(--ink-rgb), 0.09);
+}
+
+/* ── The K mark — the one thing that never moves ── */
+.di-mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: transform 0.58s cubic-bezier(0.32, 1.42, 0.44, 1),
+              background-color 520ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The logo fills the disc. object-fit keeps a non-square GIF from
+   stretching, and the disc keeps its accent ground showing through any
+   transparency so it still reads as the section's colour. */
+.di-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.di--open .di-mark { transform: scale(1.06); }
+.di-mark:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+
+/* Pinned reads as a held-down button: a ring around the mark, so it is
+   obvious the bar is staying open by choice rather than being stuck. */
+.di--pinned .di-mark {
+  box-shadow: 0 0 0 2px rgba(var(--ground-rgb), 0.9), 0 0 0 3.5px var(--acc);
+}
+
+/* ── Face 1: collapsed status ── */
+.di-now {
+  position: absolute;
+  left: 50px;      /* 7px padding + 34px mark + 9px gap */
+  right: 14px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* centre the label in the space beside the mark */
+  gap: 9px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.22s ease 0.12s, transform 0.32s ease 0.12s;
+}
+.di--open .di-now,
+.di:focus-within .di-now {
+  opacity: 0;
+  transform: translateY(-7px);
+  transition: opacity 0.16s ease, transform 0.28s ease;
+  pointer-events: none;
+}
+
+.di-dot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 0 8px 1px var(--acc-glow);
+  animation: diPulse 2.6s ease-in-out infinite;
+  /* Matches the section-to-section colour crossfade the rest of the page
+     uses, so the island shifts hue with the scroll rather than snapping. */
+  transition: background-color 520ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow      520ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes diPulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1);    }
+}
+
+/* ── Face 2: the nav ── */
+.di-nav {
+  position: absolute;
+  left: 54px;
+  right: 16px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2.4vw, 30px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(7px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.3s ease;
+}
+.di--open .di-nav,
+.di:focus-within .di-nav {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 0.26s ease 0.14s, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.14s;
+}
+
+/* Each item arrives a beat after the one before it. */
+.di--open .di-nav > li,
+.di:focus-within .di-nav > li {
+  animation: diItemIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.di-nav > li:nth-child(1) { animation-delay: 0.16s; }
+.di-nav > li:nth-child(2) { animation-delay: 0.20s; }
+.di-nav > li:nth-child(3) { animation-delay: 0.24s; }
+.di-nav > li:nth-child(4) { animation-delay: 0.28s; }
+.di-nav > li:nth-child(5) { animation-delay: 0.32s; }
+.di-nav > li:nth-child(6) { animation-delay: 0.36s; }
+@keyframes diItemIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.di-nav a,
+.di-room {
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.3s ease;
+}
+.di-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--acc);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .di-nav a:hover,
+  .di-room:hover { color: var(--ink); }
+  .di-nav a:hover::after { width: 100%; }
+}
+.di-nav a:focus-visible,
+.di-room:focus-visible { outline: 2px solid var(--acc); outline-offset: 4px; border-radius: 3px; }
+
+.di-theme { display: flex; align-items: center; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SPLIT-FLAP SECTION LABEL
+
+   .di-roll-ch is a one-line window. Behind it .di-roll-col holds the old
+   glyph above the new one; rolling slides the column up exactly one cell.
+   Idle, both cells hold the same character, so nothing needs resetting.
+   ══════════════════════════════════════════════════════════════════════ */
+.di-roll {
+  display: flex;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  line-height: 1.15em;
+  overflow: hidden;
+}
+
+.di-roll-ch {
+  display: block;
+  height: 1.15em;
+  overflow: hidden;
+}
+
+.di-roll-col {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+}
+.di-roll-col > span {
+  display: block;
+  height: 1.15em;
+  white-space: pre;   /* keeps the padding spaces between short/long names */
+}
+
+.di-roll--go .di-roll-col {
+  animation: diFlap 0.46s cubic-bezier(0.3, 1.3, 0.4, 1) both;
+  animation-delay: calc(var(--i) * 0.035s);
+}
+@keyframes diFlap {
+  from { transform: translateY(0);       }
+  to   { transform: translateY(-1.15em); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 720px) {
+  .di { top: 12px; }
+  .di-pill { --di-w: clamp(168px, 52vw, 200px); }
+  .di--open .di-pill,
+  .di:focus-within .di-pill { --di-w: 94vw; --di-h: 52px; }
+  .di-nav { gap: 14px; }
+  .di-nav a, .di-room { font-size: 0.6rem; letter-spacing: 0.14em; }
+}
+
+/* Small phones: six items will not fit 94vw at any readable size, so the
+   dead "Projects" link is the one that goes. */
+@media (max-width: 480px) {
+  .di-nav { gap: 11px; }
+  .di-nav > li:nth-child(2) { display: none; }
+  .di-nav a, .di-room { font-size: 0.56rem; letter-spacing: 0.1em; }
+  .di-roll { font-size: 0.56rem; letter-spacing: 0.16em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .di-pill,
+  .di-mark { transition-duration: 0.18s; transition-timing-function: ease; }
+  .di-dot  { animation: none; opacity: 0.9; }
+  .di-roll--go .di-roll-col { animation-duration: 0.01ms; }
+}

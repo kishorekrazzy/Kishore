@@ -1,0 +1,185 @@
+/* ═══════════════════════════════════════════════════════════
+   TERMINAL WINDOW — macOS Terminal Pro theme
+   prefix: trm-
+═══════════════════════════════════════════════════════════ */
+
+.trm-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 700px;
+  height: 420px;
+  background: #1d1f21;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 36px 72px rgba(0, 0, 0, 0.72),
+    0 0 0 0.5px rgba(255, 255, 255, 0.05);
+  z-index: 19997;
+  transition: opacity 0.22s ease;
+}
+
+.trm-window--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Title bar ────────────────────────────────────────────── */
+
+.trm-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 40px;
+  background: #2a2c2e;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.trm-tab-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trm-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
+.trm-tab--active {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.trm-tab-icon {
+  font-size: 0.68rem;
+  opacity: 0.6;
+}
+
+/* ── Terminal body ────────────────────────────────────────── */
+
+.trm-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 18px 18px;
+  font-family: 'Menlo', 'Monaco', 'SF Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  background: #1d1f21;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+.trm-body::-webkit-scrollbar { width: 6px; }
+.trm-body::-webkit-scrollbar-track { background: transparent; }
+.trm-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
+.trm-lines { display: flex; flex-direction: column; }
+
+/* ── Line types ───────────────────────────────────────────── */
+
+.trm-blank { height: 6px; }
+
+.trm-meta {
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 0.72rem;
+}
+
+.trm-cmd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.trm-prompt {
+  color: #6dbfff;  /* blue prompt */
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.trm-input {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.trm-out {
+  color: rgba(255, 255, 255, 0.55);
+  padding-left: 4px;
+  min-height: 1.2em;
+}
+
+.trm-ok  { color: #30d158; padding-left: 4px; }
+.trm-dim { color: rgba(255, 255, 255, 0.32); padding-left: 4px; }
+
+/* npm run dev output */
+.trm-vite {
+  color: #a78bfa;
+  padding-left: 4px;
+  font-weight: 600;
+}
+
+.trm-url {
+  color: #34d399;
+  padding-left: 4px;
+}
+
+/* git log */
+.trm-log { padding-left: 4px; }
+
+.trm-hash { color: #fbbf24; }
+
+.trm-ref {
+  color: #6dbfff;
+  font-weight: 600;
+}
+
+.trm-msg { color: rgba(255, 255, 255, 0.72); }
+
+/* ── Blinking cursor ──────────────────────────────────────── */
+
+.trm-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 0.85em;
+  background: rgba(255, 255, 255, 0.82);
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: trm-blink 1s step-end infinite;
+}
+
+@keyframes trm-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ── Live prompt ──
+   A bare input styled to vanish into the line: same font, same colour, no
+   chrome. The caret is the browser's own, so it blinks and moves correctly
+   instead of needing a faked cursor element. */
+.trm-entry {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: rgba(255, 255, 255, 0.88);   /* matches .trm-input */
+  caret-color: currentColor;
+}
+.trm-entry::selection { background: rgba(255, 255, 255, 0.22); }

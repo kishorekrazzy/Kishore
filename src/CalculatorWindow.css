@@ -1,0 +1,134 @@
+/* ═══════════════════════════════════════════════════════════
+   CALCULATOR WINDOW — iPhone Calculator style
+   prefix: cw-
+═══════════════════════════════════════════════════════════ */
+
+.cw-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.8),
+    0 0 0 0.5px rgba(255, 255, 255, 0.05);
+  z-index: 19998;
+  transition: opacity 0.22s ease;
+}
+
+.cw-window--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Title bar ────────────────────────────────────────────── */
+
+.cw-titlebar {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.cw-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: -0.01em;
+}
+
+/* ── Display ──────────────────────────────────────────────── */
+
+.cw-display {
+  background: #1c1c1e;
+  padding: 20px 24px 10px;
+  text-align: right;
+  min-height: 90px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.cw-num {
+  color: #fff;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  transition: font-size 0.1s ease;
+}
+
+/* ── Button grid ──────────────────────────────────────────── */
+
+.cw-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px 12px 16px;
+  background: #1c1c1e;
+}
+
+.cw-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 400;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.1s ease, opacity 0.1s ease;
+  user-select: none;
+}
+
+.cw-btn:active { filter: brightness(1.4); }
+
+/* Function buttons (gray) */
+.cw-btn--func {
+  background: #a5a5a5;
+  color: #000;
+  font-weight: 500;
+}
+
+/* Operator buttons (orange) */
+.cw-btn--op {
+  background: #ff9500;
+  color: #fff;
+}
+
+/* Active operator (inverted) */
+.cw-btn--lit {
+  background: #fff !important;
+  color: #ff9500 !important;
+}
+
+/* Number buttons (dark) */
+.cw-btn--num {
+  background: #333333;
+  color: #fff;
+}
+
+/* Zero button — spans 2 columns, pill shape, left-aligned text */
+.cw-btn--zero {
+  grid-column: span 2;
+  border-radius: 100px;
+  justify-content: flex-start;
+  padding-left: 22px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cw-btn--func:hover { background: #c0c0c0; }
+  .cw-btn--op:hover   { background: #ffac33; }
+  .cw-btn--num:hover  { background: #4a4a4a; }
+}

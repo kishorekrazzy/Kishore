@@ -1,0 +1,149 @@
+/* ═══════════════════════════════════════════════════════════
+   MAC DOCK — vertical left-side dock, cosine magnification
+   prefix: mac-dock-
+═══════════════════════════════════════════════════════════ */
+
+.mac-dock {
+  position: fixed;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%) translateX(calc(-100% - 14px));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 150;
+  transition:
+    transform 0.44s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity   0.28s ease;
+}
+
+.mac-dock--vis {
+  transform: translateY(-50%) translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── List container (glass pill) ─────────────────────────── */
+
+.mac-dock-list {
+  list-style: none;
+  margin: 0;
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(var(--ground-rgb), 0.82);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid rgba(var(--ink-rgb), 0.11);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(var(--shade-rgb), 0.5),
+    inset 0 1px 0 rgba(var(--ink-rgb), 0.06);
+}
+
+/* ── Icon slot ───────────────────────────────────────────── */
+
+.mac-dock-item {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Bounce right on click — mimics macOS dock launch bounce */
+.mac-dock-item--bounce {
+  animation: dock-bounce 0.56s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes dock-bounce {
+  0%   { transform: translateX(0); }
+  28%  { transform: translateX(10px); }
+  55%  { transform: translateX(-3px); }
+  78%  { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
+
+/* ── Button ──────────────────────────────────────────────── */
+
+.mac-dock-btn {
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22%;
+}
+
+.mac-dock-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(var(--ink-rgb), 0.5);
+  border-radius: 22%;
+}
+
+/* ── Icon image ──────────────────────────────────────────── */
+
+.mac-dock-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 22%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  display: block;
+}
+
+/* ── Tooltip (appears to the right) ─────────────────────── */
+
+.mac-dock-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(var(--ground-rgb), 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+  z-index: 200;
+}
+
+.mac-dock-item:hover .mac-dock-tooltip {
+  opacity: 1;
+}
+
+/* ── Running indicator dot ───────────────────────────────── */
+
+.mac-dock-dot {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(var(--ink-rgb), 0.65);
+  pointer-events: none;
+}
+
+/* ── Mobile: hidden ──────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .mac-dock {
+    display: none;
+  }
+}

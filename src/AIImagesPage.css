@@ -1,0 +1,470 @@
+/* ═══════════════════════════════════════════════════════════════
+   AI IMAGES PAGE — Red theme · Premium gallery
+   Prefix: aip-
+═══════════════════════════════════════════════════════════════ */
+
+/* ── ROOT ──────────────────────────────────────────────────── */
+.aip-root {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--bg-deep);
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-1) var(--bg-deep);
+}
+.aip-root::-webkit-scrollbar       { width: 6px; }
+.aip-root::-webkit-scrollbar-track { background: var(--bg-deep); }
+.aip-root::-webkit-scrollbar-thumb { background: var(--surface-1); border-radius: 3px; }
+
+/* ── NAV ───────────────────────────────────────────────────── */
+.aip-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+  height: 64px;
+  background: rgba(var(--ground-rgb),0.85);
+  border-bottom: 1px solid rgba(255,30,30,0.12);
+  backdrop-filter: blur(12px);
+}
+
+.aip-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(var(--ink-rgb),0.05);
+  border: 1px solid rgba(var(--ink-rgb),0.1);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.aip-back:hover {
+  background: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.15);
+  border-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.4);
+}
+
+.aip-nav-brand {
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.aip-nav-pad { flex: 1; }
+
+/* ── HERO ──────────────────────────────────────────────────── */
+.aip-hero {
+  position: relative;
+  padding: 56px 40px 36px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.aip-hero-glow {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(200,0,20,0.22) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.aip-hero-sup {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,50,50,0.7);
+  margin: 0 0 20px;
+  font-weight: 500;
+}
+
+.aip-hero-title {
+  font-size: clamp(3.5rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0 0 24px;
+  background: linear-gradient(135deg, var(--ink) 0%, #ff6666 40%, var(--acc) 70%, #800000 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 40px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.4));
+}
+
+.aip-hero-sub {
+  max-width: 540px;
+  margin: 0 auto 28px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+.aip-hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+}
+.aip-hs-dot { color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.5); }
+
+/* ── FILTERS ───────────────────────────────────────────────── */
+.aip-filters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 40px 20px;
+}
+
+.aip-filter-btn {
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  background: rgba(var(--ink-rgb),0.05);
+  border: 1px solid rgba(var(--ink-rgb),0.1);
+  color: var(--ink-2);
+  transition: all 0.22s ease;
+}
+.aip-filter-btn:hover {
+  background: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.12);
+  border-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.35);
+  color: var(--ink);
+}
+.aip-filter-btn--on {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: var(--ink);
+  box-shadow: 0 0 20px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.45);
+}
+
+/* ── GRID WRAP ─────────────────────────────────────────────── */
+.aip-grid-wrap {
+  padding: 0 28px 20px;
+}
+
+/* ── GRID — 4 col magazine layout ──────────────────────────── */
+.aip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 220px;
+  gap: 10px;
+  grid-auto-flow: row dense;
+}
+
+.aip-card--xl   { grid-column: span 2; grid-row: span 2; }
+.aip-card--tall { grid-row: span 2; }
+.aip-card--wide { grid-column: span 2; }
+/* .aip-card--sm is default (1×1) */
+
+/* ── CARD ──────────────────────────────────────────────────── */
+.aip-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface-1);
+  border: 1px solid rgba(var(--ink-rgb),0.04);
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.32s ease;
+}
+
+.aip-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.aip-card:hover {
+  transform: scale(1.02) translateY(-3px);
+  border-color: color-mix(in srgb, var(--ac) 50%, transparent);
+  box-shadow:
+    0 16px 48px rgba(var(--shade-rgb),0.7),
+    0 0 30px color-mix(in srgb, var(--ac) 30%, transparent);
+}
+
+/* Mesh grid texture */
+.aip-mesh {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg,  transparent, transparent 28px, rgba(var(--ink-rgb),0.025) 28px, rgba(var(--ink-rgb),0.025) 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(var(--ink-rgb),0.025) 28px, rgba(var(--ink-rgb),0.025) 29px);
+  pointer-events: none;
+}
+
+/* Film grain */
+.aip-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+}
+
+/* Large faded background number */
+.aip-bignum {
+  position: absolute;
+  bottom: -10px;
+  right: 8px;
+  font-size: clamp(4rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink-faint);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.04em;
+}
+
+/* ── HOVER OVERLAY ─────────────────────────────────────────── */
+.aip-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(var(--shade-rgb),0.92) 0%, rgba(var(--shade-rgb),0.5) 50%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.aip-card:hover .aip-overlay { opacity: 1; }
+
+.aip-overlay-body { transform: translateY(8px); transition: transform 0.3s ease; }
+.aip-card:hover .aip-overlay-body { transform: translateY(0); }
+
+.aip-overlay-cat {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ac);
+  margin: 0 0 6px;
+}
+.aip-overlay-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.aip-overlay-model {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+}
+.aip-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.aip-tag {
+  font-size: 0.64rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(var(--ink-rgb),0.08);
+  border: 1px solid rgba(var(--ink-rgb),0.1);
+  color: var(--ink-2);
+}
+
+.aip-overlay-bar {
+  height: 2px;
+  background: var(--ac);
+  margin-top: 12px;
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--ac);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22,1,0.36,1) 0.05s;
+}
+.aip-card:hover .aip-overlay-bar { transform: scaleX(1); }
+
+/* ── BOTTOM LABEL (always visible) ────────────────────────── */
+.aip-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(var(--shade-rgb),0.7), transparent);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s;
+}
+.aip-card:hover .aip-label { opacity: 0; }
+
+.aip-label-num {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ac);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.aip-label-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+.aip-label-cat {
+  font-size: 0.62rem;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+.aip-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-top: 1px solid rgba(255,30,30,0.1);
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── 3D SECTION DIVIDER ────────────────────────────────────── */
+
+/* ── 3D PARALLAX SECTION ───────────────────────────────────── */
+
+/* ── MASONRY CONTAINER ─────────────────────────────────────── */
+
+/* ── PARALLAX CARD ─────────────────────────────────────────── */
+.gs-card-figure {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  cursor: crosshair;
+}
+.gs-card-tilt {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(var(--shade-rgb),0.5), 0 0 0 1px rgba(255,50,50,0.08);
+}
+.gs-card-image-wrap {
+  position: absolute;
+  inset: -15%;
+  width: 130%;
+  height: 130%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.gs-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(var(--shade-rgb),0.78) 0%, rgba(var(--shade-rgb),0.1) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 2;
+}
+.gs-card-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0;
+}
+.gs-card-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 18px 20px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.gs-card-tilt:hover .gs-card-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+.gs-card-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.gs-card-category {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,80,80,0.75);
+}
+.gs-card-index {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-size: 0.5rem;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  color: var(--ink-faint);
+  z-index: 3;
+}
+.gs-card-edge {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 4;
+}
+.gs-card-tilt:hover .gs-card-edge { opacity: 0.75; }
+
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .aip-grid { grid-template-columns: repeat(3, 1fr); }
+  .aip-card--xl { grid-column: span 2; }
+}
+@media (max-width: 700px) {
+  .aip-grid         { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
+  .aip-card--xl     { grid-column: span 2; grid-row: span 1; }
+  .aip-card--tall   { grid-row: span 1; }
+  .aip-hero         { padding: 50px 20px 40px; }
+  .aip-filters      { padding: 0 20px 30px; }
+  .aip-grid-wrap    { padding: 0 12px 40px; }
+  .aip-nav          { padding: 0 20px; }
+}

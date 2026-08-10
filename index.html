@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- ══ IDENTITY ══════════════════════════════════════════════════
+         Title front-loads the name, then the role. Search results and
+         browser tabs both truncate, so the distinguishing word goes
+         first and the keywords follow. -->
+    <title>Kishore — AI Video Editor, Colourist &amp; Creative Developer</title>
+    <meta
+      name="description"
+      content="Portfolio of Kishore (KishoreditX) — AI-driven video editing, cinematic colour grading, generative imagery and web development. Based in India, working worldwide."
+    />
+    <meta name="author" content="Kishore" />
+    <meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)" />
+
+    <!-- Update to the real domain before launch: canonical and og:url
+         must be absolute, and social scrapers ignore relative paths. -->
+    <link rel="canonical" href="https://kishoreditx.com/" />
+
+    <!-- ══ OPEN GRAPH — Facebook, LinkedIn, WhatsApp, Slack ══════════ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kishoreditx.com/" />
+    <meta property="og:site_name" content="KishoreditX" />
+    <meta property="og:title" content="Kishore — AI Video Editor, Colourist &amp; Creative Developer" />
+    <meta
+      property="og:description"
+      content="Cinematic edits, colour grading, generative imagery and interfaces that breathe. Selected work, notes and contact."
+    />
+    <meta
+      property="og:image"
+      content="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&amp;fit=crop&amp;w=1200&amp;h=630&amp;q=80"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A film clapperboard held up against desert light" />
+    <meta property="og:locale" content="en_GB" />
+
+    <!-- ══ TWITTER / X ═══════════════════════════════════════════════ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@kishoreditx" />
+    <meta name="twitter:creator" content="@kishoreditx" />
+    <meta name="twitter:title" content="Kishore — AI Video Editor, Colourist &amp; Creative Developer" />
+    <meta
+      name="twitter:description"
+      content="Cinematic edits, colour grading, generative imagery and interfaces that breathe."
+    />
+    <meta
+      name="twitter:image"
+      content="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&amp;fit=crop&amp;w=1200&amp;h=630&amp;q=80"
+    />
+
+    <!-- ══ STRUCTURED DATA ═══════════════════════════════════════════
+         Lets search engines model this as a person with a profession and
+         a set of skills, rather than as an untyped page of text. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Kishore",
+        "alternateName": "KishoreditX",
+        "url": "https://kishoreditx.com/",
+        "email": "mailto:krazykishore2004@gmail.com",
+        "jobTitle": "AI Video Editor & Creative Developer",
+        "description": "AI-driven video editor, colourist and creative developer working across film, generative imagery and the web.",
+        "address": { "@type": "PostalAddress", "addressCountry": "IN" },
+        "knowsAbout": [
+          "Video Editing",
+          "Colour Grading",
+          "DaVinci Resolve",
+          "Adobe After Effects",
+          "Generative AI Imagery",
+          "Prompt Engineering",
+          "React",
+          "Web Development"
+        ],
+        "sameAs": [
+          "https://instagram.com/kishoreditx",
+          "https://youtube.com/@kishoreditx",
+          "https://x.com/kishoreditx"
+        ]
+      }
+    </script>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- ══ PERFORMANCE ═══════════════════════════════════════════════
+         The hero plate is the largest contentful paint. Opening the
+         connection early, and fetching the first plate before the bundle
+         has even parsed, is what keeps the hero from arriving late. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="high"
+      href="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&amp;fit=crop&amp;w=2400&amp;q=75"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Resolve the theme before first paint so a visitor never sees a
+      // flash of the wrong one. There are only two themes and both are
+      // explicit, so this always sets the attribute — including for the
+      // retired 'system' value, which resolves to what the OS was showing.
+      // Must stay in step with readMode() in ThemeToggle.jsx.
+      (function () {
+        var m = 'dark';
+        try {
+          var s = localStorage.getItem('kish.theme');
+          if (s === 'light' || s === 'dark') m = s;
+          else if (s === 'system' && matchMedia('(prefers-color-scheme: light)').matches) m = 'light';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', m);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: system-ui; line-height: 1.6">
+        This portfolio is an interactive application and needs JavaScript enabled.
+        You can reach me directly at
+        <a href="mailto:krazykishore2004@gmail.com">krazykishore2004@gmail.com</a>.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

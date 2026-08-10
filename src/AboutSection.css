@@ -1,0 +1,737 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   ABOUT SECTION — Cinematic Premium Design System
+   All animations and effects for the About Me section.
+══════════════════════════════════════════════════════════════════════ */
+
+/* ── SECTION SHELL ──────────────────────────────────────────────────── */
+
+.abt-section {
+  position: relative;
+  width: 100vw;
+  min-height: 130vh;
+  background: var(--bg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Seamless blend from hero above */
+.abt-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 220px;
+  background: linear-gradient(to bottom, var(--bg) 0%, rgba(var(--shade-rgb),0) 100%);
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* Bottom fade */
+.abt-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 140px;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ── BACKGROUND ─────────────────────────────────────────────────────── */
+
+.abt-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 70% at 0% 60%,   rgba(var(--shade-rgb), 0.32) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 100% 20%,  rgba(var(--shade-rgb), 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 30% at 50% 100%,  rgba(var(--shade-rgb), 0.45) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* ── FILM GRAIN ─────────────────────────────────────────────────────── */
+
+.abt-noise {
+  position: absolute;
+  inset: -10%;
+  width: 120%; height: 120%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.028;
+  animation: noiseShift 0.35s steps(2) infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+@keyframes noiseShift {
+  0%   { transform: translate(0,    0);    }
+  25%  { transform: translate(-1px, 2px);  }
+  50%  { transform: translate(2px,  -1px); }
+  75%  { transform: translate(-2px, 1px);  }
+  100% { transform: translate(1px,  -2px); }
+}
+
+/* ── SUBTLE HUD GRID ────────────────────────────────────────────────── */
+
+.abt-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(var(--ink-rgb), 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--ink-rgb), 0.028) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(var(--shade-rgb),0.5) 70%, transparent 100%);
+}
+
+/* ── FLOATING PARTICLES ─────────────────────────────────────────────── */
+
+.abt-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.abt-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(var(--ink-rgb), 0.75);
+  box-shadow: 0 0 6px 1px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.25);
+  animation: particleFloat ease-in-out infinite;
+}
+
+@keyframes particleFloat {
+  0%, 100% { transform: translate(0, 0)       scale(1);    }
+  33%       { transform: translate(6px, -20px) scale(1.15); }
+  66%       { transform: translate(-4px, 10px) scale(0.9);  }
+}
+
+/* ── INNER GRID ─────────────────────────────────────────────────────── */
+
+.abt-inner {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1380px;
+  padding: 140px 56px 140px;
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 88px;
+  align-items: center;
+}
+
+@media (max-width: 960px) {
+  .abt-inner {
+    grid-template-columns: 1fr;
+    padding: 100px 28px 100px;
+    gap: 64px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LEFT — 3D CARD STACK  (original animation)
+═══════════════════════════════════════════ */
+
+.abt-left {
+  position: relative;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  cursor: default;
+}
+
+/* Hover hint */
+.abt-hover-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 20;
+}
+
+.abt-revealed .abt-hover-hint {
+  animation: hintFadeIn 0.6s ease 2.2s forwards;
+}
+
+.abt-left--line .abt-hover-hint {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+@keyframes hintFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);   }
+}
+
+.abt-hover-hint span {
+  font-size: 0.48rem;
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Line mode glow */
+.abt-left--line .abt-card-stack {
+  filter: drop-shadow(0 0 40px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.10));
+}
+
+.abt-card-stack {
+  position: relative;
+  width: 260px;
+  height: 360px;
+  overflow: visible;
+}
+
+/* ── INDIVIDUAL CARD ── */
+
+.abt-card {
+  position: absolute;
+  top:  50%; left: 50%;
+  width: 250px; height: 350px;
+  margin-left: -125px;
+  margin-top:  -175px;
+  border-radius: 14px;
+  cursor: pointer;
+
+  opacity: 0;
+  transition:
+    transform  0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity    0.60s ease,
+    z-index    0s;
+  will-change: transform, opacity;
+}
+
+.abt-revealed .abt-card-0 { opacity: 1; transition-delay: 0.00s, 0.00s; }
+.abt-revealed .abt-card-1 { opacity: 1; transition-delay: 0.16s, 0.16s; }
+.abt-revealed .abt-card-2 { opacity: 1; transition-delay: 0.32s, 0.32s; }
+
+/* Card face */
+.abt-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--ink-rgb),0.07);
+  box-shadow:
+    0 24px 64px rgba(var(--shade-rgb),0.75),
+    0  0   0 1px rgba(var(--ink-rgb),0.03) inset;
+  transition:
+    box-shadow   0.45s ease,
+    border-color 0.45s ease;
+}
+
+.abt-card-face img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.8) saturate(0.85);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .abt-card--hovered .abt-card-face {
+    border-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.32);
+    box-shadow:
+      0 32px 80px rgba(var(--shade-rgb),0.85),
+      0  0  50px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.14);
+  }
+
+  .abt-card--hovered .abt-card-face img {
+    transform: scale(1.06);
+    filter: brightness(0.92) saturate(1.1);
+  }
+}
+
+/* Overlay gradient on card */
+.abt-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(var(--shade-rgb),0.72) 0%,
+    rgba(var(--shade-rgb),0.18) 40%,
+    transparent      70%
+  );
+  pointer-events: none;
+}
+
+/* Card label bottom-left */
+.abt-card-label {
+  position: absolute;
+  bottom: 14px; left: 16px;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color 0.3s ease;
+}
+
+.abt-card--hovered .abt-card-label {
+  color: var(--ink);
+}
+
+/* Card index top-right */
+.abt-card-num {
+  position: absolute;
+  top: 14px; right: 16px;
+  font-size: 0.55rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Glowing border on hover */
+.abt-card-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: 15px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  border: 1px solid oklch(var(--l-acc) var(--c-acc) var(--h) / 0.48);
+  box-shadow:
+    0  0 20px  5px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.12),
+    0  0  8px  2px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.22) inset;
+}
+
+.abt-card--hovered .abt-card-glow {
+  opacity: 1;
+}
+
+/* Surface shimmer / reflection at bottom */
+.abt-card-reflection {
+  position: absolute;
+  bottom: -30px; left: 10%;
+  width: 80%; height: 30px;
+  background: radial-gradient(ellipse at center, oklch(var(--l-acc) var(--c-acc) var(--h) / 0.10) 0%, transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  opacity: 0;
+}
+
+.abt-card--hovered .abt-card-reflection {
+  opacity: 1;
+}
+
+/* ── EXTRA ROWS — the grid above and below the aligned line ──
+   Hidden until the stack aligns. Declared after the .abt-revealed rules
+   above so scrolling into view reveals the original three only; these
+   belong to the hover state, not the scroll state. */
+.abt-card--extra {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.abt-left--line .abt-card--extra {
+  pointer-events: auto;
+  /* steps(1, end) is the whole point — the keyframes below snap between
+     values instead of easing through them, which is what makes it read as
+     a tube warming up rather than a fade. `both` holds the last frame, and
+     removing the class on mouse-leave drops the animation entirely so the
+     card falls back to opacity 0 through .abt-card's own transition. */
+  animation: abtFlickerIn 0.62s steps(1, end) both;
+  /* The middle row lands first, then the rows around it strike on. */
+  animation-delay: calc(0.22s + var(--fd));
+}
+
+@keyframes abtFlickerIn {
+  0%        { opacity: 0;    }
+  12%       { opacity: 0.85; }
+  20%       { opacity: 0.08; }
+  34%       { opacity: 0.95; }
+  42%       { opacity: 0.22; }
+  56%       { opacity: 1;    }
+  64%       { opacity: 0.45; }
+  76%, 100% { opacity: 1;    }
+}
+
+/* Reduced motion needs no rule of its own here: the universal block in
+   index.css clamps the duration to 0.01ms, and because the fill is `both`
+   the cards simply snap to their final opacity instead of stuttering. */
+
+/* ═══════════════════════════════════════════
+   CURSOR POPUP
+═══════════════════════════════════════════ */
+
+.abt-cursor-popup {
+  position: fixed;
+  left: 0; top: 0;
+  pointer-events: none;
+  z-index: 9999;
+  width: 180px;
+  height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(10px);
+  transform: scale(0.88);
+  transition:
+    opacity   0.28s ease,
+    filter    0.28s ease,
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow:
+    0 22px 60px rgba(var(--shade-rgb), 0.82),
+    0  0   0 1px rgba(var(--ink-rgb), 0.07);
+}
+
+.abt-cursor-popup--visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.abt-cursor-popup img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.8) saturate(0.8);
+}
+
+.abt-popup-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   RIGHT — TEXT CONTENT
+═══════════════════════════════════════════ */
+
+.abt-right {
+  position: relative;
+}
+
+/* ── Eyebrow ── */
+
+.abt-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.75);
+  margin-bottom: 18px;
+
+  opacity: 0;
+  transform: translateX(-18px);
+  transition:
+    opacity   0.75s ease           0.1s,
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+}
+
+.abt-revealed .abt-eyebrow {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Heading ── */
+
+.abt-heading {
+  font-size: clamp(2.8rem, 4.8vw, 5.2rem);
+  font-weight: 900;
+  line-height: 0.93;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 36px;
+}
+
+.abt-h-line {
+  display: block;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(35px) skewY(1.5deg);
+  transition:
+    opacity   0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.abt-h-line:nth-child(1) { transition-delay: 0.18s; }
+.abt-h-line:nth-child(2) { transition-delay: 0.32s; }
+.abt-h-line:nth-child(3) { transition-delay: 0.46s; }
+
+/* Outline accent word — electric blue, no purple */
+.abt-h-outline {
+  -webkit-text-stroke: 1.5px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.65);
+  color: transparent;
+  text-shadow:
+    0 0 50px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.12),
+    0 0 100px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.06);
+}
+
+.abt-revealed .abt-h-line {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Ruled divider ── */
+
+.abt-rule {
+  width: 0%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    oklch(var(--l-acc) var(--c-acc) var(--h) / 0.65) 0%,
+    rgba(var(--ink-rgb), 0.20) 50%,
+    transparent 100%
+  );
+  margin-bottom: 38px;
+  transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s;
+}
+
+.abt-revealed .abt-rule {
+  width: 100%;
+}
+
+/* ── Bio container ── */
+
+.abt-bio {
+  position: relative;
+  margin-bottom: 48px;
+}
+
+/* GLOW STREAK — scans across text on reveal */
+
+.abt-streak {
+  position: absolute;
+  top: 0; left: 0;
+  width: 110px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent                    0%,
+    rgba(30,  76, 180, 0.12)      25%,
+    oklch(var(--l-acc) var(--c-acc) var(--h) / 0.40)      48%,
+    rgba(100, 160,255, 0.52)      50%,
+    oklch(var(--l-acc) var(--c-acc) var(--h) / 0.40)      52%,
+    rgba(30,  76, 180, 0.12)      75%,
+    transparent                  100%
+  );
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transform: translateX(-130px);
+}
+
+.abt-revealed .abt-streak {
+  animation: streakSweep 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+}
+
+@keyframes streakSweep {
+  0%   { transform: translateX(-130px); opacity: 0; }
+  8%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(calc(100% + 90px)); opacity: 0; }
+}
+
+/* ── Paragraph text ── */
+
+.abt-para {
+  font-size: clamp(0.88rem, 1.35vw, 1.04rem);
+  font-weight: 300;
+  line-height: 1.90;
+  color: var(--ink-2);
+  margin-bottom: 22px;
+  letter-spacing: 0.01em;
+}
+
+.abt-para:last-child { margin-bottom: 0; }
+
+/* ── Character / word spans ── */
+
+.abt-ch {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  transform: translateY(9px);
+  transition:
+    opacity   0.38s ease                             var(--d, 0s),
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)  var(--d, 0s);
+  will-change: opacity, transform;
+}
+
+.abt-revealed .abt-ch {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Subtle glow on paragraph hover */
+@media (hover: hover) and (pointer: fine) {
+  .abt-para:hover .abt-ch {
+    text-shadow: 0 0 12px rgba(var(--ink-rgb), 0.12);
+  }
+}
+
+/* ── Special popup-keyword highlight ── */
+
+.abt-word--special {
+  color: var(--ink);
+  border-bottom: 1px solid oklch(var(--l-acc) var(--c-acc) var(--h) / 0.28);
+  cursor: default;
+  transition: color 0.22s ease, border-color 0.22s ease;
+}
+
+.abt-word--special:hover {
+  color: var(--ink);
+  border-bottom-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.58);
+  text-shadow: 0 0 16px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.22);
+}
+
+/* ── Stats row ── */
+
+.abt-stats {
+  display: flex;
+  align-items: flex-start;
+  gap: 52px;
+  margin-bottom: 44px;
+  flex-wrap: wrap;
+
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.abt-revealed .abt-stats {
+  animation: fadeUpIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) 1.3s forwards;
+}
+
+@keyframes fadeUpIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.abt-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.abt-stat-val {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+  text-shadow: 0 0 32px rgba(var(--ink-rgb), 0.22);
+}
+
+.abt-stat-lbl {
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── CTA link ── */
+
+.abt-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--ink-rgb),0.12);
+  padding-bottom: 7px;
+
+  opacity: 0;
+  transition:
+    color        0.3s ease,
+    border-color 0.3s ease;
+}
+
+.abt-revealed .abt-cta {
+  animation: fadeUpIn 0.7s cubic-bezier(0.22,1,0.36,1) 1.6s forwards;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .abt-cta:hover {
+    color: var(--ink);
+    border-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.55);
+  }
+}
+
+.abt-cta-icon {
+  width: 32px; height: 12px;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .abt-cta:hover .abt-cta-icon {
+    transform: translateX(8px);
+  }
+}
+
+/* ── Image-driven copy ──
+   Clicking one of the nine grid images swaps the heading and body for that
+   image's notes. The selected card keeps a permanent accent ring so it is
+   obvious which one the copy belongs to. */
+.abt-card--picked .abt-card-glow { opacity: 1; }
+.abt-card--picked .abt-card-face {
+  border-color: oklch(var(--l-acc) var(--c-acc) var(--h) / 0.55);
+}
+.abt-card { -webkit-tap-highlight-color: transparent; }
+.abt-card:focus-visible { outline: 2px solid var(--acc); outline-offset: 4px; border-radius: 16px; }
+
+/* The card heading is one line rather than the three stacked words, so it
+   needs its own size — the stacked rule would leave it marooned. */
+.abt-heading--card {
+  font-size: clamp(1.9rem, 3.4vw, 3.1rem);
+  line-height: 1.05;
+}
+.abt-heading--card .split-parent { display: inline-block; }
+
+/* GSAP writes inline transforms on every char; the rotateX needs a stage
+   with depth or it reads as a flat squash. */
+.abt-heading--card,
+.abt-bio--card { perspective: 800px; }
+
+.abt-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .abt-clear:hover { color: var(--ink); border-color: var(--line-hard); }
+}
+.abt-clear:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }

@@ -1,0 +1,220 @@
+/* ═════════════════════════════════════════════════════════════════
+   BANNER SECTION — Infinite marquee · Ad-banner style
+═════════════════════════════════════════════════════════════════ */
+
+/* ── SECTION SHELL ────────────────────────────────────────────── */
+
+.bn-section {
+  position: relative;
+  width: 100vw;
+  padding: 72px 0 80px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* blend from team section */
+.bn-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* blend into gallery */
+.bn-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ── BACKGROUND LAYERS ────────────────────────────────────────── */
+
+.bn-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 80% at 50% 50%, rgba(var(--shade-rgb), 0.3) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bn-noise {
+  position: absolute;
+  inset: -10%;
+  width: 120%; height: 120%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.02;
+  animation: bnNoiseShift 0.4s steps(2) infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+@keyframes bnNoiseShift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-3%, 2%); }
+  50%  { transform: translate(2%, -3%); }
+  75%  { transform: translate(-1%, 1%); }
+  100% { transform: translate(0, 0); }
+}
+
+.bn-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(var(--ink-rgb),0.01) 3px,
+    rgba(var(--ink-rgb),0.01) 4px
+  );
+}
+
+/* ── SIDE FADE MASKS ──────────────────────────────────────────── */
+
+.bn-fade-left,
+.bn-fade-right {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 180px;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.bn-fade-left  { left:  0; background: linear-gradient(to right, var(--bg) 0%, transparent 100%); }
+.bn-fade-right { right: 0; background: linear-gradient(to left,  var(--bg) 0%, transparent 100%); }
+
+/* ── HEADER ───────────────────────────────────────────────────── */
+
+.bn-header {
+  position: relative;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 52px;
+}
+
+.bn-header-line {
+  height: 1px;
+  width: 80px;
+  background: rgba(var(--ink-rgb),0.1);
+}
+
+.bn-header-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── MARQUEE WRAPPER ──────────────────────────────────────────── */
+
+.bn-marquee-wrap {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  overflow: hidden;
+  /* Pause on hover */
+}
+
+.bn-marquee-wrap:hover .bn-track {
+  animation-play-state: paused;
+}
+
+/* ── TRACK ────────────────────────────────────────────────────── */
+
+.bn-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: bnScroll 28s linear infinite;
+  will-change: transform;
+}
+
+@keyframes bnScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(-33.333%)); }
+}
+
+/* ── BANNER CARD ──────────────────────────────────────────────── */
+
+.bn-card {
+  position: relative;
+  width: 480px;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(var(--ink-rgb),0.06);
+  transition: border-color 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bn-card:hover {
+    border-color: rgba(var(--ink-rgb),0.18);
+    transform: scale(1.025);
+  }
+}
+
+/* Image */
+.bn-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.65) saturate(0.75);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bn-card:hover .bn-img {
+    transform: scale(1.06);
+    filter: brightness(0.82) saturate(0.95);
+  }
+}
+
+/* Dark gradient overlay */
+.bn-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--shade-rgb),0.5) 0%,
+    rgba(var(--shade-rgb),0.1) 50%,
+    rgba(var(--shade-rgb),0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Label */
+.bn-label {
+  position: absolute;
+  bottom: 20px;
+  left: 22px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: color 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bn-card:hover .bn-label {
+    color: var(--ink);
+  }
+}

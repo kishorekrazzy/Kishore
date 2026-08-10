@@ -1,0 +1,61 @@
+.theme-toggle {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(var(--ink-rgb), 0.06);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  /* Sits inside the nav's <ul>, which is a flex row of list items. */
+  vertical-align: middle;
+}
+
+/* One moving part. The icons never move — they only recolour as the
+   knob passes over them, which is far calmer than two animating glyphs
+   and reads instantly as "two positions". */
+.tt-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 2px 10px var(--acc-glow);
+  transition: transform 460ms cubic-bezier(0.34, 1.42, 0.5, 1),
+              background-color 520ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-toggle[data-idx='1'] .tt-knob { transform: translateX(24px); }
+
+.tt-slot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--ink-3);
+  transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tt-slot svg { width: 13px; height: 13px; }
+
+/* Whichever slot the knob is currently under flips to the on-accent ink. */
+.theme-toggle[data-idx='0'] .tt-slot:nth-of-type(1),
+.theme-toggle[data-idx='1'] .tt-slot:nth-of-type(2) { color: var(--acc-ink); }
+
+.theme-toggle:hover { border-color: var(--line-hard); }
+.theme-toggle:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
+
+/* Cross-dissolve the document on theme change. */
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 460ms; mix-blend-mode: normal; }
+::view-transition-old(root) { animation-name: tt-fade-out; }
+::view-transition-new(root) { animation-name: tt-fade-in; }
+@keyframes tt-fade-out { to   { opacity: 0; } }
+@keyframes tt-fade-in  { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-knob { transition: none; }
+}

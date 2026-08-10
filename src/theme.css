@@ -1,0 +1,951 @@
+/* ══════════════════════════════════════════════════════════════════════
+   COLOUR SYSTEM
+   ──────────────────────────────────────────────────────────────────────
+   Built on colour theory, not on picking hexes that happen to sit well
+   together.
+
+   ── THE SCHEME ───────────────────────────────────────────────────────
+   Every section owns ONE number: a hue angle. Its background, surfaces,
+   text, borders and accent are all derived from that angle by fixed
+   lightness/chroma rules that never change between sections.
+
+   That is what stops seven differently-coloured sections looking odd.
+   The eye reads "same material, different pigment" rather than "seven
+   unrelated websites", because only ONE dimension is allowed to vary —
+   contrast, value structure and saturation stay locked page-wide.
+
+   ── THE HUE JOURNEY ──────────────────────────────────────────────────
+   Sections are ordered so each is ANALOGOUS to its neighbour (33–45°
+   apart, close enough to harmonise), while the first and last are near
+   COMPLEMENTARY (amber 28° vs cyan 195° — 167° apart).
+
+     Hero      28°  amber      ┐
+     About    355°  crimson    │ every step 33–45°:
+     Team     320°  magenta    │ neighbours always harmonise
+     Bento    275°  violet     │
+     Banner   235°  indigo     │
+     Widgets  195°  cyan       ┘ endpoint complements the start
+
+   Scrolling is therefore one continuous warm→cool sweep that resolves
+   against where it began. No single transition is large enough to jar,
+   but top and bottom are unmistakably different temperatures.
+
+   ── WHY OKLCH ────────────────────────────────────────────────────────
+   In HSL, yellow at 50% "lightness" is far brighter to the eye than
+   blue at 50%. Rotating hue would make some sections glare and others
+   go muddy. OKLCH lightness is perceptually uniform, so L=62% reads
+   equally bright on every hue — the only reason one rule can serve all
+   six sections.
+
+   ── STRUCTURE (important) ────────────────────────────────────────────
+   A custom property is substituted using the values on the element
+   where it is DECLARED. So `--bg: oklch(… var(--h))` declared on :root
+   would bake in the root's hue and ignore any section override.
+
+   Hence two layers:
+     1. THEME BLOCKS below declare only hue-free scalars (L, C, alpha).
+     2. The SCOPE BLOCK re-declares the real tokens on every element
+        that owns a hue, so each one composes the scalars with its own
+        --h at its own level.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Section hues ── */
+  --h-hero:    28;   /* amber    */
+  --h-about:  355;   /* crimson  */
+  --h-team:   320;   /* magenta  */
+  --h-bento:  275;   /* violet   */
+  --h-banner: 235;   /* indigo   */
+  --h-widget: 195;   /* cyan     */
+  --h-room:   150;   /* green — CRT phosphor, its own world */
+  --h-video:   15;   /* red-orange */
+  --h-notes:  256;   /* violet-indigo — sits between Bento 275 and Banner 235 */
+  --h-contact:100;   /* yellow — the closing note, resolving warm again */
+  --h-mind:    22;   /* blood red — Personal OS, dark theme only */
+
+  --h: var(--h-hero);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYER 1 · THEME SCALARS  (no hue — safe to declare at :root)
+
+   DARK · "STUDIO"   Near-black with a blue cast, like a grading suite
+                     at night. Chroma runs high so accents emit light.
+   ══════════════════════════════════════════════════════════════════════ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Foreground / shadow as raw triplets. The stylesheets write
+     rgba(255,255,255,α) for "ink at α" and rgba(0,0,0,α) for "shadow at
+     α"; exposing both as triplets lets ~740 existing rules keep their
+     alpha and simply flip meaning between themes. */
+  --ink-rgb:   255, 255, 255;
+  --shade-rgb: 0, 0, 0;
+  /* Panel grounds — the near-blacks used as flat backgrounds (nav glass,
+     card fills). Distinct from --shade-rgb, which is for shadows and for
+     scrims over photography: those must stay dark in BOTH themes, while
+     a panel ground has to flip. */
+  --ground-rgb: 8, 8, 10;
+
+  /* Text over photography stays light in BOTH themes — a caption on a
+     dark still must not go dark just because the page did. */
+  --on-media-rgb: 255, 255, 255;
+
+  --l-bg: 14.5%;   --c-bg: 0.014;
+  --l-deep: 10.5%; --c-deep: 0.012;
+  --l-s1: 18.5%;   --c-s1: 0.020;
+  --l-s2: 22.5%;   --c-s2: 0.026;
+  --l-s3: 27.5%;   --c-s3: 0.032;
+
+  --l-line: 52%;   --c-line: 0.04;  --a-line: 0.24;
+  --a-line-soft: 0.13;
+  --l-lineh: 70%;  --c-lineh: 0.06; --a-lineh: 0.40;
+
+  --l-ink: 97%;    --c-ink: 0.010;
+  --l-ink2: 82%;   --c-ink2: 0.016;
+  --l-ink3: 63%;   --c-ink3: 0.020;
+  --l-inkf: 50%;   --c-inkf: 0.022;
+
+  --l-acc: 75%;    --c-acc: 0.180;
+  --l-acch: 86%;   --c-acch: 0.195;
+  --l-accl: 32%;   --c-accl: 0.090;
+  --l-acci: 13%;   --c-acci: 0.030;
+  --a-wash: 0.14;  --a-glow: 0.34;
+
+  --l-glass: 22%;  --c-glass: 0.024; --a-glass: 0.52;
+  --glass-line: oklch(85% 0.04 250 / 0.13);
+
+  /* Elevation reads as depth of black plus a lit top edge */
+  --sh-1: 0 1px 2px oklch(0% 0 0 / 0.50);
+  --sh-2: 0 4px 14px oklch(0% 0 0 / 0.55);
+  --sh-3: 0 10px 34px oklch(0% 0 0 / 0.60);
+  --sh-4: 0 20px 64px oklch(0% 0 0 / 0.68);
+  --sh-edge: inset 0 1px 0 oklch(100% 0 0 / 0.08);
+
+  --grain-opacity: 0.05;
+  --grain-blend: overlay;
+  --media-filter: saturate(1.05) contrast(1.05) brightness(0.94);
+
+
+  /* Hero plate grades, one per mode. Authored to crush the plate DOWN
+     so white headline type reads on top. Scrim fades to black. */
+  --plate-video: brightness(0.72) saturate(0.62) contrast(1.08);
+  --plate-ai:    brightness(0.55) saturate(0.42) contrast(1.18) hue-rotate(215deg);
+  --plate-color: brightness(0.65) saturate(1.05) contrast(1.04) sepia(0.22);
+  --plate-web:   brightness(0.80) saturate(0.12) contrast(1.38);
+  --plate-scrim: var(--shade-rgb);
+
+  /* Section seams: the soft gradient bleed where one section meets the
+     next. On black these read as depth — sections dissolve into each
+     other. 1 = visible. */
+  --seam: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT · "CLAY"    Warm bone paper. Chroma held low so colour reads as
+                     pigment stirred into the surface, not ink printed
+                     on top. Depth comes from soft warm shadow.
+   ══════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  
+  /* ── MILK · flat, solid, high-contrast ──────────────────────────────
+     No gradients, no white glow, no soft extrusion. A milk-white sheet,
+     near-white panels, solid dark ink, and one solid accent per section.
+     Depth is carried by a hairline border and a single faint shadow —
+     both neutral, never white.
+  
+     Surfaces stay pinned to one warm neutral hue rather than following
+     each section: "milk white" has to actually read as white, and a
+     ground that shifted hue per section would tint it. Sections keep
+     their identity through the accent, which is still driven by --h. */
+  
+  --h-surface-fixed: 85;          /* warm neutral — milk, not blue-white */
+  
+  --ink-rgb:   28, 26, 23;        /* solid dark, a hair off pure black */
+  --shade-rgb: 96, 92, 84;        /* neutral shadow, never black or white */
+  --ground-rgb: 250, 249, 246;    /* the milk */
+  --on-media-rgb: 255, 255, 255;
+  
+  --l-bg: 97.4%;   --c-bg: 0.005;
+  --l-deep: 94.6%; --c-deep: 0.008;
+  --l-s1: 99.5%;   --c-s1: 0.003;   /* panels read as clean white */
+  --l-s2: 96.6%;   --c-s2: 0.006;
+  --l-s3: 93.6%;   --c-s3: 0.009;
+  
+  /* With no shadow doing the work, the border defines every edge. */
+  --l-line: 80%;   --c-line: 0.010; --a-line: 0.85;
+  --a-line-soft: 0.45;
+  --l-lineh: 58%;  --c-lineh: 0.016; --a-lineh: 0.55;
+  
+  --l-ink: 18%;    --c-ink: 0.012;
+  --l-ink2: 34%;   --c-ink2: 0.012;
+  --l-ink3: 46%;   --c-ink3: 0.011;
+  --l-inkf: 60%;   --c-inkf: 0.010;
+  
+  /* Solid, saturated, dark enough to sit on white without a glow. */
+  --l-acc: 45%;    --c-acc: 0.165;
+  --l-acch: 38%;   --c-acch: 0.180;
+  --l-accl: 92%;   --c-accl: 0.030;
+  --l-acci: 99%;   --c-acci: 0.005;
+  --a-wash: 0.08;  --a-glow: 0.16;
+  
+  --l-glass: 99%;  --c-glass: 0.004; --a-glass: 0.86;
+  --glass-line: oklch(80% 0.010 85 / 0.85);
+  
+  /* One neutral shadow, barely there. No white counter-light. */
+  --sh-1: 0 1px 2px oklch(58% 0.012 85 / 0.07);
+  --sh-2: 0 2px 6px oklch(58% 0.012 85 / 0.09);
+  --sh-3: 0 6px 16px oklch(58% 0.012 85 / 0.11);
+  --sh-4: 0 12px 32px oklch(58% 0.012 85 / 0.13);
+  --sh-edge: none;
+  
+  --grain-opacity: 0;             /* texture is a gradient by another name */
+  --grain-blend: normal;
+  --media-filter: saturate(0.92) contrast(1.0) brightness(1.02);
+
+
+  /* Same four grades, inverted intent: the headline is dark ink here,
+     so the plate is lifted UP rather than crushed, contrast is pulled
+     back so highlights don't clip, and the scrim fades toward paper. */
+  --plate-video: brightness(1.14) saturate(0.48) contrast(0.90);
+  --plate-ai:    brightness(1.30) saturate(0.30) contrast(0.82) hue-rotate(215deg);
+  --plate-color: brightness(1.10) saturate(0.72) contrast(0.92) sepia(0.10);
+  --plate-web:   brightness(1.16) saturate(0.18) contrast(0.58);
+  --plate-scrim: var(--ground-rgb);
+
+  /* On paper the same bleed reads as a dirty smudge at every join, so
+     light mode butts sections edge to edge instead. 0 = off. */
+  --seam: 0;
+}
+
+/* Follow the OS only when the user has made no choice. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    color-scheme: light;
+    
+    /* ── MILK · flat, solid, high-contrast ──────────────────────────────
+       No gradients, no white glow, no soft extrusion. A milk-white sheet,
+       near-white panels, solid dark ink, and one solid accent per section.
+       Depth is carried by a hairline border and a single faint shadow —
+       both neutral, never white.
+    
+       Surfaces stay pinned to one warm neutral hue rather than following
+       each section: "milk white" has to actually read as white, and a
+       ground that shifted hue per section would tint it. Sections keep
+       their identity through the accent, which is still driven by --h. */
+    
+    --h-surface-fixed: 85;          /* warm neutral — milk, not blue-white */
+    
+    --ink-rgb:   28, 26, 23;        /* solid dark, a hair off pure black */
+    --shade-rgb: 96, 92, 84;        /* neutral shadow, never black or white */
+    --ground-rgb: 250, 249, 246;    /* the milk */
+    --on-media-rgb: 255, 255, 255;
+    
+    --l-bg: 97.4%;   --c-bg: 0.005;
+    --l-deep: 94.6%; --c-deep: 0.008;
+    --l-s1: 99.5%;   --c-s1: 0.003;   /* panels read as clean white */
+    --l-s2: 96.6%;   --c-s2: 0.006;
+    --l-s3: 93.6%;   --c-s3: 0.009;
+    
+    /* With no shadow doing the work, the border defines every edge. */
+    --l-line: 80%;   --c-line: 0.010; --a-line: 0.85;
+    --a-line-soft: 0.45;
+    --l-lineh: 58%;  --c-lineh: 0.016; --a-lineh: 0.55;
+    
+    --l-ink: 18%;    --c-ink: 0.012;
+    --l-ink2: 34%;   --c-ink2: 0.012;
+    --l-ink3: 46%;   --c-ink3: 0.011;
+    --l-inkf: 60%;   --c-inkf: 0.010;
+    
+    /* Solid, saturated, dark enough to sit on white without a glow. */
+    --l-acc: 45%;    --c-acc: 0.165;
+    --l-acch: 38%;   --c-acch: 0.180;
+    --l-accl: 92%;   --c-accl: 0.030;
+    --l-acci: 99%;   --c-acci: 0.005;
+    --a-wash: 0.08;  --a-glow: 0.16;
+    
+    --l-glass: 99%;  --c-glass: 0.004; --a-glass: 0.86;
+    --glass-line: oklch(80% 0.010 85 / 0.85);
+    
+    /* One neutral shadow, barely there. No white counter-light. */
+    --sh-1: 0 1px 2px oklch(58% 0.012 85 / 0.07);
+    --sh-2: 0 2px 6px oklch(58% 0.012 85 / 0.09);
+    --sh-3: 0 6px 16px oklch(58% 0.012 85 / 0.11);
+    --sh-4: 0 12px 32px oklch(58% 0.012 85 / 0.13);
+    --sh-edge: none;
+    
+    --grain-opacity: 0;             /* texture is a gradient by another name */
+    --grain-blend: normal;
+    --media-filter: saturate(0.92) contrast(1.0) brightness(1.02);
+
+
+    /* Same four grades, inverted intent: the headline is dark ink here,
+       so the plate is lifted UP rather than crushed, contrast is pulled
+       back so highlights don't clip, and the scrim fades toward paper. */
+    --plate-video: brightness(1.14) saturate(0.48) contrast(0.90);
+    --plate-ai:    brightness(1.30) saturate(0.30) contrast(0.82) hue-rotate(215deg);
+    --plate-color: brightness(1.10) saturate(0.72) contrast(0.92) sepia(0.10);
+    --plate-web:   brightness(1.16) saturate(0.18) contrast(0.58);
+    --plate-scrim: var(--ground-rgb);
+
+    /* On paper the same bleed reads as a dirty smudge at every join, so
+       light mode butts sections edge to edge instead. 0 = off. */
+    --seam: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LAYER 2 · HUE SCOPES
+
+   Each selector here owns a --h and re-declares the palette, so the
+   scalars above are composed against THAT element's hue. Adding a new
+   coloured section means adding its root here and giving it a --h.
+   ══════════════════════════════════════════════════════════════════════ */
+:root,
+.hue-hero,
+.abt-section,
+.ts-section,
+.bento-section,
+.bn-section,
+.wg-section,
+.nt-section,
+.ct-section,
+.gs-section,
+.di,
+.amp-root,
+.vep-root,
+.aip-root,
+.mn-root,
+.sp-page,
+.svl-root {
+  /* Surfaces follow --h-surface. In dark that falls back to the section's
+     own hue, so each section keeps a tinted ground. In light the theme
+     defines --h-surface-fixed, pinning every surface to one baby blue —
+     which is what the neumorphic shadow pair needs to read as a single
+     continuous sheet of material.
+
+     Note the fallback is resolved HERE, on the section element, so
+     var(--h) still means "this section's hue". */
+  --h-surface: var(--h-surface-fixed, var(--h));
+
+  --bg:        oklch(var(--l-bg)   var(--c-bg)   var(--h-surface));
+  --bg-deep:   oklch(var(--l-deep) var(--c-deep) var(--h-surface));
+  --surface-1: oklch(var(--l-s1)   var(--c-s1)   var(--h-surface));
+  --surface-2: oklch(var(--l-s2)   var(--c-s2)   var(--h-surface));
+  --surface-3: oklch(var(--l-s3)   var(--c-s3)   var(--h-surface));
+
+  --line:      oklch(var(--l-line)  var(--c-line)  var(--h-surface) / var(--a-line));
+  --line-soft: oklch(var(--l-line)  var(--c-line)  var(--h-surface) / var(--a-line-soft));
+  --line-hard: oklch(var(--l-lineh) var(--c-lineh) var(--h-surface) / var(--a-lineh));
+
+  --ink:       oklch(var(--l-ink)  var(--c-ink)  var(--h-surface));
+  --ink-2:     oklch(var(--l-ink2) var(--c-ink2) var(--h-surface));
+  --ink-3:     oklch(var(--l-ink3) var(--c-ink3) var(--h-surface));
+  --ink-faint: oklch(var(--l-inkf) var(--c-inkf) var(--h-surface));
+
+  --acc:       oklch(var(--l-acc)  var(--c-acc)  var(--h));
+  --acc-hi:    oklch(var(--l-acch) var(--c-acch) var(--h));
+  --acc-lo:    oklch(var(--l-accl) var(--c-accl) var(--h));
+  --acc-ink:   oklch(var(--l-acci) var(--c-acci) var(--h));
+  --acc-wash:  oklch(var(--l-acc)  var(--c-acc)  var(--h) / var(--a-wash));
+  --acc-glow:  oklch(var(--l-acc)  var(--c-acc)  var(--h) / var(--a-glow));
+
+  --glass:     oklch(var(--l-glass) var(--c-glass) var(--h-surface) / var(--a-glass));
+
+  --on-media:  rgb(var(--on-media-rgb));
+
+  /* Legacy names used throughout the original stylesheets, remapped onto
+     the ramp. Solid rather than alpha, so secondary text keeps its
+     contrast when the theme inverts. Declared here — not at :root — so
+     each section resolves them against its own hue. */
+  --white:     var(--ink);
+  --off-white: var(--ink-2);
+  --muted:     var(--ink-3);
+  --subtle:    rgba(var(--ink-rgb), 0.15);   /* borders — alpha is correct here */
+  --text:      var(--ink);
+  --text-dim:  var(--ink-3);
+  --border:    var(--line);
+  --surface:   var(--surface-1);
+  --accent:      var(--acc);
+  --accent-glow: var(--acc-glow);
+  --glow:        var(--acc-glow);
+}
+
+/* ── Hue assignment ── */
+.hue-hero      { --h: var(--h-hero);   }
+.abt-section   { --h: var(--h-about);  }
+.ts-section    { --h: var(--h-team);   }
+.bento-section { --h: var(--h-bento);  }
+.bn-section    { --h: var(--h-banner); }
+.wg-section    { --h: var(--h-mind);   }   /* red in dark — see below */
+
+/* "Inside the mind" runs red in the dark theme: a deliberate break from
+   the warm→cool sweep, marking the point where the page stops presenting
+   work and starts showing the machinery behind it. On paper that red
+   turns muddy against milk white, so light mode keeps the original cyan. */
+:root[data-theme='light'] .wg-section { --h: var(--h-widget); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .wg-section { --h: var(--h-widget); }
+}
+.nt-section    { --h: var(--h-notes);  }
+.ct-section    { --h: var(--h-contact);}
+.gs-section    { --h: var(--h-team);   }
+
+/* Contact runs yellow, and yellow is the one hue the shared accent scalars
+   cannot serve. OKLCH lightness is perceptually uniform, but sRGB's yellow
+   corner is not: at the dark theme's L75 the colour clips out of gamut and
+   lands on mustard, and at the light theme's L45 it goes olive-brown. So
+   this section — and only this section — carries its own accent lightness.
+   Declared on .ct-section itself, which is where the LAYER 2 block composes
+   --acc, so these win over the :root scalars for this subtree.
+
+   Dark: a true bright yellow, dark ink on top (--l-acci stays 13%).
+   Light: yellow cannot be both yellow and legible on milk white, so it
+   settles at a deep gold — 4.9:1 as text on paper, 5.1:1 for the white
+   button label sitting on it. Both clear AA. */
+.ct-section {
+  --l-acc:  88%;   --c-acc:  0.170;
+  --l-acch: 94%;   --c-acch: 0.130;
+  --l-accl: 32%;   --c-accl: 0.070;
+}
+:root[data-theme='light'] .ct-section {
+  --l-acc:  53%;   --c-acc:  0.150;
+  --l-acch: 45%;   --c-acch: 0.155;
+  --l-accl: 92%;   --c-accl: 0.030;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .ct-section {
+    --l-acc:  53%;   --c-acc:  0.150;
+    --l-acch: 45%;   --c-acch: 0.155;
+    --l-accl: 92%;   --c-accl: 0.030;
+  }
+}
+
+/* The island takes the hue of whatever section the scroll spy says you are
+   in. It is listed in the scope block above so --acc recomposes against
+   that hue rather than inheriting the already-resolved amber from
+   .hue-hero, which is its DOM parent. */
+.di[data-hue='hero']    { --h: var(--h-hero);    }
+.di[data-hue='about']   { --h: var(--h-about);   }
+.di[data-hue='team']    { --h: var(--h-team);    }
+.di[data-hue='bento']   { --h: var(--h-bento);   }
+.di[data-hue='banner']  { --h: var(--h-banner);  }
+.di[data-hue='notes']   { --h: var(--h-notes);   }
+.di[data-hue='mind']    { --h: var(--h-mind);    }
+.di[data-hue='contact'] { --h: var(--h-contact); }
+
+/* Personal OS is the one section whose hue is theme-dependent (see the
+   .wg-section note above), so the island has to follow it there too. */
+:root[data-theme='light'] .di[data-hue='mind'] { --h: var(--h-widget); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .di[data-hue='mind'] { --h: var(--h-widget); }
+}
+
+/* Sub-pages reuse a hue already present in the scroll, so opening one
+   still feels like the same site rather than a different product. */
+.amp-root { --h: var(--h-hero);   }   /* About Me   → amber   */
+.vep-root { --h: var(--h-video);  }   /* Video      → red-orange */
+.aip-root { --h: var(--h-team);   }   /* AI Images  → magenta */
+.mn-root  { --h: var(--h-widget); }   /* Websites   → cyan    */
+.sp-page  { --h: var(--h-bento);  }   /* Skills     → violet  */
+.svl-root { --h: var(--h-room);   }   /* The Room   → green   */
+
+/* ══════════════════════════════════════════════════════════════════════
+   TEXT OVER MEDIA
+
+   Most text sits on a surface and should invert with the theme. Text
+   sitting on a photo or video must NOT — the picture underneath is the
+   same brightness in both themes, so flipping the caption to dark ink
+   makes it vanish.
+
+   These are the elements that sit directly on footage: the profile card
+   (video plate), the forbidden-video card, the about-stack captions and
+   the banner labels.
+   ══════════════════════════════════════════════════════════════════════ */
+/* Scoped through the card root so these beat the component stylesheets,
+   which load after this file and would otherwise win on source order. */
+.bc-about .bca-name,
+.bc-about .bca-role,
+.bc-about .bca-tags span,
+.bc-about .bca-foot,
+.bc-cta .bcc-title,
+.bc-cta .bcc-sub,
+.abt-card .abt-card-label,
+.abt-card .abt-card-num,
+.bn-card .bn-label {
+  color: var(--on-media);
+}
+.bc-about .bca-tags span { border-color: rgba(var(--on-media-rgb), 0.30); }
+.bc-about .bca-foot      { color: rgba(var(--on-media-rgb), 0.78); }
+
+/* The hero sits on footage that is bright in light mode, so its secondary
+   copy loses contrast against highlights in the plate. Dark ink is still
+   the right choice — a soft paper glow lifts it off the busy areas
+   without needing a slab behind the text. */
+:root[data-theme='light'] .hl-prose,
+:root[data-theme='light'] .hl-eyebrow,
+:root[data-theme='light'] .hl-micro,
+:root[data-theme='light'] .hl-stat-text span {
+  color: var(--ink-2);
+  text-shadow: 0 1px 14px rgba(var(--on-media-rgb), 0.7),
+               0 0 3px rgba(var(--on-media-rgb), 0.5);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .hl-prose,
+  :root:not([data-theme='dark']) .hl-eyebrow,
+  :root:not([data-theme='dark']) .hl-micro,
+  :root:not([data-theme='dark']) .hl-stat-text span {
+    color: var(--ink-2);
+    text-shadow: 0 1px 14px rgba(var(--on-media-rgb), 0.7),
+                 0 0 3px rgba(var(--on-media-rgb), 0.5);
+  }
+}
+
+/* Image plates were filtered to sit back on a dark ground. On paper they
+   need lifting rather than crushing, or the card reads as a dark hole —
+   but they also have to stay quiet enough to be texture, not photography. */
+:root[data-theme='light'] .bc-img-bg {
+  filter: brightness(1.10) saturate(0.30) grayscale(0.85);
+  opacity: 0.05;
+}
+:root[data-theme='light'] .bc-stats .bc-img-bg {
+  filter: brightness(1.04) saturate(0.6) grayscale(0.3);
+  opacity: 0.20;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .bc-img-bg {
+    filter: brightness(1.10) saturate(0.30) grayscale(0.85);
+    opacity: 0.05;
+  }
+  :root:not([data-theme='dark']) .bc-stats .bc-img-bg {
+    filter: brightness(1.04) saturate(0.6) grayscale(0.3);
+    opacity: 0.20;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TRANSITION — a theme flip should read as a dimmer, not a switch.
+   Restricted to colour so no layout property is ever animated.
+   ══════════════════════════════════════════════════════════════════════ */
+body,
+.hue-hero, .abt-section, .ts-section,
+.bento-section, .bn-section, .wg-section, .nt-section, .ct-section {
+  transition: background-color 520ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 520ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body, .hue-hero, .abt-section, .ts-section,
+  .bento-section, .bn-section, .wg-section, .nt-section, .ct-section { transition: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   SECTION SEAMS
+
+   Every section carries a top and bottom gradient that bleeds it into its
+   neighbour, plus the hero's own top/bottom video edges. All of them are
+   fixed-height, pointer-events:none decoration — safe to switch off.
+
+   They exist because on a near-black page a hard section boundary shows
+   as a visible band. On paper the opposite is true: the bleed becomes a
+   grey smudge at every join. So --seam turns the whole set off in light
+   mode, and sections meet cleanly.
+   ══════════════════════════════════════════════════════════════════════ */
+.abt-section::before,   .abt-section::after,
+.ts-section::before,    .ts-section::after,
+.bento-section::before, .bento-section::after,
+.bn-section::before,    .bn-section::after,
+.gs-section::before,    .gs-section::after,
+.edge-top,
+.edge-bottom,
+.seam {
+  opacity: var(--seam);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   FLAT SURFACES  ·  light theme only
+
+   The components were authored for a dark UI and lean on gradients for
+   glow, mesh, veil and fill. On a milk-white flat theme those read as
+   smudges, so they are switched off here — 131 selectors in total,
+   classified by what they do rather than removed by hand.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Every gradient fill is removed rather than recoloured. background-image
+   is used, not background, so any background-COLOUR the element already
+   had survives — that is what keeps overlays transparent instead of
+   turning them into opaque blocks that would cover the content. */
+:root[data-theme='light'] :is(
+  .abt-bg, .abt-card-overlay, .abt-card-reflection, .abt-grid,
+  .abt-rule, .abt-streak,
+  .aip-hero-glow, .aip-label, .aip-mesh, .aip-overlay,
+  .amp-gi-info, .amp-gi-mesh, .amp-nav, .amp-ov-bottom,
+  .amp-ov-fog, .amp-ov-left, .amp-ov-right, .amp-ov-top,
+  .amp-poster-bg, .amp-poster-foot, .amp-poster-scan, .amp-poster-shine,
+  .bc-about, .bc-aeplug, .bc-aiart, .bc-chrome,
+  .bc-prompts, .bc-social, .bc-stats, .bc-tools,
+  .bc-video, .bc-website, .bca-bg-tint, .bcai-orb,
+  .bcai-orb2, .bcc-warn-card, .bcc-warn-stripe, .bct-orb,
+  .bcv-blob, .bento-bg, .bento-card::before, .bento-scanlines,
+  .bn-bg, .bn-fade-left, .bn-fade-right, .bn-overlay,
+  .bn-scanlines, .btn-primary::before, .cctv-scanlines, .cctv-vignette,
+  .gs-card-overlay, ::after, ::before, .nf-cell-info,
+  .nf-hero-grad, .nf-n-overlay, .nsb::after, .nsb::before,
+  .scroll-dot, .scroll-dot::after, .sp-card-thumb-overlay, .sp-hero-overlay,
+  .sp-hero-scroll-line, .sp-modal-video-grad, .sp-modal-video-hero::after,
+  .ts-bg, .ts-bg-overlay,
+  .ts-card-gradient, .ts-scanlines, .vep-card-grad, .vep-hero-grad-bottom,
+  .vep-hero-grad-top, .vep-player-controls, .vep-player-top, .video-bg-wrap[data-section="ai"] .video-overlay,
+  .video-bg-wrap[data-section="color"] .video-overlay, .video-bg-wrap[data-section="web"] .video-overlay, .wg-arm-base, .wg-arm-head,
+  .wg-arm-needle, .wg-arm-rod, .wg-bg, .wg-deck,
+  .wg-deck-glow, .wg-deck-sheen, .wg-deck-vinyl-edge, .wg-deckrail,
+  .wg-deckrail-grid, .wg-deckrail-line, .wg-deckrail-scan, .wg-dj-aura,
+  .wg-djeq, .wg-djeq-cf-rail, .wg-djeq-cf-thumb, .wg-djeq-ch-fill,
+  .wg-djeq-ch-thumb, .wg-djeq-foot-line, .wg-djeq-grid, .wg-djeq-knob-dial,
+  .wg-djeq-knob-grip, .wg-djeq-scan, .wg-djeq-spec-bar, .wg-fld-body,
+  .wg-fld-tab, .wg-fly-ring, .wg-fly-sheen, .wg-fly-trail,
+  .wg-music-aura, .wg-nfback-overlay, .wg-spy-vignette, .wg-tt-platter,
+  .wg-vinyl, .wg-vinyl-sheen, .wg-wa-msgs
+) {
+  background-image: none;
+}
+
+/* Panels get an explicit solid fill and a hairline edge, since with the
+   gradient gone and no shadow to speak of, the border is what separates
+   a card from the sheet it sits on. */
+:root[data-theme='light'] :is(.bento-card, .wg-card, .wg-card--light, .cctv-card, .nf-card, .sp-card,
+  .aip-card, .vep-card, .amp-gi, .gs-card-tilt, .abt-card) {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+}
+:root[data-theme='light'] :is(.bento-card, .wg-card, .wg-card--light, .cctv-card, .nf-card, .sp-card,
+  .aip-card, .vep-card, .amp-gi, .gs-card-tilt, .abt-card):hover { box-shadow: var(--sh-2); }
+
+/* Gradient-filled text would vanish once the fill is removed, so these
+   revert to solid ink. */
+:root[data-theme='light'] :is(.aip-hero-title, .amp-poster-k) {
+  background-image: none;
+  -webkit-text-fill-color: var(--ink);
+  color: var(--ink);
+}
+
+/* The hero scrim stays — it is what keeps the headline legible over the
+   plate — but as a flat wash rather than a gradient. */
+:root[data-theme='light'] .video-overlay {
+  background: rgba(var(--ground-rgb), 0.50);
+}
+
+/* Scrims that sit between a photo and text on top of it are the one kind
+   of gradient that cannot simply be deleted — remove them and the text
+   lands on raw photography. They come back as FLAT washes: solid colour,
+   no gradient, which is the point.
+
+   Direction depends on the text above them: a light wash where the label
+   is dark ink, a dark wash where the label is --on-media white. */
+:root[data-theme='light'] .wg-spy-vignette {
+  background: rgba(var(--ground-rgb), 0.72);
+}
+:root[data-theme='light'] :is(.abt-card-overlay, .bca-bg-tint, .bcc-overlay, .bn-overlay) {
+  background: rgba(20, 18, 16, 0.42);
+}
+
+
+@media (prefers-color-scheme: light) {
+
+/* Every gradient fill is removed rather than recoloured. background-image
+   is used, not background, so any background-COLOUR the element already
+   had survives — that is what keeps overlays transparent instead of
+   turning them into opaque blocks that would cover the content. */
+:root:not([data-theme='dark']) :is(
+  .abt-bg, .abt-card-overlay, .abt-card-reflection, .abt-grid,
+  .abt-rule, .abt-streak,
+  .aip-hero-glow, .aip-label, .aip-mesh, .aip-overlay,
+  .amp-gi-info, .amp-gi-mesh, .amp-nav, .amp-ov-bottom,
+  .amp-ov-fog, .amp-ov-left, .amp-ov-right, .amp-ov-top,
+  .amp-poster-bg, .amp-poster-foot, .amp-poster-scan, .amp-poster-shine,
+  .bc-about, .bc-aeplug, .bc-aiart, .bc-chrome,
+  .bc-prompts, .bc-social, .bc-stats, .bc-tools,
+  .bc-video, .bc-website, .bca-bg-tint, .bcai-orb,
+  .bcai-orb2, .bcc-warn-card, .bcc-warn-stripe, .bct-orb,
+  .bcv-blob, .bento-bg, .bento-card::before, .bento-scanlines,
+  .bn-bg, .bn-fade-left, .bn-fade-right, .bn-overlay,
+  .bn-scanlines, .btn-primary::before, .cctv-scanlines, .cctv-vignette,
+  .gs-card-overlay, ::after, ::before, .nf-cell-info,
+  .nf-hero-grad, .nf-n-overlay, .nsb::after, .nsb::before,
+  .scroll-dot, .scroll-dot::after, .sp-card-thumb-overlay, .sp-hero-overlay,
+  .sp-hero-scroll-line, .sp-modal-video-grad, .sp-modal-video-hero::after,
+  .ts-bg, .ts-bg-overlay,
+  .ts-card-gradient, .ts-scanlines, .vep-card-grad, .vep-hero-grad-bottom,
+  .vep-hero-grad-top, .vep-player-controls, .vep-player-top, .video-bg-wrap[data-section="ai"] .video-overlay,
+  .video-bg-wrap[data-section="color"] .video-overlay, .video-bg-wrap[data-section="web"] .video-overlay, .wg-arm-base, .wg-arm-head,
+  .wg-arm-needle, .wg-arm-rod, .wg-bg, .wg-deck,
+  .wg-deck-glow, .wg-deck-sheen, .wg-deck-vinyl-edge, .wg-deckrail,
+  .wg-deckrail-grid, .wg-deckrail-line, .wg-deckrail-scan, .wg-dj-aura,
+  .wg-djeq, .wg-djeq-cf-rail, .wg-djeq-cf-thumb, .wg-djeq-ch-fill,
+  .wg-djeq-ch-thumb, .wg-djeq-foot-line, .wg-djeq-grid, .wg-djeq-knob-dial,
+  .wg-djeq-knob-grip, .wg-djeq-scan, .wg-djeq-spec-bar, .wg-fld-body,
+  .wg-fld-tab, .wg-fly-ring, .wg-fly-sheen, .wg-fly-trail,
+  .wg-music-aura, .wg-nfback-overlay, .wg-spy-vignette, .wg-tt-platter,
+  .wg-vinyl, .wg-vinyl-sheen, .wg-wa-msgs
+) {
+  background-image: none;
+}
+
+/* Panels get an explicit solid fill and a hairline edge, since with the
+   gradient gone and no shadow to speak of, the border is what separates
+   a card from the sheet it sits on. */
+:root:not([data-theme='dark']) :is(.bento-card, .wg-card, .wg-card--light, .cctv-card, .nf-card, .sp-card,
+  .aip-card, .vep-card, .amp-gi, .gs-card-tilt, .abt-card) {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+}
+:root:not([data-theme='dark']) :is(.bento-card, .wg-card, .wg-card--light, .cctv-card, .nf-card, .sp-card,
+  .aip-card, .vep-card, .amp-gi, .gs-card-tilt, .abt-card):hover { box-shadow: var(--sh-2); }
+
+/* Gradient-filled text would vanish once the fill is removed, so these
+   revert to solid ink. */
+:root:not([data-theme='dark']) :is(.aip-hero-title, .amp-poster-k) {
+  background-image: none;
+  -webkit-text-fill-color: var(--ink);
+  color: var(--ink);
+}
+
+/* The hero scrim stays — it is what keeps the headline legible over the
+   plate — but as a flat wash rather than a gradient. */
+:root:not([data-theme='dark']) .video-overlay {
+  background: rgba(var(--ground-rgb), 0.50);
+}
+
+  /* Scrims that sit between a photo and text on top of it are the one kind
+     of gradient that cannot simply be deleted — remove them and the text
+     lands on raw photography. They come back as FLAT washes: solid colour,
+     no gradient, which is the point.
+
+     Direction depends on the text above them: a light wash where the label
+     is dark ink, a dark wash where the label is --on-media white. */
+  :root:not([data-theme='dark']) .wg-spy-vignette {
+    background: rgba(var(--ground-rgb), 0.72);
+  }
+  :root:not([data-theme='dark']) :is(.abt-card-overlay, .bca-bg-tint, .bcc-overlay, .bn-overlay) {
+    background: rgba(20, 18, 16, 0.42);
+  }
+
+
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT-THEME IMAGE SET
+
+   The dark theme's photography is low-key — dark frames, night scenes,
+   deep space. On milk white those read as heavy blocks. Light mode gets
+   its own set: brighter, higher-key, airier, matched subject for subject
+   so every caption still describes its picture.
+
+   Swapped in CSS via `content:` on the <img>, matched on the existing
+   src. That means no component has to know the theme, and the mapping
+   lives in one place instead of being threaded through props.
+   ══════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] img[src*="photo-1598899134739-24c46f58b8c0"] { content: url("https://images.unsplash.com/photo-1531746020-e6953c6e8e04?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1506905925346-21bda4d32df4"] { content: url("https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1492691527719-9d1e07e534b4"] { content: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1541701494587-cb58502866ab"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1620641788421-7a1c342ea42e"] { content: url("https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1493863641943-9b68992a8d07"] { content: url("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1478720568477-152d9b164e26"] { content: url("https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1579546929518-9e396f3cc809"] { content: url("https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1534528741775-53994a69daeb"] { content: url("https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1486325212027-8081e485255e"] { content: url("https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1620121692029-d088224ddc74"] { content: url("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1517841905240-472988babdf9"] { content: url("https://images.unsplash.com/photo-1560421683-6856ea585c78?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1451847251646-8a6c0dd1510c"] { content: url("https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1518770660439-4636190af475"] { content: url("https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1477959858617-67f85cf4f1df"] { content: url("https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1451187580459-43490279c0fa"] { content: url("https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1536440136628-849c177e76a1"] { content: url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1485846234645-a62644f84728"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1635070041078-e363dbe005cb"] { content: url("https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1533106497176-45ae19e68ba2"] { content: url("https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1504509546545-e000b4a62425"] { content: url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1483412033650-1015ddeb83d1"] { content: url("https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1502920917128-1aa500764cbd"] { content: url("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1526374965328-7f61d4dc18c5"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1506744038136-46273834b3fb"] { content: url("https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1506318137071-a8e063b4bec0"] { content: url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1532622784046-b040409a63be"] { content: url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1446776811953-b23d57bd21aa"] { content: url("https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1470770841072-f978cf4d019e"] { content: url("https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1614730321146-b6fa6a46bcb4"] { content: url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1501785888041-af3ef285b470"] { content: url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1469474968028-56623f02e42e"] { content: url("https://images.unsplash.com/photo-1516214104703-d870798883c5?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1500673922987-e212871fec22"] { content: url("https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1426604966848-d7adac402bdb"] { content: url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1472214103451-9374bd1c798e"] { content: url("https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1518098268026-4e89f1a2cd8e"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1493246507139-91e8bef99c02"] { content: url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1574717024653-61fd2cf4d44d"] { content: url("https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1498050108023-c5249f4df085"] { content: url("https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1531297484001-80022131f5a1"] { content: url("https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1461749280684-dccba630e2f6"] { content: url("https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1504639725590-34d0984388bd"] { content: url("https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1504384308090-c894fdcc538d"] { content: url("https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1484417894907-623942c8ee29"] { content: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1519681393784-d120267933ba"] { content: url("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] .wg-spy-bg { background-image: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+
+@media (prefers-color-scheme: light) {
+:root:not([data-theme='dark']) img[src*="photo-1598899134739-24c46f58b8c0"] { content: url("https://images.unsplash.com/photo-1531746020-e6953c6e8e04?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1506905925346-21bda4d32df4"] { content: url("https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1492691527719-9d1e07e534b4"] { content: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1541701494587-cb58502866ab"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1620641788421-7a1c342ea42e"] { content: url("https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1493863641943-9b68992a8d07"] { content: url("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1478720568477-152d9b164e26"] { content: url("https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1579546929518-9e396f3cc809"] { content: url("https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1534528741775-53994a69daeb"] { content: url("https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1486325212027-8081e485255e"] { content: url("https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1620121692029-d088224ddc74"] { content: url("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1517841905240-472988babdf9"] { content: url("https://images.unsplash.com/photo-1560421683-6856ea585c78?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1451847251646-8a6c0dd1510c"] { content: url("https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1518770660439-4636190af475"] { content: url("https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1477959858617-67f85cf4f1df"] { content: url("https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1451187580459-43490279c0fa"] { content: url("https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1536440136628-849c177e76a1"] { content: url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1485846234645-a62644f84728"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1635070041078-e363dbe005cb"] { content: url("https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1533106497176-45ae19e68ba2"] { content: url("https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1504509546545-e000b4a62425"] { content: url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1483412033650-1015ddeb83d1"] { content: url("https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1502920917128-1aa500764cbd"] { content: url("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1526374965328-7f61d4dc18c5"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1506744038136-46273834b3fb"] { content: url("https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1506318137071-a8e063b4bec0"] { content: url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1532622784046-b040409a63be"] { content: url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1446776811953-b23d57bd21aa"] { content: url("https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1470770841072-f978cf4d019e"] { content: url("https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1614730321146-b6fa6a46bcb4"] { content: url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1501785888041-af3ef285b470"] { content: url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1469474968028-56623f02e42e"] { content: url("https://images.unsplash.com/photo-1516214104703-d870798883c5?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1500673922987-e212871fec22"] { content: url("https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1426604966848-d7adac402bdb"] { content: url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1472214103451-9374bd1c798e"] { content: url("https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1518098268026-4e89f1a2cd8e"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1493246507139-91e8bef99c02"] { content: url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1574717024653-61fd2cf4d44d"] { content: url("https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1498050108023-c5249f4df085"] { content: url("https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1531297484001-80022131f5a1"] { content: url("https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1461749280684-dccba630e2f6"] { content: url("https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1504639725590-34d0984388bd"] { content: url("https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1504384308090-c894fdcc538d"] { content: url("https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1484417894907-623942c8ee29"] { content: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1519681393784-d120267933ba"] { content: url("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) .wg-spy-bg { background-image: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   HERO HEADLINE  ·  light theme
+
+   The one place the page shouts. Solid red — high chroma, dark enough to
+   hold on milk white, and deliberately NOT the section accent, so it
+   stays constant while the rest of the page cycles hue.
+   ══════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] .hl-headline,
+:root[data-theme='light'] .hl-headline span {
+  color: oklch(46% 0.205 27);
+  -webkit-text-fill-color: oklch(46% 0.205 27);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .hl-headline,
+  :root:not([data-theme='dark']) .hl-headline span {
+    color: oklch(46% 0.205 27);
+    -webkit-text-fill-color: oklch(46% 0.205 27);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE ROOM STAYS DARK
+
+   The surveillance console is its own world — a lit CRT in a dark
+   operations bunker. Inverting it to milk white turns the conceit inside
+   out, so it opts out of the light theme entirely: the dark scalars are
+   re-declared on its root, and every token inside resolves against them.
+   ══════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] .svl-root,
+:root:not([data-theme='dark']) .svl-root {
+  color-scheme: dark;
+  /* Release the light theme's pinned surface hue. Setting a custom
+     property to `initial` makes it guaranteed-invalid, so the fallback in
+     `var(--h-surface-fixed, var(--h))` takes over and the Room resolves
+     against its own green again. */
+  --h-surface-fixed: initial;
+  --ink-rgb:   255, 255, 255;
+  --shade-rgb: 0, 0, 0;
+  --ground-rgb: 8, 8, 10;
+  --on-media-rgb: 255, 255, 255;
+  --l-bg: 14.5%;   --c-bg: 0.014;
+  --l-deep: 10.5%; --c-deep: 0.012;
+  --l-s1: 18.5%;   --c-s1: 0.020;
+  --l-s2: 22.5%;   --c-s2: 0.026;
+  --l-s3: 27.5%;   --c-s3: 0.032;
+  --l-line: 52%;   --c-line: 0.04;  --a-line: 0.24;
+  --a-line-soft: 0.13;
+  --l-lineh: 70%;  --c-lineh: 0.06; --a-lineh: 0.40;
+  --l-ink: 97%;    --c-ink: 0.010;
+  --l-ink2: 82%;   --c-ink2: 0.016;
+  --l-ink3: 63%;   --c-ink3: 0.020;
+  --l-inkf: 50%;   --c-inkf: 0.022;
+  --l-acc: 75%;    --c-acc: 0.180;
+  --l-acch: 86%;   --c-acch: 0.195;
+  --l-accl: 32%;   --c-accl: 0.090;
+  --l-acci: 13%;   --c-acci: 0.030;
+  --a-wash: 0.14;  --a-glow: 0.34;
+  --l-glass: 22%;  --c-glass: 0.024; --a-glass: 0.52;
+  --glass-line: oklch(85% 0.04 250 / 0.13);
+  --sh-1: 0 1px 2px oklch(0% 0 0 / 0.50);
+  --sh-2: 0 4px 14px oklch(0% 0 0 / 0.55);
+  --sh-3: 0 10px 34px oklch(0% 0 0 / 0.60);
+  --sh-4: 0 20px 64px oklch(0% 0 0 / 0.68);
+  --sh-edge: inset 0 1px 0 oklch(100% 0 0 / 0.08);
+  --grain-opacity: 0.05;
+  --grain-blend: overlay;
+  --media-filter: saturate(1.05) contrast(1.05) brightness(0.94);
+  --plate-video: brightness(0.72) saturate(0.62) contrast(1.08);
+  --plate-ai:    brightness(0.55) saturate(0.42) contrast(1.18) hue-rotate(215deg);
+  --plate-color: brightness(0.65) saturate(1.05) contrast(1.04) sepia(0.22);
+  --plate-web:   brightness(0.80) saturate(0.12) contrast(1.38);
+  --plate-scrim: var(--shade-rgb);
+  --seam: 1;
+}
+
+
+
+/* The About Me gallery, added later — same treatment as the rest of the
+   image set: a brighter counterpart of each subject for light mode. */
+:root[data-theme='light'] img[src*="photo-1478720568477-152d9b164e26"] { content: url("https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1618077360395-f3068be8e001"] { content: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1518837695005-2083093ee35b"] { content: url("https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1542038784456-1ea8e935640e"] { content: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1626785774573-4b799315345d"] { content: url("https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1561070791-2526d30994b5"] { content: url("https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1517604931442-7e0c8ed2963c"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1639762681485-074b7f938ba0"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root[data-theme='light'] img[src*="photo-1547658719-da2b51169166"] { content: url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=78"); }
+
+@media (prefers-color-scheme: light) {
+:root:not([data-theme='dark']) img[src*="photo-1478720568477-152d9b164e26"] { content: url("https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1618077360395-f3068be8e001"] { content: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1518837695005-2083093ee35b"] { content: url("https://images.unsplash.com/photo-1439405326854-014607f694d7?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1542038784456-1ea8e935640e"] { content: url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1626785774573-4b799315345d"] { content: url("https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1561070791-2526d30994b5"] { content: url("https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1517604931442-7e0c8ed2963c"] { content: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1639762681485-074b7f938ba0"] { content: url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=78"); }
+:root:not([data-theme='dark']) img[src*="photo-1547658719-da2b51169166"] { content: url("https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=78"); }
+}

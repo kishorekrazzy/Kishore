@@ -1,0 +1,474 @@
+/* ══════════════════════════════════════════════════════════════════════
+   WEBSITES PAGE
+   ──────────────────────────────────────────────────────────────────────
+   Structured in three parts:
+
+     1. SHARED     — everything true in both themes: the browser frame,
+                     typography, chips, links, motion.
+     2. DARK       — "The Reel". Full-bleed alternating rows, one project
+                     at a time, large. Scrolled like a showreel.
+     3. LIGHT      — "The Index". A two-column ruled catalogue. Scanned
+                     rather than scrolled — six projects visible at once.
+
+   The markup is identical between them. Only the layout rules differ, so
+   links, keyboard order and lazy loading behave the same either way.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ══ 1 · SHARED ═══════════════════════════════════════════════════════ */
+
+.wp-root {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  animation: wp-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes wp-in { from { opacity: 0; transform: translateY(18px); } }
+
+.wp-progress {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  height: 2px;
+  background: var(--line-soft);
+}
+.wp-progress i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transform-origin: 0 50%;
+  transition: transform 90ms linear;
+}
+
+/* ── nav ── */
+.wp-nav {
+  position: sticky;
+  top: 2px;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 16px clamp(1.1rem, 4vw, 3.5rem);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  border-bottom: 1px solid var(--line-soft);
+}
+.wp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+.wp-back:hover { color: var(--acc); border-color: var(--acc); }
+.wp-nav-title,
+.wp-nav-count {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+@media (max-width: 640px) { .wp-nav-title { display: none; } }
+
+/* ── header ── */
+.wp-head {
+  padding: clamp(3rem, 9vw, 7rem) clamp(1.1rem, 4vw, 3.5rem) clamp(2rem, 5vw, 4rem);
+  max-width: 1400px;
+  margin-inline: auto;
+}
+.wp-kicker {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 1.2rem;
+}
+.wp-h1 {
+  display: grid;
+  font-size: clamp(2.4rem, 7vw, 5.4rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+}
+.wp-h1-alt { color: var(--acc); }
+.wp-lede {
+  max-width: 52ch;
+  font-size: clamp(0.95rem, 1.5vw, 1.12rem);
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.wp-stats {
+  display: flex;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  margin-top: 2.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line-soft);
+}
+.wp-stats dt {
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.wp-stats dd {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+
+/* ── the browser frame ── */
+.wp-frame {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  box-shadow: var(--sh-3);
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 300ms ease;
+}
+.wp-frame-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+.wp-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-hard); flex-shrink: 0; }
+.wp-dot:nth-child(1) { background: #ff5f57; }
+.wp-dot:nth-child(2) { background: #febc2e; }
+.wp-dot:nth-child(3) { background: #28c840; }
+.wp-url {
+  margin-left: 10px;
+  padding: 2px 12px;
+  border-radius: 99px;
+  background: var(--bg);
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wp-frame-shot { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+.wp-frame-shot img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wp-frame-link { display: block; text-decoration: none; }
+.wp-item:hover .wp-frame-shot img { transform: scale(1.04); }
+.wp-item:hover .wp-frame { border-color: var(--acc); }
+
+/* ── meta ── */
+.wp-meta-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wp-title {
+  font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.wp-status {
+  padding: 3px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.wp-status.is-live { border-color: var(--acc); color: var(--acc); }
+.wp-tagline { font-size: 0.95rem; color: var(--acc); font-style: italic; }
+.wp-desc { font-size: 0.9rem; line-height: 1.7; color: var(--ink-2); max-width: 54ch; }
+
+.wp-stack { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; }
+.wp-stack li {
+  padding: 4px 11px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  font-size: 0.66rem;
+  color: var(--ink-2);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+.wp-stack li:hover { border-color: var(--acc); color: var(--acc); }
+
+.wp-facts { display: flex; gap: 2rem; }
+.wp-facts dt {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 3px;
+}
+.wp-facts dd { font-size: 0.82rem; color: var(--ink); font-weight: 500; }
+
+.wp-visit {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 99px;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 220ms cubic-bezier(0.34, 1.42, 0.5, 1), filter 200ms ease;
+}
+.wp-visit:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.wp-visit.is-off {
+  background: none;
+  border: 1px dashed var(--line);
+  color: var(--ink-faint);
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.66rem;
+  font-weight: 400;
+  cursor: default;
+}
+.wp-visit.is-off:hover { transform: none; }
+
+.wp-item-no {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-weight: 700;
+  color: var(--acc);
+  line-height: 1;
+}
+
+/* ── reveal ── */
+.wp-item { opacity: 0; transform: translateY(28px); }
+.wp-item.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .wp-item { opacity: 1; transform: none; }
+  .wp-root { animation: none; }
+}
+
+/* ── footer ── */
+.wp-foot {
+  text-align: center;
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.1rem, 4vw, 3.5rem);
+  border-top: 1px solid var(--line-soft);
+}
+.wp-foot h2 {
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.7rem;
+}
+.wp-foot p { color: var(--ink-3); font-size: 0.95rem; margin-bottom: 2rem; }
+.wp-foot-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 99px;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 220ms cubic-bezier(0.34, 1.42, 0.5, 1);
+}
+.wp-foot-cta:hover { transform: translateY(-3px); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   2 · DARK — "THE REEL"
+
+   One project per screen-width row, frame and text side by side, sides
+   alternating down the page. The index number is a large ghost numeral
+   behind the frame. Nothing is compared side by side; each project gets
+   the full width and is met on its own.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.wp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 clamp(1.1rem, 4vw, 3.5rem);
+  max-width: 1400px;
+  margin-inline: auto;
+  display: grid;
+  gap: clamp(4rem, 10vw, 9rem);
+}
+
+.wp-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+}
+/* Alternate: even rows put the frame on the right. Order is swapped, not
+   position, so the DOM sequence (and tab order) stays 1-2-3-4-5-6. */
+.wp-item:nth-child(even) > .wp-frame,
+.wp-item:nth-child(even) > .wp-frame-link { order: 2; }
+.wp-item:nth-child(even) > .wp-meta { order: 1; }
+
+.wp-item-no {
+  position: absolute;
+  top: -0.55em;
+  left: -0.1em;
+  z-index: 0;
+  font-size: clamp(5rem, 13vw, 11rem);
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+.wp-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wp-item:hover .wp-frame {
+  transform: translateY(-6px);
+  box-shadow: var(--sh-4);
+}
+
+/* Specular sweep across the glass — reads as a screen catching light. */
+.wp-frame-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg,
+    transparent 35%, rgba(255, 255, 255, 0.12) 48%, transparent 60%);
+  background-size: 220% 100%;
+  background-position: 180% 0;
+  transition: background-position 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wp-item:hover .wp-frame-glare { background-position: -60% 0; }
+
+@media (max-width: 900px) {
+  .wp-item { grid-template-columns: 1fr; gap: 1.5rem; }
+  .wp-item:nth-child(even) > .wp-frame,
+  .wp-item:nth-child(even) > .wp-frame-link,
+  .wp-item:nth-child(even) > .wp-meta { order: 0; }
+  .wp-item-no { font-size: 4.5rem; top: -0.4em; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   3 · LIGHT — "THE INDEX"
+
+   Same six projects, rearranged into a catalogue: two columns, every
+   entry the same size, ruled and numbered. You take the set in at a
+   glance and compare, rather than meeting them one at a time.
+
+   Flat by construction — no gradients, no glare, hairline borders doing
+   the separating, matching the milk theme elsewhere.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root[data-theme='light'] .wp-list,
+:root:not([data-theme='dark']) .wp-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.2rem, 2.5vw, 2.2rem);
+}
+
+:root[data-theme='light'] .wp-item,
+:root:not([data-theme='dark']) .wp-item {
+  /* stacked card, not a side-by-side row */
+  grid-template-columns: 1fr;
+  gap: 0;
+  align-items: stretch;
+  padding: 14px 14px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-1);
+  transition: border-color 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+:root[data-theme='light'] .wp-item:hover,
+:root:not([data-theme='dark']) .wp-item:hover {
+  border-color: var(--acc);
+  transform: translateY(-3px);
+}
+
+/* The ghost numeral becomes a small ordinal in the corner. */
+:root[data-theme='light'] .wp-item-no,
+:root:not([data-theme='dark']) .wp-item-no {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  left: auto;
+  z-index: 3;
+  font-size: 0.72rem;
+  opacity: 1;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--acc);
+  color: var(--acc-ink);
+  letter-spacing: 0.06em;
+}
+
+/* Order swapping is a Reel behaviour — cancel it here. */
+:root[data-theme='light'] .wp-item:nth-child(even) > *,
+:root:not([data-theme='dark']) .wp-item:nth-child(even) > * { order: 0; }
+
+:root[data-theme='light'] .wp-meta,
+:root:not([data-theme='dark']) .wp-meta {
+  gap: 10px;
+  padding: 18px 6px 0;
+}
+
+/* Flat: no lift, no shadow, no glare. */
+:root[data-theme='light'] .wp-frame,
+:root:not([data-theme='dark']) .wp-frame {
+  box-shadow: none;
+  border-radius: 9px;
+}
+:root[data-theme='light'] .wp-item:hover .wp-frame,
+:root:not([data-theme='dark']) .wp-item:hover .wp-frame { transform: none; }
+:root[data-theme='light'] .wp-frame-glare,
+:root:not([data-theme='dark']) .wp-frame-glare { display: none; }
+
+/* Denser type — this layout is read at a glance, not at full width. */
+:root[data-theme='light'] .wp-title,
+:root:not([data-theme='dark']) .wp-title { font-size: 1.25rem; }
+:root[data-theme='light'] .wp-desc,
+:root:not([data-theme='dark']) .wp-desc { font-size: 0.84rem; line-height: 1.62; }
+:root[data-theme='light'] .wp-tagline,
+:root:not([data-theme='dark']) .wp-tagline { font-size: 0.85rem; }
+
+/* Facts sit on one ruled line at the foot of each card. */
+:root[data-theme='light'] .wp-facts,
+:root:not([data-theme='dark']) .wp-facts {
+  gap: 1.6rem;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  margin-top: 4px;
+}
+
+:root[data-theme='light'] .wp-visit,
+:root:not([data-theme='dark']) .wp-visit { padding: 8px 16px; font-size: 0.74rem; }
+
+/* Single column once two no longer fit. */
+@media (max-width: 860px) {
+  :root[data-theme='light'] .wp-list,
+  :root:not([data-theme='dark']) .wp-list { grid-template-columns: 1fr; }
+}

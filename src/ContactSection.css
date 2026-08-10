@@ -1,0 +1,233 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CONTACT
+   Hue: yellow (100°) — the closing note. It sits past Widgets' cyan, so
+   the page resolves warm again at the end rather than stopping cold.
+   Yellow needs its own accent lightness to stay in gamut and legible;
+   that override lives with the hue assignment in theme.css.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ct-section {
+  position: relative;
+  padding: clamp(4rem, 11vh, 8rem) clamp(1.1rem, 4vw, 4rem);
+  background: var(--bg);
+  transition: background-color 520ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ct-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+  opacity: 0;
+  transform: translateY(24px);
+}
+.ct-in .ct-inner {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (max-width: 900px) { .ct-inner { grid-template-columns: 1fr; } }
+
+/* ── left column ── */
+.ct-head-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.ct-head-line { height: 1px; width: 46px; background: var(--line); }
+.ct-head-eyebrow {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+.ct-title {
+  font-size: clamp(2.1rem, 5.5vw, 3.8rem);
+  font-weight: 600;
+  letter-spacing: -0.038em;
+  line-height: 1.02;
+  color: var(--ink);
+}
+.ct-title-accent { color: var(--acc); }
+.ct-lede {
+  margin-top: 18px;
+  max-width: 40ch;
+  font-size: 1rem;
+  line-height: 1.68;
+  color: var(--ink-2);
+}
+
+.ct-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 12px 18px;
+  border-radius: 99px;
+  border: 1px dashed var(--line-hard);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.ct-email:hover { border-color: var(--acc); color: var(--acc); border-style: solid; }
+.ct-email-icon { color: var(--acc); }
+
+.ct-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.8rem;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line-soft);
+}
+.ct-facts dt {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.ct-facts dd { font-size: 0.88rem; font-weight: 500; color: var(--ink); }
+.ct-open { color: var(--acc); }
+
+/* ── form ── */
+.ct-form { display: grid; gap: 16px; }
+
+/* Off-screen rather than display:none — bots fill hidden inputs, and
+   display:none is the one thing they know to skip. */
+.ct-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ct-field { display: grid; gap: 7px; }
+.ct-field label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ct-count { letter-spacing: 0.08em; color: var(--ink-faint); }
+
+.ct-field input,
+.ct-field textarea {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  resize: vertical;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.ct-field input::placeholder,
+.ct-field textarea::placeholder { color: var(--ink-faint); }
+.ct-field input:focus,
+.ct-field textarea:focus {
+  outline: none;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-wash);
+}
+.ct-field--bad input,
+.ct-field--bad textarea { border-color: oklch(60% 0.2 25); }
+
+.ct-err { font-size: 0.74rem; color: oklch(60% 0.2 25); }
+
+.ct-fail {
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid oklch(60% 0.2 25 / 0.4);
+  background: oklch(60% 0.2 25 / 0.08);
+  font-size: 0.84rem;
+  color: var(--ink-2);
+}
+.ct-fail a { color: var(--acc); }
+
+.ct-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 14px 26px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.34, 1.42, 0.5, 1), filter 200ms ease;
+}
+.ct-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); }
+.ct-submit:disabled { opacity: 0.65; cursor: wait; }
+
+.ct-spin {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: ct-spin 720ms linear infinite;
+}
+@keyframes ct-spin { to { transform: rotate(360deg); } }
+
+.ct-note { font-size: 0.74rem; color: var(--ink-faint); line-height: 1.5; }
+
+/* ── success ── */
+.ct-done {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: clamp(1.8rem, 4vw, 2.6rem);
+  border: 1px solid var(--acc);
+  border-radius: 14px;
+  background: var(--surface-1);
+  animation: ct-pop 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ct-pop { from { opacity: 0; transform: scale(0.97); } }
+.ct-done-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-size: 1.2rem;
+}
+.ct-done h3 { font-size: 1.3rem; font-weight: 600; color: var(--ink); }
+.ct-done p { font-size: 0.9rem; color: var(--ink-2); }
+.ct-again {
+  margin-top: 6px;
+  padding: 9px 18px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+.ct-again:hover { border-color: var(--acc); color: var(--acc); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-inner { opacity: 1; transform: none; }
+  .ct-spin { animation-duration: 2s; }
+}
