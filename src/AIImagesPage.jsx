@@ -93,10 +93,6 @@ export default function AIImagesPage({ onBack }) {
               aria-label={`Open ${item.title}`}
             >
               <img src={item.src} alt={item.title} loading="lazy" draggable="false" />
-              <span className="bnt-tile-tag">
-                <b>{String(i + 1).padStart(2, '0')}</b>
-                {item.title}
-              </span>
             </button>
 
             {/* The statement lands inside the run, not above it — the
@@ -119,19 +115,41 @@ export default function AIImagesPage({ onBack }) {
         })}
       </main>
 
-      {/* ══ LIGHTBOX ══ */}
+      {/* ══ PREVIEW WINDOW ══
+          A macOS Preview window rather than a full-screen lightbox: fixed
+          chrome, traffic lights, the filename centred in the title bar,
+          and the picture sized to the window instead of the viewport. */}
       {active && (
-        <div className="bnt-box" role="dialog" aria-modal="true" aria-label={active.title}>
-          <button className="bnt-box-scrim" onClick={close} aria-label="Close" tabIndex={-1} />
-          <img className="bnt-box-img" src={active.src} alt={active.title} />
-          <p className="bnt-box-cap">
-            <b>{String(open + 1).padStart(2, '0')}</b>
-            {active.title}
-            <span>{active.model}</span>
-          </p>
-          <button className="bnt-box-nav bnt-box-nav--prev" onClick={() => step(-1)} aria-label="Previous">←</button>
-          <button className="bnt-box-nav bnt-box-nav--next" onClick={() => step(1)} aria-label="Next">→</button>
-          <button className="bnt-box-x" onClick={close} aria-label="Close">✕</button>
+        <div className="bnt-pv" role="dialog" aria-modal="true" aria-label={active.title}>
+          <button className="bnt-pv-scrim" onClick={close} aria-label="Close" tabIndex={-1} />
+
+          <div className="bnt-pv-win">
+            <div className="bnt-pv-bar">
+              <span className="bnt-pv-lights">
+                <button className="bnt-pv-light bnt-pv-light--r" onClick={close} aria-label="Close" />
+                <span className="bnt-pv-light bnt-pv-light--y" aria-hidden="true" />
+                <span className="bnt-pv-light bnt-pv-light--g" aria-hidden="true" />
+              </span>
+
+              <span className="bnt-pv-name">
+                {active.title.replace(/\s+/g, '-').toLowerCase()}.png
+              </span>
+
+              <span className="bnt-pv-count">
+                {String(open + 1).padStart(2, '0')} of {String(items.length).padStart(2, '0')}
+              </span>
+            </div>
+
+            <div className="bnt-pv-canvas">
+              <img src={active.src} alt={active.title} />
+            </div>
+
+            <div className="bnt-pv-foot">
+              <button onClick={() => step(-1)} aria-label="Previous">‹</button>
+              <span>{active.title}</span>
+              <button onClick={() => step(1)} aria-label="Next">›</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
