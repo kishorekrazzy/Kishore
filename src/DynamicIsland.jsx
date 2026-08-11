@@ -39,7 +39,9 @@ const DEFAULT_LINKS = [
   { href: '#work',     label: 'Work'     },
   { href: '#projects', label: 'Projects' },
   { href: '#about',    label: 'About'    },
-  { href: '#contact',  label: 'Contact'  },
+  // Replaced Contact. '#/certs' is a route, not an anchor — the leading
+  // slash is what the sub-page router matches on.
+  { href: '#/certs',   label: 'Certificates' },
 ];
 
 // How far down the viewport the "you are here" line sits. A section counts

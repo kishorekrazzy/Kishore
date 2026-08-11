@@ -72,7 +72,7 @@ export const DEFAULT_CONTENT = {
       { href: '#work',     label: 'Work'     },
       { href: '#projects', label: 'Projects' },
       { href: '#about',    label: 'About'    },
-      { href: '#contact',  label: 'Contact'  },
+      { href: '#/certs',   label: 'Certificates' },
     ],
   },
 
@@ -165,6 +165,26 @@ export const DEFAULT_CONTENT = {
     ],
   },
 
+
+  /* Certificates page — reached from the nav. Plain text on purpose: the
+     certificates carry the visual weight, the words just place them. */
+  certs: {
+    eyebrow: 'Certificates',
+    title: 'Proof of the hours',
+    intro: "Everything below was earned the slow way — sitting with the software until it stopped arguing. They are not why I can do the work, but they are a fair record of when I started taking each part of it seriously.",
+    outro: 'More on the way. I collect these the way other people collect stamps.',
+    items: [
+      { title: 'Adobe Premiere Pro',      issuer: 'Adobe Certified',        year: '2024', note: 'Advanced editing, multicam and proxy workflows.' },
+      { title: 'DaVinci Resolve',         issuer: 'Blackmagic Design',      year: '2024', note: 'Colour grading, node trees and delivery.' },
+      { title: 'After Effects',           issuer: 'Adobe Certified',        year: '2023', note: 'Motion graphics, tracking and compositing.' },
+      { title: 'Generative AI Imagery',   issuer: 'Independent Study',      year: '2025', note: 'Prompt systems, LoRA training and batch pipelines.' },
+      // Spare slots — fill the name in the dashboard and the row appears.
+      // A certificate with no name is skipped, so these stay invisible.
+      { title: '', issuer: '', year: '', note: '' },
+      { title: '', issuer: '', year: '', note: '' },
+    ],
+  },
+
   /* ── Image registry ────────────────────────────────────────────────
      Every image URL on the site that is not already a field above, as
      flat arrays of strings keyed by where it appears.
@@ -178,6 +198,15 @@ export const DEFAULT_CONTENT = {
      The dashboard discovers these automatically; nothing here needs a
      SCHEMA entry. */
   images: {
+    // Certificates — swap these for the real scans
+    certs: [
+      '/certs/cert-1.svg',
+      '/certs/cert-2.svg',
+      '/certs/cert-3.svg',
+      '/certs/cert-4.svg',
+      '',
+      '',
+    ],
     // Edit Suite board — scattered card deck
     deck: [
       'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=900&q=80',
@@ -346,6 +375,7 @@ export const DEFAULT_CONTENT = {
 };
 
 export const IMAGE_GROUP_LABELS = {
+  'certs': 'Certificates',
   'deck': 'Edit Suite board',
   'warning': 'Warning stack — windows',
   'aiHero': 'AI Images \u2014 hero strip',
@@ -460,6 +490,24 @@ export const SCHEMA = [
       ...Array.from({ length: 6 }, (_, i) => ([
         { path: `warning.tabs.${i}.url`,     label: `Window ${i + 1} — address bar`, type: 'text' },
         { path: `warning.tabs.${i}.caption`, label: `Window ${i + 1} — caption`,     type: 'text' },
+      ])).flat(),
+    ],
+  },
+  {
+    id: 'certs',
+    title: 'Certificates page',
+    fields: [
+      { path: 'certs.eyebrow', label: 'Eyebrow',      type: 'text' },
+      { path: 'certs.title',   label: 'Page title',   type: 'text' },
+      { path: 'certs.intro',   label: 'Intro text',   type: 'multiline' },
+      { path: 'certs.outro',   label: 'Closing line', type: 'multiline' },
+      ...Array.from({ length: 6 }, (_, i) => ([
+        { path: `images.certs.${i}`, label: `Certificate ${i + 1} — IMAGE URL`, type: 'image',
+          hint: 'Paste any image URL, or a path like /certs/cert-1.svg for a file in public/. Leave the name blank to hide this certificate.' },
+        { path: `certs.items.${i}.title`,  label: `Certificate ${i + 1} — name`,   type: 'text' },
+        { path: `certs.items.${i}.issuer`, label: `Certificate ${i + 1} — issuer`, type: 'text' },
+        { path: `certs.items.${i}.year`,   label: `Certificate ${i + 1} — year`,   type: 'text' },
+        { path: `certs.items.${i}.note`,   label: `Certificate ${i + 1} — note`,   type: 'multiline' },
       ])).flat(),
     ],
   },

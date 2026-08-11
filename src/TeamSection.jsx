@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import ScrollReveal from './ScrollReveal';
 import { useContent, withImages } from './content/store';
 import { CardSwap, Card } from './CardSwap';
+import Scanner from './Scanner';
 import './TeamSection.css';
 
 const DEFAULT_TEAM = [
@@ -84,26 +85,37 @@ export default function TeamSection() {
   return (
     <section className="ts-section" id="team" aria-label="Team Skills">
 
-      {/* ── FULL-SCREEN B&W BACKGROUND IMAGES ── */}
-      <div className="ts-full-bg" aria-hidden="true">
-        {TEAM.map((m, i) => (
-          <img
-            key={m.num}
-            src={m.bgImg}
-            alt=""
-            className={`ts-bg-slide${activeIdx === i ? ' ts-bg-slide--active' : ''}`}
-            draggable="false"
-          />
-        ))}
-        <div className="ts-bg-overlay" />
+      {/* ── SCANNER BACKGROUND ── */}
+      <div className="ts-scanner-bg" aria-hidden="true">
+        <Scanner
+          color1={member.accent}
+          color2="#FF9FFC"
+          color3="#FFFFFF"
+          speed={0.5}
+          sweepSpeed={0.25}
+          sweepWidth={1.6}
+          sweepFalloff={6}
+          scale={1.5}
+          frequency={2}
+          ripple={0.22}
+          bandDensity={11}
+          lineSharpness={5.5}
+          glow={0.22}
+          scanDirection="vertical"
+          colorSpread={0.7}
+          brightness={0.6}
+          contrast={1.15}
+          softness={1.4}
+          vignette={0.45}
+          scanline={true}
+          grain={true}
+          grainIntensity={0.05}
+          opacity={1.0}
+          mouseInteraction={true}
+          mouseRadius={0.5}
+          mouseStrength={0.5}
+        />
       </div>
-
-      {/* ── BG LAYERS ── */}
-      <div className="ts-bg" aria-hidden="true" />
-      <div className="ts-noise" aria-hidden="true" />
-      <div className="ts-scanlines" aria-hidden="true" />
-      <div className="ts-blob" aria-hidden="true" style={{ backgroundColor: member.accent }} />
-      <div className="ts-blob-secondary" aria-hidden="true" style={{ backgroundColor: member.accent }} />
 
       {/* ── SECTION LABEL ── */}
       <div className="ts-section-header">

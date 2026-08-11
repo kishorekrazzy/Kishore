@@ -153,6 +153,32 @@ The dashboard needs no changes — it is generated from `SCHEMA`.
 | Contact | eyebrow, title, accent word, lede, email, 3 facts, submit label, footnote, success message |
 | **All images** | **every image URL on the site — 138 of them, auto-discovered** |
 
+### Swapping the certificate images
+
+Dashboard → **Certificates page**. Each certificate has its own
+**IMAGE URL** field sitting directly above its name, issuer, year and
+note, with a live preview underneath.
+
+Three kinds of value work:
+
+| Value | Use when |
+|---|---|
+| `https://…` | the scan is hosted anywhere public — Firebase Storage, Cloudinary, Imgur, your own server |
+| `/certs/cert-1.svg` | you dropped the file into `public/certs/` and redeployed |
+| *(blank)* | no image yet — the row still renders its text |
+
+There are **six slots**. Four are filled with mockups; slots 5 and 6 are
+empty and stay hidden until you give them a name. A certificate with a
+blank name is skipped entirely, so partly-filled slots never show.
+
+If you need more than six, the slots have to exist in
+`DEFAULT_CONTENT.certs.items` first — `mergeContent` maps over the default
+array, so a stored seventh entry would be dropped.
+
+> Google Drive and Dropbox "share" links return an HTML page, not an image.
+> Use the direct-file form, or upload to Firebase Storage and copy the
+> download URL.
+
 ### The All images view
 
 The first item in the sidebar. It is not a hand-written list — the

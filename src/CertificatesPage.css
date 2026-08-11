@@ -1,0 +1,270 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CERTIFICATES PAGE
+
+   Gallery wall. Certificates centred and large, a placard under each, a
+   hard rule between entries and a sticky rail that always says where you
+   are. Minimal palette, local to this page — the pillar behind supplies
+   the only colour.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.cert-root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+
+  --c-bg:     #08080b;
+  --c-ink:    #f4f3f7;
+  --c-ink2:   #a8a5b4;
+  --c-ink3:   #6e6b7a;
+  --c-faint:  #45424f;
+  --c-line:   rgba(255, 255, 255, 0.10);
+  --c-accent: #b9c0ff;
+  --c-pad:    clamp(24px, 5vw, 76px);
+
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-hand);
+}
+
+/* ── Background ── */
+.cert-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.cert-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% 35%, transparent 26%, rgba(8, 8, 11, 0.8) 100%);
+}
+
+/* ── Sticky rail ──
+   Back, section name and a live counter. Gives the page a frame so the
+   entries do not just float in the dark. */
+.cert-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px var(--c-pad);
+  background: linear-gradient(rgba(8, 8, 11, 0.92), rgba(8, 8, 11, 0.72) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.cert-back {
+  padding: 7px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--c-line);
+  background: none;
+  color: var(--c-ink2);
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.cert-back:hover { color: var(--c-ink); border-color: rgba(255, 255, 255, 0.28); }
+.cert-back:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+
+.cert-bar-title {
+  font-size: 1.05rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-ink3);
+}
+.cert-bar-count { font-size: 1.1rem; color: var(--c-faint); }
+.cert-bar-count b { color: var(--c-accent); font-weight: 400; }
+.cert-bar-count i { font-style: normal; margin-left: 4px; }
+
+/* ── Opening ── */
+.cert-open {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(60px, 12vh, 130px) var(--c-pad) clamp(50px, 9vh, 96px);
+  text-align: center;
+}
+.cert-title {
+  font-size: clamp(3rem, 8vw, 6.4rem);
+  font-weight: 400;              /* single-weight face; bold would synthesise */
+  line-height: 0.98;
+  margin-bottom: 18px;
+}
+.cert-intro {
+  font-size: clamp(1.3rem, 1.8vw, 1.72rem);
+  line-height: 1.42;
+  color: var(--c-ink2);
+  max-width: 62ch;
+  margin: 0 auto;
+}
+
+/* ── The wall ── */
+.cert-list { position: relative; z-index: 1; }
+
+.cert-item {
+  padding: clamp(52px, 8vh, 96px) var(--c-pad);
+  border-top: 1px solid var(--c-line);   /* the rule between entries */
+}
+.cert-item:first-child { border-top: 0; }
+
+/* Certificate: centred, wide, nothing behind it. The pillar is the only
+   light; a faint rim keeps a white sheet from cutting out hard against
+   near-black. */
+.cert-sheet {
+  position: relative;
+  /* --ratio is set inline from the image's own dimensions, so portrait
+     scans are not stretched into landscape. max-height cannot constrain a
+     width-driven aspect-ratio, so the height cap is folded into the width
+     — otherwise a tall certificate runs off the screen. */
+  aspect-ratio: var(--ratio, 1.41);
+  width: min(100%, 980px, calc(74vh * var(--ratio, 1.41)));
+  margin: 0 auto;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 40px 90px rgba(0, 0, 0, 0.55);
+}
+.cert-still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;   /* the sheet already matches the image ratio */
+}
+/* The still is a no-WebGL fallback. The mesh renders at 82% of its box,
+   so a visible full-size still sat behind the warped one and read as a
+   backing panel. Once a canvas exists the still steps aside. */
+.cert-sheet:has(canvas) .cert-still { opacity: 0; }
+.cert-mesh { position: absolute; inset: 0; z-index: 2; }
+
+/* ── Placard ──
+   One line under the work: number, name, note, reactions. Top-aligned so
+   it reads as a caption rather than four stacked blocks. */
+.cert-placard {
+  display: grid;
+  grid-template-columns: auto minmax(200px, 1fr) minmax(0, 1.1fr) auto;
+  align-items: start;
+  gap: clamp(20px, 3vw, 46px);
+  width: min(100%, 980px);
+  margin: 30px auto 0;
+}
+
+.cert-no {
+  font-size: 1.5rem;
+  color: var(--c-accent);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.cert-no i { font-style: normal; color: var(--c-faint); font-size: 0.8em; }
+
+.cert-name {
+  font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.02;
+}
+.cert-issuer {
+  font-size: 1.15rem;
+  color: var(--c-ink3);
+  margin-top: 2px;
+}
+.cert-issuer em { font-style: normal; color: var(--c-faint); }
+
+.cert-note {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: var(--c-ink2);
+  padding-top: 4px;
+}
+
+/* ── Reactions ── */
+.cert-reacts { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 2px; }
+.cert-react {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 99px;
+  border: 1px solid var(--c-line);
+  background: none;
+  color: var(--c-ink2);
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.25s ease, background-color 0.25s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cert-react:hover {
+    border-color: rgba(255, 255, 255, 0.26);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+  }
+}
+.cert-react:active { transform: scale(0.94); }
+.cert-react:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+.cert-react-emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 1rem;
+  line-height: 1;
+}
+.cert-react-count { font-variant-numeric: tabular-nums; color: var(--c-faint); }
+
+/* ── Burst ──
+   Over the certificate, never taking pointer events, so the mesh keeps
+   receiving hover while emoji are flying. */
+.cert-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+.cert-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+  line-height: 1;
+  animation-name: certBlast;
+  animation-timing-function: cubic-bezier(0.16, 0.9, 0.3, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+@keyframes certBlast {
+  0%   { transform: translate(-50%, -50%) scale(0.2) rotate(0deg); opacity: 0; }
+  18%  { transform: translate(-50%, -50%) scale(1.25) rotate(calc(var(--r) * 0.2)); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.55) rotate(var(--r)); opacity: 0; }
+}
+
+.cert-outro {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: clamp(56px, 9vh, 110px) var(--c-pad) clamp(80px, 12vh, 140px);
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 1.45;
+  color: var(--c-ink3);
+  border-top: 1px solid var(--c-line);
+}
+
+/* ── Narrow ── */
+@media (max-width: 900px) {
+  .cert-placard { grid-template-columns: 1fr; gap: 14px; }
+  .cert-no { font-size: 1.25rem; }
+  .cert-item { padding: 44px var(--c-pad); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cert-root { scroll-behavior: auto; }
+  .cert-particle { animation-duration: 0.01ms !important; }
+}

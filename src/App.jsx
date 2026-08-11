@@ -15,6 +15,7 @@ const RoomPage         = lazy(() => import('./RoomPage'));
 const AIImagesPage     = lazy(() => import('./AIImagesPage'));
 const WebsitePage      = lazy(() => import('./WebsitePage'));
 const SkillsPage       = lazy(() => import('./SkillsPage'));
+const CertificatesPage = lazy(() => import('./CertificatesPage'));
 // The admin dashboard pulls in Firebase Auth — it must never land in a
 // visitor's bundle.
 const AdminDashboard   = lazy(() => import('./admin/AdminDashboard'));
@@ -271,7 +272,7 @@ function HeroLayout({ section, fading }) {
 // put something in the URL themselves; otherwise a refresh always lands
 // back on the home page.
 
-const PAGE_IDS = ['about', 'video', 'room', 'ai', 'web', 'skills', 'admin'];
+const PAGE_IDS = ['about', 'video', 'room', 'ai', 'web', 'skills', 'certs', 'admin'];
 
 // Routes are namespaced under "#/" on purpose. The nav already uses bare
 // anchors (#about, #work, #contact) to jump between sections, so matching
@@ -334,6 +335,7 @@ export default function App() {
   const showAIImages  = page === 'ai';
   const showWebsite   = page === 'web';
   const showSkills    = page === 'skills';
+  const showCerts     = page === 'certs';
   const showAdmin     = page === 'admin';
 
   // Boolean-shaped setters so every existing call site keeps working.
@@ -344,12 +346,13 @@ export default function App() {
   const setShowAIImages  = openPage('ai');
   const setShowWebsite   = openPage('web');
   const setShowSkills    = openPage('skills');
+  const setShowCerts     = openPage('certs');
   const [showWarning, setShowWarning] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const scrollRef = useRef(null);
 
-  const anySubPage = showAboutMe || showVideoPage || showRoomPage || showAIImages || showWebsite || showSkills;
+  const anySubPage = showAboutMe || showVideoPage || showRoomPage || showAIImages || showWebsite || showSkills || showCerts;
   const heroSections  = useContent('hero.sections', HERO_SECTIONS);
   const activeSection = heroSections[activeIdx] ?? HERO_SECTIONS[activeIdx];
 
@@ -656,6 +659,7 @@ export default function App() {
           {showAIImages && <AIImagesPage onBack={() => setShowAIImages(false)} />}
           {showWebsite && <WebsitePage onBack={() => setShowWebsite(false)} />}
           {showSkills  && <SkillsPage  onBack={() => setShowSkills(false)}  />}
+          {showCerts   && <CertificatesPage onBack={() => setShowCerts(false)} />}
         </Suspense>
         </ErrorBoundary>
       )}
