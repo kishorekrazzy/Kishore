@@ -111,7 +111,7 @@ export function findImagePaths(node, path = '', inImages = false, out = []) {
   return out;
 }
 
-/* Turns `images.aiHero.3` into "AI Images — hero strip · 4", and
+/* Turns `images.team.3` into "Syndicate — members · 4", and
    `hero.sections.0.image` into "hero › sections 1 › image". */
 export function describeImagePath(path, groupLabels = {}) {
   const parts = path.split('.');

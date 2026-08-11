@@ -1,0 +1,68 @@
+/* ══════════════════════════════════════════════════════════════════════
+   AI BOT DOCK — the 3D robot, bottom-right, on nothing
+   ══════════════════════════════════════════════════════════════════════ */
+
+.abd {
+  position: fixed;
+  right: 18px;
+  bottom: 14px;
+  z-index: 120;          /* above content, below the island's overlays */
+}
+
+.abd-hit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;      /* no panel — the robot sits on the page itself */
+  font: inherit;
+  cursor: pointer;
+}
+.abd-hit:focus-visible { outline: 2px solid var(--acc); outline-offset: 6px; border-radius: 14px; }
+
+/* The canvas needs a definite box or three.js has nothing to size to. */
+.abd-stage {
+  display: block;
+  width: clamp(112px, 11vw, 152px);
+  height: clamp(112px, 11vw, 152px);
+  /* Its own pointer events, so the robot reacts to being pressed. */
+  pointer-events: auto;
+}
+.abd-stage canvas { display: block; touch-action: none; }
+
+/* The label is the only thing that hides — it unfurls under the robot on
+   hover rather than the robot sliding in from off-screen, which would
+   waste a canvas nobody can see. */
+.abd-label {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(var(--ground-rgb), 0.82);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  color: var(--ink-2);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+}
+.abd:hover .abd-label,
+.abd:focus-within .abd-label {
+  max-height: 32px;
+  opacity: 1;
+  padding: 6px 12px;
+}
+
+@media (max-width: 620px) {
+  .abd { right: 8px; bottom: 8px; }
+  .abd-stage { width: 96px; height: 96px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abd-label { transition: none; }
+}

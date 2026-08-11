@@ -103,7 +103,7 @@ function RollingText({ text }) {
 }
 
 // ── COMPONENT ────────────────────────────────────────────────────────
-export default function DynamicIsland({ onRoomClick, onWarnClick }) {
+export default function DynamicIsland({ onRoomClick, onWarnClick, onProfileClick }) {
   const LOGO_SRC = useContent('nav.logo',  DEFAULT_LOGO);
   const LINKS    = useContent('nav.links', DEFAULT_LINKS);
 
@@ -217,14 +217,14 @@ export default function DynamicIsland({ onRoomClick, onWarnClick }) {
       <div className="di-pill">
 
         {/* Always visible, both states */}
+        {/* The logo opens the profile card. Pinning the nav moved to the
+            label beside it, so touch — which never hovers — still has a way
+            in to the links. */}
         <button
           className="di-mark"
-          onClick={togglePin}
-          aria-expanded={open}
-          aria-pressed={pinned}
-          aria-label={pinned
-            ? 'Unpin navigation'
-            : `Current section: ${section.label}. Pin navigation open`}
+          onClick={onProfileClick}
+          aria-label="Open profile card"
+          title="Profile"
         >
           {logoOk
             ? <img src={LOGO_SRC} alt="" draggable="false" onError={() => setBadLogo(LOGO_SRC)} />
@@ -232,7 +232,16 @@ export default function DynamicIsland({ onRoomClick, onWarnClick }) {
         </button>
 
         {/* Collapsed face — the track if one is playing, else the section */}
-        <div className="di-now" aria-hidden={open ? 'true' : undefined}>
+        <div
+          className="di-now"
+          onClick={togglePin}
+          role="button"
+          tabIndex={open ? -1 : 0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(); } }}
+          aria-expanded={open}
+          aria-label={`Current section: ${section.label}. Open navigation`}
+          aria-hidden={open ? 'true' : undefined}
+        >
           {playing ? (
             <>
               <span className="di-bars" aria-hidden="true"><i /><i /><i /><i /></span>

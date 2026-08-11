@@ -185,6 +185,52 @@ export const DEFAULT_CONTENT = {
     ],
   },
 
+
+  /* The ID card the island's logo swings out. */
+  lanyard: {
+    title: 'Kishore',
+    body: 'AI editor, colourist and creative developer. Drag the card — it swings.',
+    hint: 'Drag to play · Esc to close',
+  },
+
+  /* Drives the ✨ chat in the nav. `system` is the assistant's persona —
+     paste the character sheet here and every reply follows it. */
+  ai: {
+    greeting: 'How can I help today?',
+    system: '',
+  },
+
+
+  /* AI Images exhibition. One object per picture.
+     Add another object here (or from the dashboard) and it appears in the
+     exhibition with no code change. */
+  aiGallery: [
+    { src: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1400&q=80',
+      title: 'Studio Silhouette', model: 'Midjourney v6' },
+    { src: 'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&w=1400&q=80',
+      title: 'Scarlet Matrix', model: 'Stable Diffusion XL' },
+    { src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80',
+      title: 'Hyperreal Genesis', model: 'Midjourney v6' },
+    { src: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=1400&q=80',
+      title: 'Chrome Bloom', model: 'Midjourney v6' },
+    { src: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1400&q=80',
+      title: 'Analogue Ghost', model: 'Stable Diffusion XL' },
+    { src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80',
+      title: 'Circuit Cathedral', model: 'Flux.1' },
+    { src: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1400&q=80',
+      title: 'The Operator', model: 'Midjourney v6' },
+    { src: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1400&q=80',
+      title: 'Kinetic Trace', model: 'Flux.1' },
+    { src: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1400&q=80',
+      title: 'Graded Still', model: 'Midjourney v6' },
+    { src: 'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=1400&q=80',
+      title: 'Archive Reel', model: 'Stable Diffusion XL' },
+    { src: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1400&q=80',
+      title: 'Soft Protocol', model: 'Flux.1' },
+    { src: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1400&q=80',
+      title: 'Signal Room', model: 'Midjourney v6' },
+  ],
+
   /* ── Image registry ────────────────────────────────────────────────
      Every image URL on the site that is not already a field above, as
      flat arrays of strings keyed by where it appears.
@@ -198,6 +244,11 @@ export const DEFAULT_CONTENT = {
      The dashboard discovers these automatically; nothing here needs a
      SCHEMA entry. */
   images: {
+    // Lanyard card — [0] front face, [1] back face
+    lanyard: [
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=900&q=80',
+    ],
     // Certificates — swap these for the real scans
     certs: [
       '/certs/cert-1.svg',
@@ -225,32 +276,6 @@ export const DEFAULT_CONTENT = {
       'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=80',
-    ],
-    // AI Images — hero strip
-    aiHero: [
-      'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1620121692029-d088224ddc74?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1600&q=80',
-      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1600&q=80',
     ],
     // About Me — gallery
     aboutMe: [
@@ -375,10 +400,10 @@ export const DEFAULT_CONTENT = {
 };
 
 export const IMAGE_GROUP_LABELS = {
+  'lanyard': 'Profile card (lanyard)',
   'certs': 'Certificates',
   'deck': 'Edit Suite board',
   'warning': 'Warning stack — windows',
-  'aiHero': 'AI Images \u2014 hero strip',
   'aboutMe': 'About Me \u2014 gallery',
   'team': 'Syndicate \u2014 members',
   'banners': 'Showcase banners',
@@ -510,6 +535,35 @@ export const SCHEMA = [
         { path: `certs.items.${i}.note`,   label: `Certificate ${i + 1} — note`,   type: 'multiline' },
       ])).flat(),
     ],
+  },
+  {
+    id: 'lanyard',
+    title: 'Profile card (logo click)',
+    fields: [
+      { path: 'lanyard.title', label: 'Name',    type: 'text' },
+      { path: 'lanyard.body',  label: 'Blurb',   type: 'multiline' },
+      { path: 'lanyard.hint',  label: 'Hint',    type: 'text' },
+      { path: 'images.lanyard.0', label: 'Card front', type: 'image', hint: 'Portrait orientation reads best on the card face.' },
+      { path: 'images.lanyard.1', label: 'Card back',  type: 'image' },
+    ],
+  },
+  {
+    id: 'ai',
+    title: 'AI chat (✨ nav button)',
+    fields: [
+      { path: 'ai.greeting', label: 'Greeting headline', type: 'text' },
+      { path: 'ai.system',   label: 'System prompt / character sheet', type: 'multiline',
+        hint: 'Paste the character sheet here. Leave blank to use the built-in default in AiChat.jsx.' },
+    ],
+  },
+  {
+    id: 'ai-gallery',
+    title: 'AI Images gallery',
+    fields: Array.from({ length: 12 }, (_, i) => ([
+      { path: `aiGallery.${i}.src`,    label: `Image ${i + 1} — URL`,    type: 'image' },
+      { path: `aiGallery.${i}.title`,  label: `Image ${i + 1} — title`,  type: 'text'  },
+      { path: `aiGallery.${i}.model`,  label: `Image ${i + 1} — model`,  type: 'text'  },
+    ])).flat(),
   },
   {
     id: 'contact',

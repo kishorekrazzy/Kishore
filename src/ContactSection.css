@@ -8,12 +8,57 @@
 
 .ct-section {
   position: relative;
+  /* 16:9 ratio container */
+  aspect-ratio: 16 / 9;
   padding: clamp(4rem, 11vh, 8rem) clamp(1.1rem, 4vw, 4rem);
-  background: var(--bg);
+  background: #ffffff !important;
   transition: background-color 520ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  /* Space below the section */
+  margin-bottom: clamp(3rem, 8vh, 6rem);
 }
 
+/* ── overlay artwork ──
+   Sits above every layer in the section. pointer-events:none is what keeps
+   the form beneath it fully clickable despite covering it. */
+.ct-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;  /* clicks pass through to the form */
+  overflow: hidden;
+}
+.ct-overlay img {
+  /* The artwork is 2752x1536 (1.792) and the section is 16:9 (1.778), so
+     `cover` fills it edge to edge with a ~0.8% crop — no letterboxing and
+     effectively nothing lost. */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  opacity: 1;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Below the breakpoint the section drops its 16:9 and grows with the form,
+   so `cover` would crop the artwork hard. `contain` keeps the whole frame
+   and pins it to the bottom, where it reads as a base rather than a
+   mis-cropped fill. */
+@media (max-width: 860px) {
+  .ct-overlay img {
+    object-fit: contain;
+    object-position: center bottom;
+  }
+}
+
+/* Make sure form content stays above the background but below the overlay visually,
+   while remaining fully interactive since overlay has pointer-events: none */
+/* Content sits at z-index 1, overlay at z-index 2 with pointer-events: none */
 .ct-inner {
+  position: relative;
+  z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
@@ -29,7 +74,42 @@
   transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
               transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-@media (max-width: 900px) { .ct-inner { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .ct-inner { grid-template-columns: 1fr; }
+  /* On mobile, drop aspect-ratio to avoid overly tall section */
+  .ct-section { aspect-ratio: auto; }
+}
+
+/* ── Force dark text on the white background ── */
+.ct-section,
+.ct-section .ct-title,
+.ct-section .ct-facts dd,
+.ct-section .ct-email,
+.ct-section .ct-done h3 { color: #111111; }
+.ct-section .ct-head-eyebrow { color: #d4272e; }
+.ct-section .ct-title-accent { color: #d4272e; }
+.ct-section .ct-lede,
+.ct-section .ct-done p,
+.ct-section .ct-note,
+.ct-section .ct-again { color: #444444; }
+.ct-section .ct-head-line { background: #d4272e; }
+.ct-section .ct-facts dt,
+.ct-section .ct-count { color: #888888; }
+.ct-section .ct-open { color: #d4272e; }
+.ct-section .ct-facts { border-top-color: #e0e0e0; }
+.ct-section .ct-field input,
+.ct-section .ct-field textarea {
+  background: #f7f7f7;
+  border-color: #ddd;
+  color: #111;
+}
+.ct-section .ct-field input::placeholder,
+.ct-section .ct-field textarea::placeholder { color: #aaa; }
+.ct-section .ct-field label { color: #666; }
+.ct-section .ct-email { border-color: #ccc; }
+.ct-section .ct-email:hover { border-color: #d4272e; color: #d4272e; }
+.ct-section .ct-email-icon { color: #d4272e; }
+.ct-section .ct-submit { background: #d4272e; color: #fff; }
 
 /* ── left column ── */
 .ct-head-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }

@@ -119,9 +119,13 @@ const measureLine = (ctx, line, letterSpacing) => {
   return textWidth + Math.max(0, chars.length - 1) * letterSpacing;
 };
 
-const drawLine = (ctx, line, x, y, letterSpacing) => {
+/* `x` is the anchor; align decides which edge of the line sits on it.
+   The original always centred, which is wrong for a headline that is
+   supposed to sit flush against the left of its layout. */
+const drawLine = (ctx, line, x, y, letterSpacing, align = 'center') => {
   const chars = Array.from(line);
-  let cursor = x - measureLine(ctx, line, letterSpacing) / 2;
+  const w = measureLine(ctx, line, letterSpacing);
+  let cursor = align === 'left' ? x : align === 'right' ? x - w : x - w / 2;
 
   chars.forEach((char, index) => {
     ctx.fillText(char, cursor, y);
@@ -191,7 +195,19 @@ const buildTextCanvas = ({ container, width, height, dpr, props }) => {
   }
 
   const startY = height / 2 - (lineHeight * (lines.length - 1)) / 2;
-  lines.forEach((line, index) => drawLine(ctx, line, width / 2, startY + index * lineHeight, letterSpacing));
+
+  /* The fit box is maxWidth wide and centred, so the inset either side is
+     half the leftover. Anchoring to that edge rather than to 0 keeps the
+     margin the warp needs — distortion pushes pixels outward, and text on
+     the canvas edge gets clipped. */
+  const inset = (width - maxWidth) / 2;
+  const anchorX =
+    props.textAlign === 'left'  ? inset :
+    props.textAlign === 'right' ? width - inset :
+    width / 2;
+
+  lines.forEach((line, index) =>
+    drawLine(ctx, line, anchorX, startY + index * lineHeight, letterSpacing, props.textAlign));
 
   return canvas;
 };
@@ -222,6 +238,7 @@ const WarpText = ({
   fontFamily = 'inherit',
   letterSpacing = '-0.06em',
   lineHeight = 0.9,
+  textAlign = 'center',
   className = '',
   style
 }) => {
@@ -234,6 +251,7 @@ const WarpText = ({
     fontFamily,
     letterSpacing,
     lineHeight,
+    textAlign,
     warpStrength,
     warpScale,
     speed,
@@ -253,6 +271,7 @@ const WarpText = ({
       fontFamily,
       letterSpacing,
       lineHeight,
+      textAlign,
       warpStrength,
       warpScale,
       speed,
@@ -274,6 +293,7 @@ const WarpText = ({
     fontFamily,
     letterSpacing,
     lineHeight,
+    textAlign,
     warpStrength,
     warpScale,
     speed,

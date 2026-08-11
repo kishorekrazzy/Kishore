@@ -112,6 +112,10 @@ export default function ContactSection() {
 
   return (
     <section ref={sectionRef} className="ct-section" id="contact" aria-label="Contact">
+      {/* Decorative overlay — pointer-events:none keeps every form element clickable */}
+      <div className="ct-overlay" aria-hidden="true">
+        <img src="/deadpool_overlay.png" alt="" draggable="false" />
+      </div>
       <div className="ct-inner">
 
         <div className="ct-left">

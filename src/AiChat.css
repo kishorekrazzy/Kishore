@@ -1,0 +1,319 @@
+/* ══════════════════════════════════════════════════════════════════════
+   AI CHAT — plain CSS port of the Tailwind original.
+
+   Colours are literal rather than theme tokens: the panel is a dark glass
+   surface in both light and dark mode, the way the source design is, so it
+   should not follow the site's hue system.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.aic {
+  position: fixed;
+  inset: 0;
+  z-index: 9200;             /* above the warning stack, below admin */
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  font-family: var(--font-display, system-ui);
+  color: #fff;
+}
+
+.aic-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  background: rgba(6, 6, 8, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: aicFade 0.35s ease both;
+}
+@keyframes aicFade { from { opacity: 0; } }
+
+/* Ambient blobs */
+.aic-blobs { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.aic-blobs i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(128px);
+  animation: aicPulse 6s ease-in-out infinite;
+}
+.aic-blobs i:nth-child(1) { top: 0;   left: 25%;  width: 24rem; height: 24rem; background: rgba(139, 92, 246, 0.14); }
+.aic-blobs i:nth-child(2) { bottom: 0; right: 25%; width: 24rem; height: 24rem; background: rgba(99, 102, 241, 0.14); animation-delay: 0.7s; }
+.aic-blobs i:nth-child(3) { top: 25%; right: 33%; width: 16rem; height: 16rem; background: rgba(217, 70, 239, 0.12); filter: blur(96px); animation-delay: 1s; }
+@keyframes aicPulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+.aic-cursor-glow {
+  position: fixed;
+  width: 50rem; height: 50rem;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background: linear-gradient(90deg, #8b5cf6, #d946ef, #6366f1);
+  filter: blur(96px);
+}
+
+/* ── Shell ── */
+.aic-shell {
+  position: relative;
+  z-index: 2;
+  width: min(680px, 100%);
+  max-height: min(90vh, 860px);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.aic-close {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.aic-close:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+.aic-head { text-align: center; }
+.aic-head h1 {
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, rgba(255,255,255,0.92), rgba(255,255,255,0.42));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 4px;
+}
+.aic-rule {
+  display: block;
+  height: 1px;
+  margin: 6px 0 10px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.aic-head p { font-size: 0.82rem; color: rgba(255,255,255,0.4); }
+
+/* ── Transcript ── */
+.aic-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+}
+.aic-msg {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.aic-msg--user {
+  align-self: flex-end;
+  background: #fff;
+  color: #0a0a0b;
+}
+.aic-msg--assistant {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.9);
+}
+
+.aic-dots { display: inline-flex; align-items: center; gap: 4px; }
+.aic-dots i {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 4px rgba(255,255,255,0.3);
+}
+
+.aic-error {
+  font-size: 0.78rem;
+  color: #ff8a8a;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+/* ── Input panel ── */
+.aic-panel {
+  position: relative;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+
+.aic-input {
+  width: 100%;
+  min-height: 60px;
+  padding: 16px;
+  border: 0;
+  background: none;
+  resize: none;
+  overflow: hidden;
+  color: rgba(255,255,255,0.92);
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.aic-input::placeholder { color: rgba(255,255,255,0.22); }
+.aic-input:focus { outline: none; }
+
+.aic-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.aic-bar-left { display: flex; gap: 6px; }
+
+.aic-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.aic-icon-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+.aic-icon-btn.is-on { background: rgba(255,255,255,0.1); color: #fff; }
+.aic-icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.aic-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.4);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.aic-send.is-ready { background: #fff; color: #0a0a0b; box-shadow: 0 6px 20px rgba(255,255,255,0.12); }
+.aic-send:disabled { cursor: not-allowed; }
+.aic-spin { animation: aicSpin 2s linear infinite; }
+@keyframes aicSpin { to { transform: rotate(360deg); } }
+
+/* ── Command palette ── */
+.aic-palette {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(8,8,10,0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+.aic-pal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: rgba(255,255,255,0.7);
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+.aic-pal-row:hover, .aic-pal-row.is-active { background: rgba(255,255,255,0.08); color: #fff; }
+.aic-pal-icon { display: grid; place-items: center; color: rgba(255,255,255,0.6); }
+.aic-pal-label { font-weight: 500; }
+.aic-pal-prefix { color: rgba(255,255,255,0.35); margin-left: auto; }
+
+/* ── Chips ── */
+.aic-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.aic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.6);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.aic-chip:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.92); }
+
+.aic-warn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: center;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+}
+.aic-warn code {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  background: rgba(255,255,255,0.07);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+@media (max-width: 620px) {
+  .aic { padding: 14px; }
+  .aic-head h1 { font-size: 1.35rem; }
+  .aic-msg { max-width: 92%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aic-blobs i, .aic-spin { animation: none; }
+  .aic-cursor-glow { display: none; }
+}
+
+/* ── The robot, standing at the bottom of the chat ──
+   Full width so it has room to track the cursor sideways, and tall enough
+   to read at 1.6 scale. Negative top margin closes the gap the canvas's
+   own headroom leaves, so it looks planted on the panel floor rather than
+   floating in a box. Click-through — it must never block the input. */
+.aic-robot {
+  height: clamp(200px, 30vh, 330px);
+  width: 100%;
+  margin-top: -18px;
+  pointer-events: none;
+  /* The shell is a flex column with a max-height. Without this the robot
+     is the first thing squeezed when content grows, and R3F measures that
+     collapsed box on mount and never resizes off it — the canvas stays at
+     its 300x150 default. */
+  flex-shrink: 0;
+  min-height: 200px;
+}
+.aic-robot canvas { display: block; }
+
+@media (max-width: 620px) {
+  .aic-robot { height: 168px; }
+}

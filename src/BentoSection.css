@@ -393,17 +393,25 @@
   user-select: none;
   -webkit-user-drag: none;
   z-index: 0;
-  filter: brightness(0.6) saturate(0.85) contrast(1.05);
+  /* Full strength — the legibility comes from the gradient below, not from
+     dimming the footage. */
+  filter: none;
   transition: filter 0.5s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .bc-about:hover .bca-bg-video {
-    filter: brightness(0.7) saturate(1) contrast(1.05);
+    /* Base is undimmed now, so hover lifts slightly rather than restoring
+       from a dim — the old brightness(0.7) would have darkened it. */
+    filter: brightness(1.06) saturate(1.06);
   }
 }
 
 /* Dark gradient overlay so the bottom-aligned text stays readable */
+/* Black rising from the bottom only. The top two-fifths stay clear so the
+   video plays untouched; the ramp starts where the text begins and reaches
+   near-solid behind it. Multiple stops rather than two — a straight linear
+   fade over this distance bands visibly on a dark gradient. */
 .bca-bg-tint {
   position: absolute;
   inset: 0;
@@ -411,9 +419,12 @@
   z-index: 0;
   background: linear-gradient(
     180deg,
-    rgba(var(--shade-rgb), 0.25) 0%,
-    rgba(var(--shade-rgb), 0.55) 55%,
-    rgba(var(--shade-rgb), 0.92) 100%
+    rgba(0, 0, 0, 0)    0%,
+    rgba(0, 0, 0, 0)    38%,
+    rgba(0, 0, 0, 0.28) 56%,
+    rgba(0, 0, 0, 0.62) 74%,
+    rgba(0, 0, 0, 0.85) 88%,
+    rgba(0, 0, 0, 0.94) 100%
   );
 }
 

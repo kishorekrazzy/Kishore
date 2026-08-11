@@ -21,6 +21,10 @@ const CertificatesPage = lazy(() => import('./CertificatesPage'));
 const AdminDashboard   = lazy(() => import('./admin/AdminDashboard'));
 // Only downloaded if somebody actually presses the ⚠ button.
 const WarningStack     = lazy(() => import('./WarningStack'));
+// Three.js + rapier + drei is a heavy graph — it must never be in the
+// first-load bundle, only fetched when the logo is actually clicked.
+const LanyardOverlay   = lazy(() => import('./LanyardOverlay'));
+const AiChat           = lazy(() => import('./AiChat'));
 import MacDock from './MacDock';
 import { MusicWindowManager }      from './MusicWindow';
 import { NotesWindowManager }      from './NotesWindow';
@@ -33,6 +37,7 @@ import DeckSection from './DeckSection';
 import DynamicIsland from './DynamicIsland';
 import WarpText from './WarpText';
 import ErrorBoundary from './ErrorBoundary';
+import AiBotDock from './AiBotDock';
 import { useContent } from './content/store';
 
 // ── 4 HERO SECTION DATA ─────────────────────────────────────────────
@@ -130,7 +135,7 @@ function useHeadlineInk() {
 
 /* Shared warp settings. Each layout differs only in its box and type
    scale, which ride on the class — see .hl-warp in index.css. */
-function WarpHeadline({ text, variant, ink, fontSize, letterSpacing }) {
+function WarpHeadline({ text, variant, ink, fontSize, letterSpacing, textAlign = 'center' }) {
   return (
     <h1 className={`hl-headline hl-headline--${variant}`}>
       <WarpText
@@ -140,6 +145,7 @@ function WarpHeadline({ text, variant, ink, fontSize, letterSpacing }) {
         fontSize={fontSize}
         fontWeight={900}
         letterSpacing={letterSpacing}
+        textAlign={textAlign}
         lineHeight={1}
         warpStrength={0.08}
         warpScale={1.7}
@@ -189,6 +195,9 @@ function HeroLayout({ section, fading }) {
         <WarpHeadline
           variant="xl" ink={ink}
           text={section.headline}
+          /* Flush left — .hl-v-bottom is anchored to the bottom-left, so a
+             centred headline floated away from the edge it belongs on. */
+          textAlign="left"
           fontSize="clamp(3.4rem, 7.2vw, 9rem)" letterSpacing="-0.025em"
         />
         <div className="hl-stats-row">
@@ -348,6 +357,8 @@ export default function App() {
   const setShowSkills    = openPage('skills');
   const setShowCerts     = openPage('certs');
   const [showWarning, setShowWarning] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const scrollRef = useRef(null);
@@ -569,6 +580,7 @@ export default function App() {
             <DynamicIsland
               onRoomClick={() => setShowRoomPage(true)}
               onWarnClick={() => setShowWarning(true)}
+              onProfileClick={() => setShowProfile((v) => !v)}
             />
           </ErrorBoundary>
 
@@ -641,6 +653,27 @@ export default function App() {
           <ContactSection />
         </ErrorBoundary>
       </div>
+
+      {/* Bottom-right bot. Outside the scroll container so it stays put. */}
+      <ErrorBoundary name="Ask bot" silent>
+        <AiBotDock onOpen={() => setShowChat(true)} />
+      </ErrorBoundary>
+
+      {showChat && (
+        <ErrorBoundary name="Chat" silent>
+          <Suspense fallback={null}>
+            <AiChat onClose={() => setShowChat(false)} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+
+      {showProfile && (
+        <ErrorBoundary name="Profile card" silent>
+          <Suspense fallback={null}>
+            <LanyardOverlay onClose={() => setShowProfile(false)} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
 
       {showWarning && (
         <ErrorBoundary name="Warning" silent>

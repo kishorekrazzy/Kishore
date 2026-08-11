@@ -495,3 +495,10 @@
 @media (prefers-reduced-motion: reduce) {
   .di-bars i { animation: none; transform: scaleY(0.7); }
 }
+
+/* The label doubles as the nav opener on touch, so it needs a hit area and
+   a pointer — but only while the island is closed. */
+.di-now { cursor: pointer; }
+.di--open .di-now { cursor: default; }
+.di-now:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 99px; }
+

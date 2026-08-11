@@ -1,0 +1,55 @@
+/* ══════════════════════════════════════════════════════════════════════
+   LANYARD
+
+   A full-screen overlay rather than the component's inline block, because
+   it is opened from the nav and dismissed from anywhere.
+   ══════════════════════════════════════════════════════════════════════ */
+.lanyard-wrapper {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(1);
+  transform-origin: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   OVERLAY — hangs over the live site
+
+   Deliberately NOT a modal: no scrim, no backdrop blur, no scroll lock.
+   The wrapper is click-through, and only the column the card occupies
+   takes pointer events, so everything outside it stays usable while the
+   card hangs there.
+   ══════════════════════════════════════════════════════════════════════ */
+.ly-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;          /* over the island, under the warning stack */
+  pointer-events: none;   /* the page underneath keeps working */
+  animation: lyIn 0.45s ease both;
+}
+@keyframes lyIn { from { opacity: 0; } }
+
+/* A narrow column on the right. Only this strip captures the pointer —
+   make it wider and you start stealing clicks from the page. */
+/* Full-viewport canvas. Anything smaller crops the card the moment it
+   swings past the container edge — which is a clipping problem, not a
+   physics one, so no amount of gravity or wall tuning fixes it.
+
+   The canvas is click-through; R3F receives its pointer events from #root
+   via eventSource, so the card drags anywhere on the page while the site
+   underneath stays completely usable. */
+.ly-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ly-stage .lanyard-wrapper { width: 100%; height: 100%; }
+.ly-stage canvas { touch-action: none; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ly-overlay { animation: none; }
+}
