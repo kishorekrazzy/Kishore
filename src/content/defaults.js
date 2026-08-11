@@ -23,7 +23,7 @@ export const DEFAULT_CONTENT = {
         stat2: { val: '>5 Yrs', label: 'Experience' },
         cta: 'View My Work',
         eyebrow: 'AI Editor · Visual Storyteller',
-        prose: 'Crafting cinematic narratives\nthrough the art of movement,\nrhythm, and sound design.',
+        prose: 'Crafting cinematic narrative through the art of movement, rhythm, and soul design, where algorithms dream and pixel become art in color grading, tuning raw footage into cinematic gold. Every frame tells its own color story.',
         micro: 'KishoreditX · 2026',
         headline: 'THE BEST\nCREATIVE\nIN THE WORLD',
       },
@@ -35,7 +35,7 @@ export const DEFAULT_CONTENT = {
         stat2: { val: '>10+', label: 'AI tools mastered' },
         cta: 'Explore AI Art',
         eyebrow: 'Machine Intelligence · 2026',
-        prose: 'Where algorithms dream and pixels become art.',
+        prose: 'Crafting cinematic narrative through the art of movement, rhythm, and soul design, where algorithms dream and pixel become art in color grading, tuning raw footage into cinematic gold. Every frame tells its own color story.',
         micro: '',
         headline: 'MACHINE\nMEETS\nIMAGINATION',
       },
@@ -47,7 +47,7 @@ export const DEFAULT_CONTENT = {
         stat2: { val: '>8 Yrs', label: 'Color expertise' },
         cta: 'See Color Work',
         eyebrow: 'Color Grading · Cinematic',
-        prose: 'Turning raw footage into\ncinematic gold. Every frame\ntells its own color story.',
+        prose: 'Crafting cinematic narrative through the art of movement, rhythm, and soul design, where algorithms dream and pixel become art in color grading, tuning raw footage into cinematic gold. Every frame tells its own color story.',
         micro: '',
         headline: 'CINEMATIC\nCOLOR\nSTORIES',
       },
@@ -59,7 +59,7 @@ export const DEFAULT_CONTENT = {
         stat2: { val: '>3 Yrs', label: 'Web development' },
         cta: 'View Web Work',
         eyebrow: 'Web Design · Development',
-        prose: 'Designing digital experiences\nthat look as good as\nthey perform.',
+        prose: 'Crafting cinematic narrative through the art of movement, rhythm, and soul design, where algorithms dream and pixel become art in color grading, tuning raw footage into cinematic gold. Every frame tells its own color story.',
         micro: '',
         headline: 'DIGITAL\nEXPERIENCES\nCRAFTED',
       },
@@ -178,6 +178,16 @@ export const DEFAULT_CONTENT = {
      The dashboard discovers these automatically; nothing here needs a
      SCHEMA entry. */
   images: {
+    // Edit Suite board — scattered card deck
+    deck: [
+      'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80',
+    ],
     // Warning stack — browser window plates
     warning: [
       'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=1200&q=80',
@@ -336,6 +346,7 @@ export const DEFAULT_CONTENT = {
 };
 
 export const IMAGE_GROUP_LABELS = {
+  'deck': 'Edit Suite board',
   'warning': 'Warning stack — windows',
   'aiHero': 'AI Images \u2014 hero strip',
   'aboutMe': 'About Me \u2014 gallery',

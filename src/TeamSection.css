@@ -163,40 +163,40 @@
 
 /* ── SECTION HEADER ─────────────────────────────────────────── */
 
-/* Laid out like the member block below it — title, then a rule beneath —
-   rather than a label with a line running off to the side. */
+/* Section label, sitting beside its rule — the same arrangement Bento and
+   Contact use for theirs. */
 .ts-section-header {
   position: absolute;
-  top: 40px;
+  top: 44px;
   left: 88px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 24px;
   z-index: 20;
 }
 
-/* Matched to the member name's treatment (.ts-role, clamp(2.2rem, 4vw,
-   4.4rem)) and kept a step under it, so the section header reads as the
-   same kind of type without outshouting the name beside it. */
+/* Sized with the other section names rather than as a display heading:
+   Bento's eyebrow is 0.58rem, About's 0.62rem, Contact's and Notes' 0.6rem.
+   The member name (.ts-role) is the big type in this section — the label
+   sits above it, not against it. */
 .ts-sh-title {
-  font-size: clamp(2rem, 3.8vw, 4rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.92;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--ink-3);
+  line-height: 1;
 }
 
 .ts-sh-line {
   height: 1px;
-  width: clamp(120px, 16vw, 220px);
+  width: 120px;
   flex: none;
-  background: rgba(var(--ink-rgb), 0.18);
+  background: rgba(var(--ink-rgb), 0.1);
 }
 
 @media (max-width: 960px) {
-  .ts-section-header { top: 28px; left: 28px; gap: 10px; }
+  .ts-section-header { top: 28px; left: 28px; }
 }
 
 /* ── INNER LAYOUT ─────────────────────────────────────────────── */

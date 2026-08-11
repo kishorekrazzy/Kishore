@@ -183,3 +183,12 @@
   caret-color: currentColor;
 }
 .trm-entry::selection { background: rgba(255, 255, 255, 0.22); }
+
+/* Warnings and accents for the richer command output. */
+.trm-warn   { color: #ff7b6b; padding-left: 4px; }
+.trm-accent { color: #7fd4ff; padding-left: 4px; }
+.trm-blank  { height: 0.5em; }
+
+/* An open question re-labels the prompt so it is obvious the terminal is
+   waiting on you rather than on a command. */
+.trm-prompt--ask { color: #ffd166; }

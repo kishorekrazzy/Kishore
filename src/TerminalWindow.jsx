@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import './TerminalWindow.css';
+import { useMusicPlayer } from './MusicContext';
 
 // ── Terminal session lines ────────────────────────────────────────────────────
 
@@ -72,26 +73,77 @@ function Line({ line }) {
   );
 }
 
-// ── Commands ──────────────────────────────────────────────────────────────────
-// The terminal used to be a still picture of a terminal. It takes input now,
-// because the admin panel is reached by typing `adminunlock` into it — an
-// unlisted door rather than a link anyone can find in the nav.
+// ── Content ───────────────────────────────────────────────────────────────────
+// The terminal used to be a still picture of a terminal. It takes input now:
+// some commands print, some genuinely drive the site (theme, music, routing),
+// and a few are doors you have to find.
 
 const PROMPT = 'kishore@Kishores-MacBook-Pro app-scaffold %';
 
-const HELP = [
-  { type: 'out', text: '' },
-  { type: 'ok',  text: '  Available commands' },
-  { type: 'out', text: '    help          this list' },
-  { type: 'out', text: '    whoami        who is running this' },
-  { type: 'out', text: '    ls            what is in here' },
-  { type: 'out', text: '    open <id>     about · video · room · ai · web · skills' },
-  { type: 'out', text: '    clear         wipe the scrollback' },
-  { type: 'out', text: '' },
+const PAGES = ['about', 'video', 'room', 'ai', 'web', 'skills'];
+const SECTIONS = {
+  home: '.hue-hero', about: '#about', team: '#team', work: '#work',
+  notes: '#notes', suite: '#suite', contact: '#contact',
+};
+
+/* The wallet is meant to be found, not advertised. `ls` hides it, `ls -a`
+   shows it, `cat .wallet.key` gives the passphrase, `wallet` asks for it. */
+const WALLET_PASS = 'finalcut';
+
+const FILES = {
+  'readme.md':    ['# KishoreditX', 'Cuts, colour and code. Everything here was made by hand', 'or by a machine I told exactly what to do.'],
+  'stack.txt':    ['premiere · resolve · after effects', 'comfyui · midjourney · stable diffusion', 'react · three · gsap'],
+  '.wallet.key':  ['-----BEGIN FRAME WALLET KEY-----', 'passphrase: finalcut', '-----END FRAME WALLET KEY-----'],
+  '.secrets':     ['every timeline is 40% waiting for a render', 'the best cut is the one nobody notices'],
+};
+
+const FORTUNES = [
+  'Cut on motion. Always cut on motion.',
+  'If the edit works muted, the sound design is a gift, not a crutch.',
+  'The audience forgives a soft frame. Never a soft pace.',
+  'Colour is the last 10% that everyone notices.',
+  'Render early. Render often. Render before you are tired.',
+  'A good cut is invisible. A great cut is inevitable.',
 ];
 
-const PAGES = ['about', 'video', 'room', 'ai', 'web', 'skills'];
+const ORACLE = [
+  'Ship it.', 'Cut 8 frames off the head.', 'That transition is doing too much.',
+  'Sleep on it, then delete the first 20 seconds.', 'The client will ask for it in blue.',
+  'Yes — but grade it warmer.', 'No. And you already knew that.',
+];
 
+const NEOFETCH = [
+  { type: 'accent', text: '        ▄▄▄▄▄▄▄        kish@kishoreditx' },
+  { type: 'accent', text: '     ▄█████████▄      ─────────────────' },
+  { type: 'out',    text: '    ███  ▀█▀  ███     OS      Personal OS 2026' },
+  { type: 'out',    text: '    ███   █   ███     Shell   zsh 5.9' },
+  { type: 'out',    text: '    ███  ▄█▄  ███     Role    AI Editor · Colourist' },
+  { type: 'accent', text: '     ▀█████████▀      Uptime  5 years, 200+ projects' },
+  { type: 'accent', text: '        ▀▀▀▀▀▀▀        Render  94% · 4K ProRes' },
+];
+
+const HELP = [
+  { type: 'blank' },
+  { type: 'ok',   text: '  SITE' },
+  { type: 'out',  text: '    open <id>       about · video · room · ai · web · skills' },
+  { type: 'out',  text: '    goto <section>  home · about · team · work · notes · suite · contact' },
+  { type: 'out',  text: '    theme [d|l]     switch the colour theme' },
+  { type: 'out',  text: '    music <cmd>     play · pause · next · prev · now' },
+  { type: 'out',  text: '    warn            trigger the security notice' },
+  { type: 'blank' },
+  { type: 'ok',   text: '  FILES' },
+  { type: 'out',  text: '    ls [-a]         list files (some are hidden)' },
+  { type: 'out',  text: '    cat <file>      read one' },
+  { type: 'blank' },
+  { type: 'ok',   text: '  TOYS' },
+  { type: 'out',  text: '    neofetch  matrix  render  scan  coffee  fortune' },
+  { type: 'out',  text: '    ask <question>  echo <text>  date  history' },
+  { type: 'blank' },
+  { type: 'dim',  text: '  Some commands are not listed. Try looking around.' },
+  { type: 'blank' },
+];
+
+// ── Window ────────────────────────────────────────────────────────────────────
 // ── Window ────────────────────────────────────────────────────────────────────
 
 function TerminalWindow({ visible, onClose }) {
@@ -99,47 +151,267 @@ function TerminalWindow({ visible, onClose }) {
   const inputRef = useRef(null);
   const [history, setHistory] = useState([]);
   const [value, setValue]     = useState('');
+  /* When a command needs an answer it parks a handler here; Enter routes to
+     it instead of the parser until it resolves. That is what makes `wallet`
+     and `hire` conversations rather than one-shot prints. */
+  const [ask, setAsk] = useState(null);
 
-  const write = (lines) => setHistory((h) => [...h, ...lines]);
+  const aliveRef  = useRef(true);
+  const typedRef  = useRef([]);          // command history for `history`
+  const unlockRef = useRef(false);       // wallet stays open once opened
+  const music     = useMusicPlayer();
 
-  const run = (raw) => {
-    // `-adminunlock`, `--adminunlock` and `adminunlock` all work.
+  useEffect(() => () => { aliveRef.current = false; }, []);
+
+  const write = useCallback((lines) => {
+    if (!aliveRef.current) return;
+    setHistory((h) => [...h, ...(Array.isArray(lines) ? lines : [lines])]);
+  }, []);
+
+  // Prints one line at a time so long output arrives like a real process.
+  const typeOut = useCallback((lines, step = 90) => {
+    lines.forEach((line, i) => {
+      setTimeout(() => write(line), i * step);
+    });
+    return lines.length * step;
+  }, [write]);
+
+  const run = useCallback((raw) => {
     const input = raw.trim();
     const [cmd, ...args] = input.replace(/^-+/, '').toLowerCase().split(/\s+/);
+    const rest = input.replace(/^\s*\S+\s*/, '');
     write([{ type: 'cmd', prompt: PROMPT, text: input }]);
-    if (!cmd) return;
+    if (!input) return;
+    typedRef.current.push(input);
 
-    if (cmd === 'adminunlock') {
-      write([
-        { type: 'ok',  text: '  ✔ admin unlocked — opening dashboard' },
-        { type: 'dim', text: '  sign in with your Firebase account to continue' },
-      ]);
-      // Let the line paint before the route swap tears the window down.
-      setTimeout(() => { window.location.hash = '#/admin'; onClose(); }, 420);
-      return;
-    }
-    if (cmd === 'help' || cmd === 'h')  return write(HELP);
-    if (cmd === 'clear' || cmd === 'c') return setHistory([{ type: 'clear' }]);
-    if (cmd === 'whoami') return write([{ type: 'out', text: '  kish — AI editor, visual storyteller' }]);
-    if (cmd === 'ls') return write([
-      { type: 'out', text: '  hero/  about/  work/  notes/  personal-os/  contact/' },
-    ]);
-    if (cmd === 'open') {
-      const id = args[0];
-      if (!PAGES.includes(id)) {
-        return write([{ type: 'out', text: `  open: unknown page '${args[0] || ''}' — try ${PAGES.join(', ')}` }]);
+    const say  = (t, type = 'out') => write([{ type, text: '  ' + t }]);
+    const fail = (t) => say(t, 'warn');
+
+    switch (cmd) {
+      // ── the unlisted door ──
+      case 'adminunlock':
+        say('✔ admin unlocked — opening dashboard', 'ok');
+        say('sign in with your Firebase account to continue', 'dim');
+        setTimeout(() => { window.location.hash = '#/admin'; onClose(); }, 420);
+        return;
+
+      case 'help': case 'h': return write(HELP);
+      case 'clear': case 'c': return setHistory([{ type: 'clear' }]);
+      case 'exit': case 'quit': say('closing…', 'dim'); return setTimeout(onClose, 300);
+
+      case 'whoami':
+        return write([
+          { type: 'out',  text: '  kish — AI editor, colourist, visual storyteller' },
+          { type: 'dim',  text: '  chennai · ist · open for work' },
+        ]);
+
+      case 'neofetch': return typeOut(NEOFETCH, 70);
+      case 'date':     return say(new Date().toString());
+      case 'echo':     return say(rest || '');
+      case 'fortune':  return say(FORTUNES[Math.floor(Math.random() * FORTUNES.length)], 'accent');
+
+      case 'ask': case 'oracle':
+        if (!rest) return fail('ask what? try: ask should I cut this scene');
+        say('…consulting the timeline gods', 'dim');
+        setTimeout(() => say(ORACLE[Math.floor(Math.random() * ORACLE.length)], 'accent'), 700);
+        return;
+
+      case 'history':
+        return write(typedRef.current.length
+          ? typedRef.current.map((c, i) => ({ type: 'out', text: `  ${String(i + 1).padStart(3)}  ${c}` }))
+          : [{ type: 'dim', text: '  nothing yet' }]);
+
+      // ── files ──
+      case 'ls': {
+        const all = args.includes('a') || args.includes('-a') || rest.includes('-a');
+        const shown = Object.keys(FILES).filter((f) => all || !f.startsWith('.'));
+        write([{ type: 'out', text: '  hero/  about/  work/  notes/  personal-os/  contact/' }]);
+        write([{ type: all ? 'accent' : 'out', text: '  ' + shown.join('   ') }]);
+        if (!all) write([{ type: 'dim', text: '  (2 hidden — ls -a)' }]);
+        return;
       }
-      write([{ type: 'ok', text: `  ✔ opening ${id}` }]);
-      setTimeout(() => { window.location.hash = `#/${id}`; onClose(); }, 300);
-      return;
+      case 'cat': {
+        const f = rest.trim().toLowerCase();
+        if (!f) return fail('cat what?');
+        if (!FILES[f]) return fail(`cat: ${f}: No such file or directory`);
+        return write(FILES[f].map((l) => ({ type: f.startsWith('.') ? 'accent' : 'out', text: '  ' + l })));
+      }
+
+      // ── the hidden wallet ──
+      case 'wallet':
+        if (unlockRef.current) return showWallet();
+        say('frame wallet · locked', 'warn');
+        setAsk({
+          label: 'passphrase:',
+          mask: true,
+          onAnswer: (a) => {
+            if (a.trim().toLowerCase() === WALLET_PASS) {
+              unlockRef.current = true;
+              say('✔ unlocked', 'ok');
+              setTimeout(showWallet, 260);
+            } else {
+              fail('✖ denied — the key is lying around here somewhere');
+            }
+          },
+        });
+        return;
+
+      // ── conversational brief ──
+      case 'hire': {
+        const brief = {};
+        const q3 = () => setAsk({ label: 'budget range?', onAnswer: (a) => {
+          brief.budget = a;
+          write([
+            { type: 'blank' },
+            { type: 'ok',  text: '  ── brief captured ──' },
+            { type: 'out', text: `  name    ${brief.name}` },
+            { type: 'out', text: `  project ${brief.project}` },
+            { type: 'out', text: `  budget  ${brief.budget}` },
+            { type: 'dim', text: '  opening the contact form so you can send it…' },
+          ]);
+          setTimeout(() => { goto('contact'); onClose(); }, 900);
+        } });
+        const q2 = () => setAsk({ label: 'what are you making?', onAnswer: (a) => { brief.project = a; q3(); } });
+        say('let us take a brief. three questions.', 'ok');
+        setAsk({ label: 'your name?', onAnswer: (a) => { brief.name = a; q2(); } });
+        return;
+      }
+
+      // ── things that actually drive the site ──
+      case 'theme': {
+        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = ['dark', 'light'].includes(args[0]) ? args[0]
+          : args[0] === 'd' ? 'dark' : args[0] === 'l' ? 'light'
+          : cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('kish.theme', next); } catch { /* private mode */ }
+        return say(`theme → ${next}`, 'ok');
+      }
+
+      case 'music': {
+        const sub = args[0] || 'now';
+        if (sub === 'play')  { music.setPlaying(true);  return say(`▶ ${music.song?.title || 'playing'}`, 'ok'); }
+        if (sub === 'pause') { music.setPlaying(false); return say('⏸ paused', 'ok'); }
+        if (sub === 'next')  { music.next(); return say('⏭ next track', 'ok'); }
+        if (sub === 'prev')  { music.prev(); return say('⏮ previous track', 'ok'); }
+        return say(`♪ ${music.song?.title || '—'} — ${music.song?.artist || ''}${music.playing ? ' (playing)' : ' (paused)'}`);
+      }
+
+      case 'open': {
+        const id = args[0];
+        if (!PAGES.includes(id)) return fail(`open: unknown page '${args[0] || ''}' — try ${PAGES.join(', ')}`);
+        say(`✔ opening ${id}`, 'ok');
+        setTimeout(() => { window.location.hash = `#/${id}`; onClose(); }, 300);
+        return;
+      }
+
+      case 'goto': {
+        const id = args[0];
+        if (!SECTIONS[id]) return fail(`goto: unknown section — try ${Object.keys(SECTIONS).join(', ')}`);
+        say(`↓ ${id}`, 'ok');
+        setTimeout(() => { goto(id); onClose(); }, 300);
+        return;
+      }
+
+      case 'warn':
+        say('⚠ raising security notice', 'warn');
+        setTimeout(() => { window.dispatchEvent(new CustomEvent('kish:warn')); onClose(); }, 350);
+        return;
+
+      // ── toys ──
+      case 'matrix': {
+        const glyphs = 'アイウエオカキクケコｱｲｳ01<>/\\|=+*';
+        const rows = Array.from({ length: 12 }, () =>
+          ({ type: 'accent', text: '  ' + Array.from({ length: 54 }, () => glyphs[Math.floor(Math.random() * glyphs.length)]).join('') }));
+        typeOut(rows, 65);
+        setTimeout(() => say('wake up, editor.', 'ok'), rows.length * 65 + 200);
+        return;
+      }
+
+      case 'render': {
+        const name = rest || 'GOLDEN_HOUR_v07';
+        const frames = [0, 12, 28, 41, 55, 63, 78, 89, 96, 100];
+        say(`rendering ${name}.mov · 4K ProRes 422`, 'dim');
+        frames.forEach((pct, i) => setTimeout(() => {
+          const filled = Math.round(pct / 4);
+          write([{ type: pct === 100 ? 'ok' : 'out',
+                   text: `  [${'█'.repeat(filled)}${'░'.repeat(25 - filled)}] ${String(pct).padStart(3)}%` }]);
+          if (pct === 100) write([{ type: 'ok', text: '  ✔ done — 00:02:14:06 written to /exports' }]);
+        }, 260 + i * 220));
+        return;
+      }
+
+      case 'scan': {
+        const found = [
+          { type: 'out', text: '  scanning portfolio…' },
+          { type: 'ok',  text: '  ✔ 122 images catalogued' },
+          { type: 'ok',  text: '  ✔ 9 sections responding' },
+          { type: 'warn',text: '  ! 1 nav link points at #projects, which does not exist' },
+          { type: 'ok',  text: '  ✔ 0 unhandled errors' },
+          { type: 'dim', text: '  scan complete in 1.4s' },
+        ];
+        return typeOut(found, 260);
+      }
+
+      case 'coffee':
+        return typeOut([
+          { type: 'dim',    text: '        ( (' },
+          { type: 'dim',    text: '         ) )' },
+          { type: 'accent', text: '      ........' },
+          { type: 'accent', text: '      |      |]' },
+          { type: 'accent', text: '      \\      /' },
+          { type: 'accent', text: '       `----\'' },
+          { type: 'ok',     text: '  brewed. now go finish the cut.' },
+        ], 130);
+
+      // ── jokes ──
+      case 'sudo':
+        return fail(`kish is not in the sudoers file. This incident has been reported.`);
+      case 'rm':
+        if (rest.includes('/')) {
+          say('rm: refusing to remove the entire portfolio', 'warn');
+          return say('nice try', 'dim');
+        }
+        return fail('rm: missing operand');
+
+      default:
+        return fail(`zsh: command not found: ${cmd}`);
     }
-    write([{ type: 'out', text: `  zsh: command not found: ${cmd}` }]);
-  };
+
+    function goto(id) {
+      const sc = document.getElementById('main-scroll');
+      const el = document.querySelector(SECTIONS[id]);
+      if (sc && el) sc.scrollTop += el.getBoundingClientRect().top;
+    }
+
+    function showWallet() {
+      write([
+        { type: 'blank' },
+        { type: 'accent', text: '  ┌─ FRAME WALLET ─────────────────────────┐' },
+        { type: 'accent', text: '  │  balance      1,284,900 frames         │' },
+        { type: 'accent', text: '  │  delivered      200 projects           │' },
+        { type: 'accent', text: '  │  reach           1.2M views            │' },
+        { type: 'accent', text: '  │  coffee        ∞ (overdrawn)           │' },
+        { type: 'accent', text: '  └────────────────────────────────────────┘' },
+        { type: 'dim',    text: '  every frame in here was paid for in hours.' },
+        { type: 'blank' },
+      ]);
+    }
+  }, [write, typeOut, onClose, music]);
 
   const onKeyDown = (e) => {
     if (e.key !== 'Enter') return;
-    run(value);
+    const v = value;
     setValue('');
+    if (ask) {
+      // Echo the answer, masked if the question asked for it.
+      write([{ type: 'cmd', prompt: ask.label, text: ask.mask ? '•'.repeat(v.length) : v }]);
+      const { onAnswer } = ask;
+      setAsk(null);
+      onAnswer(v);
+      return;
+    }
+    run(v);
   };
 
   // Stick to the bottom as output arrives.
@@ -206,11 +478,12 @@ function TerminalWindow({ visible, onClose }) {
 
           {/* Live prompt */}
           <div className="trm-cmd">
-            <span className="trm-prompt">{PROMPT}</span>
+            <span className={`trm-prompt${ask ? ' trm-prompt--ask' : ''}`}>{ask ? ask.label : PROMPT}</span>
             {' '}
             <input
               ref={inputRef}
               className="trm-entry"
+              type={ask?.mask ? 'password' : 'text'}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={onKeyDown}

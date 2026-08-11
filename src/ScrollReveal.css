@@ -1,8 +1,11 @@
-.scroll-reveal {
+/* :where() gives these zero specificity, so any host class the call site
+   passes in wins on its own — which is what the sr-plain variant below was
+   trying, and failing, to arrange. */
+:where(.scroll-reveal) {
   margin: 20px 0;
 }
 
-.scroll-reveal-text {
+:where(.scroll-reveal-text) {
   font-size: clamp(1.6rem, 4vw, 3rem);
   line-height: 1.5;
   font-weight: 600;
@@ -13,21 +16,20 @@
 }
 
 /* ── Inheriting variant ──
-   The component ships as an <h2> with its own type scale and margin. Every
-   place it is used here already has settled typography, so this variant
-   strips the component's opinions and lets the host rule win. Applied via
-   containerClassName / textClassName at each call site. */
-.sr-plain,
-.sr-plain .scroll-reveal-text,
-.scroll-reveal-text.sr-plain {
+   The component ships as an <h2> with its own type scale and margin, and
+   every call site already has settled typography, so this strips the
+   component's margin and lets the host class do the rest.
+
+   It used to declare font-size/weight/colour/text-transform as `inherit`
+   at .scroll-reveal-text.sr-plain — specificity 0,2,0 — which beat every
+   host class at 0,1,0 and did the exact opposite of what it intended.
+   .ts-role was collapsing from 57px bold uppercase to 16px regular
+   sentence case. With the base rules above now at zero specificity there
+   is nothing left to strip: the host simply wins. */
+:where(.sr-plain),
+:where(.sr-plain .scroll-reveal-text),
+:where(.scroll-reveal-text.sr-plain) {
   margin: 0;
-  font-size: inherit;
-  line-height: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  color: inherit;
-  font-family: inherit;
-  text-transform: inherit;
 }
 
 /* Blur on many words at once is expensive; hint the compositor and drop it

@@ -28,6 +28,7 @@ import { CalculatorWindowManager } from './CalculatorWindow';
 import WidgetsSection from './WidgetsSection';
 import NotesSection from './NotesSection';
 import ContactSection from './ContactSection';
+import DeckSection from './DeckSection';
 import DynamicIsland from './DynamicIsland';
 import WarpText from './WarpText';
 import ErrorBoundary from './ErrorBoundary';
@@ -346,11 +347,6 @@ export default function App() {
   const [showWarning, setShowWarning] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [fading, setFading] = useState(false);
-  const rafRef = useRef(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const smoothRef = useRef({ x: 0, y: 0 });
-  const bgRef = useRef(null);
-  const heroRef = useRef(null);
   const scrollRef = useRef(null);
 
   const anySubPage = showAboutMe || showVideoPage || showRoomPage || showAIImages || showWebsite || showSkills;
@@ -363,31 +359,10 @@ export default function App() {
     setTimeout(() => { setActiveIdx(idx); setFading(false); }, 280);
   }, [activeIdx, fading]);
 
-  const handleMouseMove = useCallback((e) => {
-    mouseRef.current = {
-      x: (e.clientX / window.innerWidth) * 2 - 1,
-      y: (e.clientY / window.innerHeight) * 2 - 1,
-    };
-  }, []);
-
-  const animateParallax = useCallback(() => {
-    const t = mouseRef.current;
-    const s = smoothRef.current;
-    s.x += (t.x - s.x) * 0.04;
-    s.y += (t.y - s.y) * 0.04;
-    if (bgRef.current) bgRef.current.style.transform = `scale(1.08) translate(${s.x * -18}px, ${s.y * -18}px)`;
-    if (heroRef.current) heroRef.current.style.transform = `translate(${s.x * 14}px, ${s.y * 14}px)`;
-    rafRef.current = requestAnimationFrame(animateParallax);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    rafRef.current = requestAnimationFrame(animateParallax);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, [handleMouseMove, animateParallax]);
+  /* The hero used to track the cursor: a mousemove listener fed a rAF loop
+     that translated the plate wrapper and the hero copy a few pixels each
+     frame. Removed on request — every other hero effect is untouched. The
+     plate keeps its own scale and Ken Burns drift from CSS. */
 
   // Dock icon → page navigation
   useEffect(() => {
@@ -418,6 +393,13 @@ export default function App() {
       history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, [page]);
+
+  // The terminal's `warn` command raises the same overlay the island does.
+  useEffect(() => {
+    const open = () => setShowWarning(true);
+    window.addEventListener('kish:warn', open);
+    return () => window.removeEventListener('kish:warn', open);
+  }, []);
 
   // Back / forward, and hand-edited URLs.
   useEffect(() => {
@@ -551,7 +533,7 @@ export default function App() {
         <div className="hue-hero" style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
 
           {/* Stacked video backgrounds — data-section drives per-section CSS filter */}
-          <div className="video-bg-wrap" ref={bgRef} data-section={activeSection.id}>
+          <div className="video-bg-wrap" data-section={activeSection.id}>
             {/* Keyed by position, not by URL. The plates are CMS-editable
                 now, so two sections can legitimately share an image — and a
                 duplicate key makes React omit or duplicate a plate. The list
@@ -588,7 +570,7 @@ export default function App() {
           </ErrorBoundary>
 
           {/* Hero text — moves with parallax */}
-          <main className="hero" ref={heroRef} id="home">
+          <main className="hero" id="home">
             <HeroLayout section={activeSection} fading={fading} />
           </main>
 
@@ -648,6 +630,9 @@ export default function App() {
             onAboutClick={() => setShowAboutMe(true)}
             onSkillsClick={() => setShowSkills(true)}
           />
+        </ErrorBoundary>
+        <ErrorBoundary name="Edit Suite">
+          <DeckSection />
         </ErrorBoundary>
         <ErrorBoundary name="Contact">
           <ContactSection />
