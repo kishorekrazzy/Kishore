@@ -283,3 +283,41 @@ The dock Terminal takes input now. `help` lists everything; the useful ones:
 | `open <id>` | jumps to a sub-page — `about`, `video`, `room`, `ai`, `web`, `skills` |
 | `clear` | wipes the scrollback |
 | `help`, `whoami`, `ls` | the rest |
+
+---
+
+## Deploying to Netlify
+
+`netlify.toml` sets the build (`npm run build` → `dist`) and the functions
+directory. Two things are not in the repository and have to be set in the
+Netlify UI, under **Site configuration → Environment variables**:
+
+| Name | Value | Why |
+|---|---|---|
+| `OPENROUTER_API_KEY` | your OpenRouter key | The AI chat. **No `VITE_` prefix** |
+| `VITE_OPENROUTER_MODEL` | optional model slug | Overrides the head of the fallback chain |
+
+### Why `OPENROUTER_API_KEY` and not `VITE_OPENROUTER_API_KEY`
+
+Vite inlines every `VITE_*` variable into the client bundle at build time.
+Setting the key that way would work — and would also publish it in the
+JavaScript for anyone to read, whatever the hosting dashboard calls the
+field. The chat instead goes through `netlify/functions/chat.mjs`, which
+reads the key from `process.env` on Netlify's servers. The browser only
+ever talks to `/api/chat`.
+
+`src/services/openrouter.js` reads `.env.local` only in dev builds, so a
+production build cannot carry the key even if the file is present.
+
+### If the chat says it is not configured
+
+That message means the function is deployed and running but
+`OPENROUTER_API_KEY` is unset. Add it, then **redeploy** — environment
+variables are read at request time by the function, but a redeploy is the
+reliable way to be sure the new value is picked up.
+
+### Working locally
+
+`npm run dev` has no functions running, so `/api/chat` 404s and the client
+falls back to `VITE_OPENROUTER_API_KEY` from `.env.local`. To exercise the
+real function locally instead, use `netlify dev`.

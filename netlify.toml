@@ -1,0 +1,38 @@
+# ══════════════════════════════════════════════════════════════════════
+#  Netlify
+#
+#  The chat key lives in Netlify's environment as OPENROUTER_API_KEY —
+#  no VITE_ prefix, deliberately. Vite inlines every VITE_* variable into
+#  the client bundle at build time, so a key set that way would be readable
+#  by anyone who opens the deployed JavaScript. netlify/functions/chat.mjs
+#  reads it server-side instead.
+# ══════════════════════════════════════════════════════════════════════
+
+[build]
+  command   = "npm run build"
+  publish   = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  # Web Streams and fetch in the functions runtime.
+  NODE_VERSION = "20"
+
+# The app routes on the hash (#/admin), so nothing here needs a rewrite —
+# this is a guard for any real path someone types or links to.
+# Function routes are matched before redirects, so /api/chat is unaffected.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Long-lived caching for fingerprinted build output only. index.html must
+# stay uncached or a deploy leaves people on the previous bundle.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

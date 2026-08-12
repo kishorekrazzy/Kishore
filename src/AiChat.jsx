@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  ImageIcon, Workflow, MonitorIcon, SendIcon, XIcon,
+  ImageIcon, Workflow, MonitorIcon, SendIcon,
   LoaderIcon, Sparkles, Command, Paperclip,
 } from 'lucide-react';
 // Aliased to uppercase: without the React ESLint plugin, JSX member usage
 // like <Motion.div> is not counted as a reference.
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { askOpenRouter, hasKey } from './services/openrouter';
+import { askOpenRouter } from './services/openrouter';
 import { useContent } from './content/store';
 import { KISHORE_PERSONA } from './services/persona';
 import { lazy, Suspense } from 'react';
@@ -294,12 +294,6 @@ export default function AiChat({ onClose }) {
           </Suspense>
         </div>
 
-        {!hasKey() && (
-          <p className="aic-warn">
-            <XIcon size={13} /> No API key found — add <code>VITE_OPENROUTER_API_KEY</code> to
-            <code>.env.local</code> and restart the dev server.
-          </p>
-        )}
       </Motion.div>
     </div>
   );
