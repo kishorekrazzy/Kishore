@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ScrollReveal from './ScrollReveal';
+import { useContent } from './content/store';
 import './NotesSection.css';
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -14,7 +15,7 @@ import './NotesSection.css';
    build step, no markdown parser to keep alive.
    ══════════════════════════════════════════════════════════════════════ */
 
-const NOTES = [
+const DEFAULT_NOTES = [
   {
     id: 'grade-not-filter',
     kicker: 'Colour',
@@ -125,6 +126,28 @@ function Reader({ note, onClose, onStep }) {
 }
 
 export default function NotesSection() {
+  /* CMS text over the defaults, per post and per key. `body` is stored as
+     one string with blank lines between paragraphs — prose belongs in a
+     textarea, not in four numbered inputs — and is split back out here. */
+  const head  = useContent('notes', {});
+  const items = useContent('notes.items', null);
+  const NOTES = DEFAULT_NOTES.map((n, i) => {
+    const c = items?.[i];
+    if (!c) return n;
+    const body = typeof c.body === 'string'
+      ? c.body.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean)
+      : null;
+    return {
+      ...n,
+      kicker:  c.kicker  || n.kicker,
+      title:   c.title   || n.title,
+      date:    c.date    || n.date,
+      read:    c.read    || n.read,
+      excerpt: c.excerpt || n.excerpt,
+      body:    body?.length ? body : n.body,
+    };
+  });
+
   const [openId, setOpenId] = useState(null);
   const sectionRef = useRef(null);
   const note = openId ? NOTES.find((n) => n.id === openId) : null;
@@ -140,22 +163,22 @@ export default function NotesSection() {
     return () => obs.disconnect();
   }, []);
 
-  const step = useCallback((dir) => {
+  const step = (dir) => {
     setOpenId((cur) => {
       const i = NOTES.findIndex((n) => n.id === cur);
       return NOTES[(i + dir + NOTES.length) % NOTES.length].id;
     });
-  }, []);
+  };
 
   return (
     <section ref={sectionRef} className="nt-section" id="notes" aria-label="Notes and process writing">
       <div className="nt-head">
         <div className="nt-head-row">
           <div className="nt-head-line" />
-          <span className="nt-head-eyebrow">Notes</span>
+          <span className="nt-head-eyebrow">{head.eyebrow || 'Notes'}</span>
           <div className="nt-head-line" />
         </div>
-        <h2 className="nt-title">Working <span className="nt-title-accent">notes</span></h2>
+        <h2 className="nt-title">{head.title || 'Working'} <span className="nt-title-accent">{head.titleAccent || 'notes'}</span></h2>
         <ScrollReveal
           as="div"
           containerClassName="sr-plain"
@@ -164,7 +187,7 @@ export default function NotesSection() {
           baseRotation={0}
           blurStrength={5}
         >
-          Short pieces on colour, cutting, prompting and weight.
+          {head.sub || 'Short pieces on colour, cutting, prompting and weight.'}
         </ScrollReveal>
       </div>
 

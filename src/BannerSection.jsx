@@ -9,7 +9,10 @@ const DEFAULT_BANNERS = [
 ];
 
 export default function BannerSection() {
-  const BANNERS = withImages(DEFAULT_BANNERS, useContent('images.banners', null), 'src');
+  const heading = useContent('banners.heading', 'Selected Work');
+  const labels  = useContent('banners.items', null);
+  const BANNERS = withImages(DEFAULT_BANNERS, useContent('images.banners', null), 'src')
+    .map((b, i) => ({ ...b, label: labels?.[i]?.label || b.label }));
   // Duplicated for the seamless infinite loop. Derived here rather than at
   // module scope: BANNERS is a hook result now, so a module-level constant
   // built from it would run before the hook ever does.
@@ -29,7 +32,7 @@ export default function BannerSection() {
       {/* Section label */}
       <div className="bn-header">
         <div className="bn-header-line" />
-        <span className="bn-header-label">Selected Work</span>
+        <span className="bn-header-label">{heading}</span>
         <div className="bn-header-line" />
       </div>
 

@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import './AdminDashboard.css';
-import { DEFAULT_CONTENT, SCHEMA, IMAGE_GROUP_LABELS } from '../content/defaults';
-import { CONTENT_DOC, getPath, setPath, mergeContent, findImagePaths, describeImagePath } from '../content/store';
+import { DEFAULT_CONTENT, SCHEMA } from '../content/defaults';
+import { CONTENT_DOC, getPath, setPath, mergeContent, buildMediaGroups } from '../content/store';
 
 /* ══════════════════════════════════════════════════════════════════════
    ADMIN DASHBOARD
@@ -78,10 +78,10 @@ function LoginScreen({ onSignedIn }) {
   };
 
   return (
-    <div className="adm-login">
-      <form className="adm-login-card" onSubmit={submit}>
+    <div className="ad-login">
+      <form className="ad-login-card" onSubmit={submit}>
         <h1>Site admin</h1>
-        <p className="adm-login-sub">Sign in to edit the portfolio content.</p>
+        <p className="ad-login-sub">Sign in to edit the portfolio content.</p>
 
         <label htmlFor="adm-email">Email</label>
         <input id="adm-email" type="email" value={email} autoComplete="username"
@@ -91,7 +91,7 @@ function LoginScreen({ onSignedIn }) {
         <input id="adm-pass" type="password" value={pass} autoComplete="current-password"
           onChange={(e) => setPass(e.target.value)} required />
 
-        {error && <p className="adm-error" role="alert">{error}</p>}
+        {error && <p className="ad-error" role="alert">{error}</p>}
 
         <button type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
       </form>
@@ -100,39 +100,117 @@ function LoginScreen({ onSignedIn }) {
 }
 
 // ── One editable field ───────────────────────────────────────────────
+/* A row, not a card. Label and description on the left, the control on
+   the right — the System Settings pattern. Rows sit in a grouped inset
+   list, so scanning down a column of labels is the primary way you find
+   something rather than reading a grid of boxes. */
+/* Hoisted: defining this inside Field would mint a new component type on
+   every render, which remounts the inputs and drops focus mid-typing. */
+function Row({ id, field, dirty, wide, onReset, children }) {
+  return (
+    <div className={`ad-row${dirty ? ' is-dirty' : ''}${wide ? ' ad-row--wide' : ''}`}>
+      <div className="ad-row-lead">
+        <label htmlFor={id}>{field.label}</label>
+        {field.hint && <p>{field.hint}</p>}
+        {dirty && <button type="button" className="ad-reset" onClick={onReset}>Reset</button>}
+      </div>
+      <div className="ad-row-ctl">{children}</div>
+    </div>
+  );
+}
+
 function Field({ field, value, defaultValue, onChange }) {
   const dirty = value !== defaultValue;
   const id = `f-${field.path.replace(/\./g, '-')}`;
+  const reset = () => onChange(field.path, defaultValue);
 
-  return (
-    <div className={`adm-field${dirty ? ' adm-field--dirty' : ''}`}>
-      <div className="adm-field-head">
-        <label htmlFor={id}>{field.label}</label>
+  if (field.type === 'hue') {
+    const h = Number(value ?? 0);
+    return (
+      <Row id={id} field={field} dirty={dirty} onReset={reset}>
+        <span className="ad-swatch" style={{ background: `oklch(75% 0.18 ${h})` }} />
+        <input
+          id={id} className="ad-hue" type="range" min={0} max={360} step={1}
+          value={h} onChange={(e) => onChange(field.path, Number(e.target.value))}
+        />
+        <input
+          className="ad-num" type="number" min={0} max={360}
+          value={h} onChange={(e) => onChange(field.path, Number(e.target.value))}
+        />
+      </Row>
+    );
+  }
+
+  if (field.type === 'range') {
+    const v = Number(value ?? 0);
+    return (
+      <Row id={id} field={field} dirty={dirty} onReset={reset}>
+        <input
+          id={id} className="ad-range" type="range"
+          min={field.min} max={field.max} step={field.step ?? 1}
+          value={v} onChange={(e) => onChange(field.path, Number(e.target.value))}
+        />
+        <span className="ad-val">{v}{field.unit || ''}</span>
+      </Row>
+    );
+  }
+
+  if (field.type === 'color') {
+    return (
+      <Row id={id} field={field} dirty={dirty} onReset={reset}>
+        <input className="ad-color" type="color" value={value || '#000000'}
+               onChange={(e) => onChange(field.path, e.target.value)} />
+        <input id={id} className="ad-input ad-input--mono" type="text" value={value ?? ''}
+               onChange={(e) => onChange(field.path, e.target.value)} />
+      </Row>
+    );
+  }
+
+  /* Image rows lead with the thumbnail so you identify the picture by
+     sight, and show the file name rather than the whole URL — the full
+     address is in the input beneath, which is where you edit it. */
+  if (field.type === 'image') {
+    const file = String(value || '').split('/').pop()?.split('?')[0] || '';
+    return (
+      <div className={`ad-row ad-row--media${dirty ? ' is-dirty' : ''}`}>
+        <span className="ad-thumb">
+          {value
+            ? <img src={value} alt="" loading="lazy" onError={(e) => { e.currentTarget.dataset.broken = 'true'; }} />
+            : <i />}
+        </span>
+        <div className="ad-media-body">
+          <div className="ad-media-head">
+            <label htmlFor={id}>{field.label}</label>
+            <span className="ad-file" title={value || ''}>{file || 'not set'}</span>
+          </div>
+          <input id={id} className="ad-input ad-input--mono" type="text" value={value ?? ''}
+                 placeholder="https://…"
+                 onChange={(e) => onChange(field.path, e.target.value)} />
+          {field.hint && <p className="ad-media-hint">{field.hint}</p>}
+        </div>
         {dirty && (
-          <button type="button" className="adm-revert" onClick={() => onChange(field.path, defaultValue)}>
-            revert
+          <button type="button" className="ad-reset ad-reset--media" onClick={() => onChange(field.path, defaultValue)}>
+            Reset
           </button>
         )}
       </div>
+    );
+  }
 
-      {field.type === 'multiline' ? (
-        <textarea id={id} rows={3} value={value ?? ''} onChange={(e) => onChange(field.path, e.target.value)} />
-      ) : (
-        <input id={id} type="text" value={value ?? ''} onChange={(e) => onChange(field.path, e.target.value)} />
-      )}
+  if (field.type === 'multiline') {
+    return (
+      <Row id={id} field={field} dirty={dirty} onReset={reset} wide>
+        <textarea id={id} className="ad-input" rows={3} value={value ?? ''}
+                  onChange={(e) => onChange(field.path, e.target.value)} />
+      </Row>
+    );
+  }
 
-      {field.hint && <p className="adm-hint">{field.hint}</p>}
-
-      {field.type === 'image' && (
-        <div className="adm-preview">
-          {value
-            ? <img src={value} alt="" loading="lazy" onError={(e) => { e.currentTarget.dataset.broken = 'true'; }} />
-            : <span className="adm-preview-empty">no image</span>}
-        </div>
-      )}
-
-      <code className="adm-path">{field.path}</code>
-    </div>
+  return (
+    <Row id={id} field={field} dirty={dirty} onReset={reset}>
+      <input id={id} className="ad-input" type="text" value={value ?? ''}
+             onChange={(e) => onChange(field.path, e.target.value)} />
+    </Row>
   );
 }
 
@@ -141,22 +219,58 @@ function Field({ field, value, defaultValue, onChange }) {
    handful that already have their own SCHEMA fields (hero plates, about
    cards, the logo) are gathered under one heading so this view really is
    all of them in one place. */
-const MEDIA_ID = '__media';
+const MEDIA_ALL = '__media';
+const ANALYZE_ID = '__analyze';
 
-function buildMediaGroups(content) {
-  const groups = new Map();
-  for (const path of findImagePaths(content)) {
-    const parts = path.split('.');
-    const key   = parts[0] === 'images' ? parts[1] : 'Elsewhere on the site';
-    const title = parts[0] === 'images' ? (IMAGE_GROUP_LABELS[key] || key) : key;
-    if (!groups.has(title)) groups.set(title, []);
-    groups.get(title).push({
-      path,
-      label: describeImagePath(path, IMAGE_GROUP_LABELS),
-      type: 'image',
-    });
-  }
-  return [...groups].map(([title, fields]) => ({ title, fields }));
+/* Code-split: charts, the heat canvas and two live subscriptions have no
+   business loading for someone who only came here to change a caption. */
+const Analyze = lazy(() => import('./Analyze'));
+
+/* The sidebar badge. A separate, deliberately tiny subscription so the
+   count is there without the Analyze panel — and its whole chunk — having
+   to be open. Rows are aged out locally: a tab killed by the OS never gets
+   to delete its own live document. */
+function useLiveCount() {
+  const [n, setN] = useState(0);
+
+  useEffect(() => {
+    let unsub = null;
+    let cancelled = false;
+    let rows = [];
+    const recount = () => setN(rows.filter((r) => Date.now() - (r.lastSeen || 0) < 45000).length);
+    const timer = setInterval(recount, 5000);
+
+    (async () => {
+      try {
+        const [m, { db }] = await Promise.all([
+          import('firebase/firestore'),
+          import('../firebase'),
+        ]);
+        if (cancelled) return;
+        unsub = m.onSnapshot(m.collection(db, 'analytics_live'), (snap) => {
+          rows = snap.docs.map((d) => d.data());
+          recount();
+        }, () => { /* rules not published yet — the badge just stays at 0 */ });
+      } catch { /* offline */ }
+    })();
+
+    return () => { cancelled = true; clearInterval(timer); unsub?.(); };
+  }, []);
+
+  return n;
+}
+
+/* Mirrors ThemeVars so a drag previews instantly. Kept here rather than
+   imported so the dashboard chunk does not pull the site's provider in. */
+function applyThemePreview(t) {
+  if (!t) return;
+  const root = document.documentElement;
+  Object.entries(t.hues || {}).forEach(([k, v]) => root.style.setProperty(`--h-${k}`, String(v)));
+  if (t.accentLightDark  != null) root.style.setProperty('--l-acc', `${t.accentLightDark}%`);
+  if (t.accentChromaDark != null) root.style.setProperty('--c-acc', String(t.accentChromaDark));
+  if (t.bgLightnessDark  != null) root.style.setProperty('--l-bg',  `${t.bgLightnessDark}%`);
+  if (t.grain != null) root.style.setProperty('--grain-opacity', String(t.grain));
+  if (t.seam  != null) root.style.setProperty('--seam', String(t.seam));
 }
 
 // ── Dashboard ────────────────────────────────────────────────────────
@@ -170,6 +284,7 @@ function Editor({ user, onSignOut, onExit }) {
   const [state, setState] = useState('loading');  // loading | idle | saving | saved | error
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
+  const liveCount = useLiveCount();
 
   useEffect(() => {
     let cancelled = false;
@@ -195,7 +310,14 @@ function Editor({ user, onSignOut, onExit }) {
   }, []);
 
   const change = useCallback((path, value) => {
-    setDraft((d) => setPath(d, path, value));
+    setDraft((d) => {
+      const next = setPath(d, path, value);
+      /* Theme edits paint immediately, before any save — dragging a hue
+         with no feedback until you commit is unusable. Same properties
+         ThemeVars writes, so the preview is the real thing. */
+      if (path.startsWith('theme.')) applyThemePreview(next.theme);
+      return next;
+    });
     setState((s) => (s === 'saved' ? 'idle' : s));
   }, []);
 
@@ -203,8 +325,13 @@ function Editor({ user, onSignOut, onExit }) {
 
   const allFields = useMemo(() => [
     ...SCHEMA.flatMap((g) => g.fields.map((f) => ({ ...f, group: g.id }))),
-    ...mediaGroups.flatMap((g) => g.fields.map((f) => ({ ...f, group: MEDIA_ID }))),
+    ...mediaGroups.flatMap((g) => g.fields.map((f) => ({ ...f, group: g.id }))),
   ], [mediaGroups]);
+
+  const mediaTotal = useMemo(
+    () => mediaGroups.reduce((n, g) => n + g.fields.length, 0),
+    [mediaGroups],
+  );
 
   const dirtyPaths = useMemo(
     () => allFields.filter((f) => getPath(draft, f.path) !== getPath(saved, f.path)).map((f) => f.path),
@@ -214,11 +341,13 @@ function Editor({ user, onSignOut, onExit }) {
   // Search cuts across every group; with no query you get the selected one.
   const visible = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    const all = [...SCHEMA.map((g) => ({ ...g })), ...mediaGroups.map((g) => ({ ...g, id: MEDIA_ID }))];
+    const all = [...SCHEMA, ...mediaGroups];
     if (!q) {
-      if (group === MEDIA_ID) return mediaGroups;
-      const g = SCHEMA.find((x) => x.id === group);
-      return g ? [{ title: g.title, fields: g.fields }] : [];
+      // The one overview tab: every image on the site, still grouped.
+      if (group === MEDIA_ALL) return mediaGroups;
+      if (group === ANALYZE_ID) return [];
+      const g = all.find((x) => x.id === group);
+      return g ? [g] : [];
     }
     return all
       .map((g) => ({
@@ -273,90 +402,151 @@ function Editor({ user, onSignOut, onExit }) {
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirtyPaths.length]);
 
-  if (state === 'loading') return <div className="adm-loading">Loading content…</div>;
+  if (state === 'loading') return <div className="ad-boot">Loading…</div>;
+
+  const total = allFields.length;
+
+  /* One nav row, whatever the group is. The badge is a count normally and
+     an amber dot when that group holds unsaved edits — you want to know
+     *where* the changes are, not how many. */
+  const navItem = (g) => {
+    const n = g.fields.filter((f) => dirtyPaths.includes(f.path)).length;
+    return (
+      <button
+        key={g.id}
+        className={`ad-nav-item${!filter && group === g.id ? ' is-on' : ''}`}
+        onClick={() => { setGroup(g.id); setFilter(''); }}
+        title={g.title}
+      >
+        <span className="ad-nav-txt">{g.title}</span>
+        {n > 0
+          ? <span className="ad-nav-dot" aria-label={`${n} unsaved`} />
+          : <span className="ad-nav-n">{g.fields.length}</span>}
+      </button>
+    );
+  };
+
+  const isAnalyze = !filter && group === ANALYZE_ID;
+
+  const navBands = {
+    appearance: SCHEMA.filter((g) => g.id === 'theme'),
+    sections:   SCHEMA.filter((g) => g.id !== 'theme'),
+  };
 
   return (
-    <div className="adm">
-      <header className="adm-bar">
-        <div className="adm-bar-left">
-          <strong>Site admin</strong>
-          <span className="adm-user">{user.email}</span>
+    <div className="ad">
+      {/* ── Sidebar ── */}
+      <aside className="ad-side">
+        <div className="ad-brand">
+          <span className="ad-brand-dot" aria-hidden="true" />
+          <div>
+            <strong>Studio</strong>
+            <span>{user.email}</span>
+          </div>
         </div>
 
-        <div className="adm-bar-right">
-          <span className={`adm-status adm-status--${state}`}>
-            {state === 'saving' ? 'Saving…'
-              : state === 'saved' ? 'Saved'
-                : state === 'error' ? 'Error'
-                  : dirtyPaths.length > 0 ? `${dirtyPaths.length} unsaved` : 'Up to date'}
-          </span>
-          <button className="adm-btn" onClick={resetAll} disabled={dirtyPaths.length === 0}>Discard</button>
-          <button className="adm-btn adm-btn--primary" onClick={save} disabled={dirtyPaths.length === 0 || state === 'saving'}>
-            Save changes
-          </button>
-          <button className="adm-btn" onClick={onExit}>View site</button>
-          <button className="adm-btn" onClick={onSignOut}>Sign out</button>
-        </div>
-      </header>
-
-      {error && <p className="adm-error adm-error--bar" role="alert">{error}</p>}
-
-      <div className="adm-body">
-        <nav className="adm-side" aria-label="Content sections">
+        <div className="ad-search-wrap">
           <input
-            className="adm-search"
+            className="ad-search"
             type="search"
-            placeholder="Search all fields…"
+            placeholder="Search all fields"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <ul>
-            <li>
-              <button
-                className={`adm-side-btn adm-side-btn--media${!filter && group === MEDIA_ID ? ' adm-side-btn--on' : ''}`}
-                onClick={() => { setGroup(MEDIA_ID); setFilter(''); }}
-              >
-                All images
-                <span className="adm-count">{mediaGroups.reduce((n, g) => n + g.fields.length, 0)}</span>
-              </button>
-            </li>
-            {SCHEMA.map((g) => {
-              const n = g.fields.filter((f) => dirtyPaths.includes(f.path)).length;
-              return (
-                <li key={g.id}>
-                  <button
-                    className={`adm-side-btn${!filter && group === g.id ? ' adm-side-btn--on' : ''}`}
-                    onClick={() => { setGroup(g.id); setFilter(''); }}
-                  >
-                    {g.title}
-                    {n > 0 && <span className="adm-badge">{n}</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+        </div>
+
+        {/* Three bands: how it looks, what it says, and every picture —
+            each image group its own tab, so you go straight to the set you
+            mean instead of scrolling one list of two hundred URLs. */}
+        <nav className="ad-nav" aria-label="Sections">
+          <p className="ad-nav-label">Insights</p>
+          <button
+            className={`ad-nav-item${!filter && group === ANALYZE_ID ? ' is-on' : ''}`}
+            onClick={() => { setGroup(ANALYZE_ID); setFilter(''); }}
+          >
+            <span className="ad-nav-txt">Analyze</span>
+            {liveCount > 0
+              ? <span className="ad-nav-live" title={`${liveCount} on the site now`}>{liveCount}</span>
+              : <span className="ad-nav-n">live</span>}
+          </button>
+
+          <p className="ad-nav-label">Appearance</p>
+          {navBands.appearance.map(navItem)}
+
+          <p className="ad-nav-label">Sections</p>
+          {navBands.sections.map(navItem)}
+
+          <p className="ad-nav-label">Images</p>
+          <button
+            className={`ad-nav-item${!filter && group === MEDIA_ALL ? ' is-on' : ''}`}
+            onClick={() => { setGroup(MEDIA_ALL); setFilter(''); }}
+          >
+            <span className="ad-nav-txt">All images</span>
+            <span className="ad-nav-n">{mediaTotal}</span>
+          </button>
+          {mediaGroups.map(navItem)}
         </nav>
 
-        <main className="adm-main">
-          {visible.length === 0 && <p className="adm-empty">Nothing matches “{filter}”.</p>}
-          {visible.map((g) => (
-            <section key={g.title} className="adm-group">
+        <div className="ad-side-foot">
+          <button onClick={onExit}>View site</button>
+          <button onClick={onSignOut}>Sign out</button>
+        </div>
+      </aside>
+
+      {/* ── Main ── */}
+      <main className="ad-main">
+        {error && <p className="ad-error" role="alert">{error}</p>}
+
+        {isAnalyze && (
+          <Suspense fallback={<p className="ad-empty">Loading analytics…</p>}>
+            <Analyze />
+          </Suspense>
+        )}
+
+        {!isAnalyze && visible.length === 0 && <p className="ad-empty">Nothing matches “{filter}”.</p>}
+
+        {!isAnalyze && visible.map((g) => (
+          <section key={g.id || g.title} className="ad-sec">
+            <header className="ad-sec-head">
               <h2>{g.title}</h2>
-              <div className="adm-grid">
-                {g.fields.map((f) => (
-                  <Field
-                    key={f.path}
-                    field={f}
-                    value={getPath(draft, f.path)}
-                    defaultValue={getPath(DEFAULT_CONTENT, f.path)}
-                    onChange={change}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </main>
+              {g.intro && <p>{g.intro}</p>}
+              <span className="ad-sec-n">{g.fields.length} {g.fields.length === 1 ? 'field' : 'fields'}</span>
+            </header>
+
+            {/* Grouped inset list — one rounded container, hairline dividers. */}
+            <div className="ad-list">
+              {g.fields.map((f) => (
+                <Field
+                  key={f.path}
+                  field={f}
+                  value={getPath(draft, f.path)}
+                  defaultValue={getPath(DEFAULT_CONTENT, f.path)}
+                  onChange={change}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {!isAnalyze && <div className="ad-main-foot">{total} fields · {SCHEMA.length} content sections · {mediaGroups.length} image sets</div>}
+      </main>
+
+      {/* ── Save bar — only present when there is something to save ── */}
+      <div className={`ad-savebar${dirtyPaths.length ? ' is-up' : ''}`}>
+        <span className="ad-savebar-txt">
+          {state === 'saving' ? 'Saving…'
+            : state === 'error' ? 'Could not save'
+            : `${dirtyPaths.length} unsaved ${dirtyPaths.length === 1 ? 'change' : 'changes'}`}
+        </span>
+        <div className="ad-savebar-btns">
+          <button className="ad-btn" onClick={resetAll}>Discard</button>
+          <button className="ad-btn ad-btn--go" onClick={save} disabled={state === 'saving'}>
+            {state === 'saving' ? 'Saving…' : 'Save'}
+          </button>
+        </div>
       </div>
+
+      {state === 'saved' && <div className="ad-toast">Saved</div>}
     </div>
   );
 }
@@ -397,7 +587,7 @@ export default function AdminDashboard({ onExit }) {
     setUser(null);
   }, []);
 
-  if (checking) return <div className="adm-loading">Checking session…</div>;
+  if (checking) return <div className="ad-boot">Checking session…</div>;
   if (!user) return <LoginScreen onSignedIn={setUser} />;
   return <Editor user={user} onSignOut={signOut} onExit={onExit} />;
 }

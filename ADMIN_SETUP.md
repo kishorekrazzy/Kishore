@@ -92,6 +92,20 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if false;
     }
+
+    // Analytics: visitors add to the day's counters, only you read them.
+    // One document per day, id = YYYY-MM-DD.
+    match /analytics/{day} {
+      allow read: if request.auth != null;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    // One document per open tab, deleted when the tab closes.
+    match /analytics_live/{sessionId} {
+      allow read: if request.auth != null;
+      allow write: if true;
+    }
   }
 }
 ```
@@ -105,6 +119,51 @@ allow write: if request.auth != null && request.auth.uid == 'YOUR_UID_HERE';
 ```
 
 Your UID is in Authentication → Users.
+
+### A word on the analytics rules
+
+`allow create, update: if true` on `analytics` is what lets a visitor's
+browser add to the day's counters without an account — and it is also what
+lets anyone who reads the site's JavaScript write nonsense into those same
+counters. That is the standing trade-off of analytics with no server in
+front of it, and it is worth knowing rather than discovering.
+
+What it cannot do is damage anything. The collection is separate from
+`site/content`, nothing on the public page ever reads it, and `delete` is
+refused, so the worst case is inflated numbers in the Analyze tab. If the
+figures ever need to be trustworthy rather than indicative, put
+[App Check](https://firebase.google.com/docs/app-check) in front of the
+project or move the writes into a Cloud Function — both leave the
+collector and the dashboard unchanged.
+
+Reads stay locked to signed-in accounts either way, so nobody else can see
+your traffic.
+
+---
+
+## Analytics
+
+The Analyze tab is fed by `src/services/analytics.js`, which runs on the
+public site. No cookie, no third-party script and no personal data: a
+random id in `localStorage` so returning visits can be told apart, and
+counters.
+
+Everything accumulates in memory and is written every 20 seconds as one
+document update built from atomic increments, so a ten-minute visit costs
+about thirty Firestore writes rather than thirty thousand — and two
+visitors flushing at the same moment add up instead of overwriting each
+other.
+
+| Where | What |
+|---|---|
+| `analytics/{YYYY-MM-DD}` | Every counter for that day: sessions, visitors, per-section dwell and views, heat grid, clicks, hours, devices, browsers, referrers, scroll depth, durations, exits, events |
+| `analytics_live/{session}` | One row per open tab, refreshed every 10s and deleted on close. The dashboard ages out anything older than 45 seconds, since a tab killed by the OS never gets to delete its own row |
+
+**Do Not Track is honoured.** If your own browser sends the header you will
+see nothing from your own visits — the console says so. Set `RESPECT_DNT`
+to `false` at the top of `src/services/analytics.js` to collect regardless.
+
+The admin route is never measured, and neither are bots.
 
 ---
 

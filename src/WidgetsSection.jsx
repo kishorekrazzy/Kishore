@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useContent, withImages } from './content/store';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { NotificationList } from './NotificationList';
+import { BrainwaveCard, ThoughtStream } from './MindWidgets';
 import { LocationMap } from './components/ui/location-map';
 import { fmt, useMusicPlayer } from './MusicContext';
 import { playTick, playDetent, playGrip, playRelease, primeAudio } from './components/dj-tactile-audio';
@@ -13,6 +13,7 @@ import './WidgetsSection.css';
 // ── MUSIC PLAYER ─────────────────────────────────────────────────────────────
 
 function MusicCard({ onActivate, djMode }) {
+  const musicPlate = useContent('images.musicPlate.0', null);
   const { song, playing, setPlaying, progress, seek, prev, next, duration } = useMusicPlayer();
 
   const trackDur  = duration && Number.isFinite(duration) && duration > 0 ? duration : song.duration;
@@ -41,6 +42,9 @@ function MusicCard({ onActivate, djMode }) {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !djMode && onActivate?.()}
       aria-label="Music player — click to open DJ console"
     >
+      {/* Monochrome plate behind the player — greyscale on purpose so it
+          sits under the UI instead of competing with the album art. */}
+      {musicPlate && <img className="wg-music-plate" src={musicPlate} alt="" aria-hidden="true" draggable="false" />}
       {/* DJ-mode ambient glow ring */}
       <div className="wg-music-aura" aria-hidden="true" />
 
@@ -609,7 +613,9 @@ function FinderWindow({
   onAboutClick,
   onSkillsClick,
 }) {
-  const FINDER_WORKS = withImages(DEFAULT_FINDER_WORKS, useContent('images.finderWorks', null), 'img');
+  const workNames = useContent('os.finder.works', null);
+  const FINDER_WORKS = withImages(DEFAULT_FINDER_WORKS, useContent('images.finderWorks', null), 'img')
+    .map((w, i) => ({ ...w, name: workNames?.[i]?.name || w.name }));
   // Per-window navigation history
   const [nav, setNav] = useState({
     hist: [{ view: initialView, folder: initialFolder }],
@@ -1119,16 +1125,22 @@ const DEFAULT_NF_GRID = [
 
 function NetflixCard() {
   const nfHeroUrl  = useContent('images.netflixHero', null);
-  const NF_HERO    = nfHeroUrl?.[0] ? { ...DEFAULT_NF_HERO, img: nfHeroUrl[0] } : DEFAULT_NF_HERO;
+  const nfCopy     = useContent('os.netflix', {});
+  const NF_HERO    = {
+    ...DEFAULT_NF_HERO,
+    ...(nfHeroUrl?.[0] ? { img: nfHeroUrl[0] } : null),
+    title: nfCopy.title || DEFAULT_NF_HERO.title,
+    genre: nfCopy.genre || DEFAULT_NF_HERO.genre,
+  };
   const nfGridUrls = useContent('images.netflixGrid', null);
   // Stored flat as front, back, front, back … in source order.
-  const NF_GRID    = Array.isArray(nfGridUrls)
-    ? DEFAULT_NF_GRID.map((c, i) => ({
-        ...c,
-        front: nfGridUrls[i * 2]     || c.front,
-        back:  nfGridUrls[i * 2 + 1] || c.back,
-      }))
-    : DEFAULT_NF_GRID;
+  const NF_GRID    = DEFAULT_NF_GRID.map((c, i) => ({
+    ...c,
+    front: (Array.isArray(nfGridUrls) && nfGridUrls[i * 2])     || c.front,
+    back:  (Array.isArray(nfGridUrls) && nfGridUrls[i * 2 + 1]) || c.back,
+    title: nfCopy.cards?.[i]?.title || c.title,
+    sub:   nfCopy.cards?.[i]?.sub   || c.sub,
+  }));
   useEffect(() => {
     return () => document.documentElement.classList.remove('nf-hover');
   }, []);
@@ -1361,6 +1373,9 @@ const HOBBIES = [
 
 function HobbiesCard() {
   const [playingDallor, setPlayingDallor] = useState(false);
+  const copy = useContent('os.hobbies', {});
+  // Colours stay in code — the chip palette is a design decision, not copy.
+  const HOBBY_LIST = HOBBIES.map((h, i) => ({ ...h, label: copy.items?.[i]?.label || h.label }));
 
   return (
     <>
@@ -1370,15 +1385,19 @@ function HobbiesCard() {
       />
       <div className="wg-card wg-card--dark wg-hobbies">
         <div className="wg-hobbies-hdr">
-          <p className="wg-eyebrow">When not working</p>
-          <h3 className="wg-card-ttl">Hobbies</h3>
+          <p className="wg-eyebrow">{copy.eyebrow || 'When not working'}</p>
+          <h3 className="wg-card-ttl">{copy.title || 'Hobbies'}</h3>
         </div>
 
         <div className="wg-hobbies-grid">
-          {HOBBIES.map(h =>
-            h.label === 'Travel' ? (
+          {HOBBY_LIST.map((h, hi) =>
+            /* Position, not label: the 8th chip is wired to the flight
+               animation, whatever it ends up being called. Matching on the
+               word 'Travel' meant renaming it in the dashboard silently
+               removed the animation. */
+            hi === 7 ? (
               <button
-                key={h.label}
+                key={hi}
                 className="wg-chip wg-chip--travel"
                 onClick={() => { if (!playingDallor) setPlayingDallor(true); }}
                 aria-label="Travel — play animation"
@@ -1388,7 +1407,7 @@ function HobbiesCard() {
                 <span className="wg-chip-lbl">{h.label}</span>
               </button>
             ) : (
-              <div key={h.label} className="wg-chip">
+              <div key={hi} className="wg-chip">
                 <span className="wg-chip-dot" style={{ background: h.color }} aria-hidden="true" />
                 <span className="wg-chip-lbl">{h.label}</span>
               </div>
@@ -2094,7 +2113,7 @@ export default function WidgetsSection({ onAboutClick, onSkillsClick }) {
           style={{ '--d': '0.14s', '--djd': '0.04s' }}
         >
           <FlipWidget back={<NfPosterBack img={plates[7]} title="UPDATES" sub="Latest Feed" />}>
-            <NotificationList onViewAll={() => { if (!playingCat) setPlayingCat(true); }} />
+            <ThoughtStream />
           </FlipWidget>
         </div>
         <div
@@ -2118,7 +2137,7 @@ export default function WidgetsSection({ onAboutClick, onSkillsClick }) {
           style={{ '--d': '0.32s', '--djd': '0.06s' }}
         >
           <FlipWidget back={<NfPosterBack img={plates[9]} title="IST · INDIA" sub="UTC +5:30" />}>
-            <ClockCard />
+            <BrainwaveCard />
           </FlipWidget>
         </div>
         <div

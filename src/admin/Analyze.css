@@ -1,0 +1,371 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ANALYZE — styles
+
+   Inherits the dashboard's tokens (--panel, --line, --ink…) from .ad,
+   so it stays in the same visual language and follows the same light and
+   dark palettes without redeclaring any of it.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.az { padding-bottom: 20px; }
+
+/* ── header ── */
+.az-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 0 4px;
+}
+.az-head h2 { font-size: 1.42rem; font-weight: 700; letter-spacing: -0.028em; }
+.az-head p { margin-top: 5px; max-width: 60ch; font-size: 0.83rem; line-height: 1.5; color: var(--ink-2); }
+.az-head-ctl { display: flex; align-items: center; gap: 8px; }
+
+/* Segmented control, the macOS one. */
+.az-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(120, 120, 128, 0.14);
+}
+.az-seg button {
+  padding: 5px 13px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+.az-seg button.is-on {
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.az-export {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.az-export:hover { background: rgba(120, 120, 128, 0.1); }
+
+/* ── live strip ── */
+.az-live {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 14px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.az-live strong { font-size: 1.1rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.az-pulse {
+  align-self: center;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  flex-shrink: 0;
+}
+.az-pulse.is-on { background: #30d158; animation: azPulse 2s ease-in-out infinite; }
+@keyframes azPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.5); }
+  70%      { box-shadow: 0 0 0 9px rgba(48, 209, 88, 0); }
+}
+
+/* ── KPI row ── */
+.az-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.az-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.az-kpi--accent { box-shadow: 0 0 0 1.5px var(--blue); }
+.az-kpi-label { font-size: 0.72rem; color: var(--ink-2); }
+.az-kpi-value {
+  font-size: 1.62rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.az-kpi-foot { display: flex; align-items: center; gap: 7px; font-size: 0.7rem; color: var(--ink-3); }
+.az-delta { font-style: normal; font-weight: 600; }
+.az-delta--up   { color: #30d158; }
+.az-delta--down { color: var(--red); }
+
+/* ── panels ── */
+.az-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.az-panel {
+  padding: 16px 18px 18px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+  min-width: 0;
+}
+.az-panel--wide { grid-column: 1 / -1; }
+.az-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.az-panel-head h3 { font-size: 0.94rem; font-weight: 600; letter-spacing: -0.015em; }
+.az-panel-head p { margin-top: 4px; max-width: 76ch; font-size: 0.75rem; line-height: 1.5; color: var(--ink-3); }
+.az-sub {
+  margin: 16px 0 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.az-empty { padding: 16px 0; font-size: 0.8rem; color: var(--ink-3); }
+.az-error {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(255, 59, 48, 0.08);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.az-error p + p { margin-top: 8px; color: var(--ink-2); }
+.az-error code { font-family: ui-monospace, 'SF Mono', monospace; font-size: 0.94em; }
+.az-flag {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(255, 159, 10, 0.12);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.az-foot { margin-top: 18px; padding: 0 4px; font-size: 0.72rem; color: var(--ink-3); }
+
+/* ── traffic chart ── */
+.az-chart-svg { width: 100%; height: auto; margin-top: 12px; display: block; }
+.az-grid  { stroke: var(--line); stroke-width: 1; }
+.az-axis  { stroke: var(--line); stroke-width: 1; }
+.az-bar   { fill: var(--blue); opacity: 0.75; transition: opacity 0.15s var(--ease); }
+.az-bar.is-hot { opacity: 1; }
+.az-chart-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.az-chart-foot strong { color: var(--ink); font-weight: 600; }
+
+/* ── heat map ── */
+.az-heat-stage {
+  position: relative;
+  margin: 12px 0 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  /* Dark ground whatever the dashboard theme is: an additive heat ramp is
+     only legible over something dark. */
+  background: #0b0b0f;
+  aspect-ratio: 32 / 18;
+}
+.az-heat-canvas { width: 100%; height: 100%; display: block; }
+.az-heat-frame {
+  position: absolute;
+  inset: 7px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  pointer-events: none;
+}
+.az-heat-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+.az-heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+}
+.az-heat-ramp {
+  width: 110px;
+  height: 6px;
+  border-radius: 99px;
+  background: linear-gradient(90deg,
+    hsl(220, 95%, 55%), hsl(190, 95%, 55%), hsl(110, 95%, 55%), hsl(45, 95%, 55%), hsl(0, 95%, 55%));
+}
+.az-heat-legend em { margin-left: auto; font-style: normal; }
+
+/* ── section dwell ── */
+.az-sections { display: flex; flex-direction: column; gap: 12px; }
+.az-sections li { display: flex; align-items: flex-start; gap: 12px; }
+.az-sec-rank {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  background: rgba(120, 120, 128, 0.14);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.az-sec-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.az-sec-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.az-sec-top strong { font-size: 0.85rem; font-weight: 600; }
+.az-sec-top span { font-size: 0.76rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.az-sec-track { height: 6px; border-radius: 99px; background: rgba(120, 120, 128, 0.16); overflow: hidden; }
+.az-sec-track i {
+  display: block; height: 100%;
+  border-radius: 99px;
+  background: var(--blue);
+  transition: width 0.5s var(--ease);
+}
+.az-sec-meta { font-size: 0.71rem; color: var(--ink-3); }
+
+/* ── generic bar list ── */
+.az-bars { display: flex; flex-direction: column; gap: 8px; }
+.az-bars li { display: grid; grid-template-columns: minmax(0, 1fr) 1.1fr auto; align-items: center; gap: 10px; }
+.az-bars-key {
+  font-size: 0.79rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.az-bars-track { height: 5px; border-radius: 99px; background: rgba(120, 120, 128, 0.16); overflow: hidden; }
+.az-bars-track i {
+  display: block; height: 100%;
+  border-radius: 99px;
+  background: var(--blue);
+  opacity: 0.85;
+  transition: width 0.5s var(--ease);
+}
+.az-bars-val {
+  font-size: 0.76rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.az-bars-val em { margin-left: 6px; font-style: normal; color: var(--ink-3); }
+
+/* ── hours ── */
+.az-hours { display: flex; align-items: flex-end; gap: 3px; height: 108px; }
+.az-hour { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.az-hour i {
+  display: block;
+  width: 100%;
+  border-radius: 3px 3px 1px 1px;
+  background: rgba(120, 120, 128, 0.2);
+  transition: height 0.5s var(--ease);
+}
+.az-hour i.has { background: var(--blue); opacity: 0.8; }
+.az-hour em {
+  position: absolute;
+  bottom: -16px; left: 0;
+  font-size: 0.62rem;
+  font-style: normal;
+  color: var(--ink-3);
+}
+.az-panel .az-hours { margin-bottom: 18px; }
+
+/* ── live sessions ── */
+.az-livelist { display: flex; flex-direction: column; }
+.az-livelist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+.az-livelist li:last-child { box-shadow: none; }
+.az-livelist div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.az-livelist strong { font-size: 0.82rem; font-weight: 600; }
+.az-livelist div span {
+  font-size: 0.71rem; color: var(--ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.az-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #30d158; flex-shrink: 0;
+}
+.az-live-meta {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  font-size: 0.76rem; color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.az-live-meta em { font-style: normal; font-size: 0.68rem; color: var(--ink-3); }
+
+/* ── reach ── */
+.az-reach { display: flex; align-items: flex-end; gap: 8px; padding-top: 6px; }
+.az-reach li {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.az-reach-bar {
+  width: 100%;
+  height: 92px;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 6px;
+  background: rgba(120, 120, 128, 0.14);
+  overflow: hidden;
+}
+.az-reach-bar i {
+  display: block; width: 100%;
+  background: var(--blue);
+  opacity: 0.85;
+  transition: height 0.5s var(--ease);
+}
+.az-reach strong { font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+.az-reach-name {
+  font-size: 0.66rem;
+  color: var(--ink-3);
+  text-align: center;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 620px) {
+  .az-head-ctl { width: 100%; justify-content: space-between; }
+  .az-reach { overflow-x: auto; }
+  .az-reach li { min-width: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .az-pulse.is-on { animation: none; }
+  .az-sec-track i, .az-bars-track i, .az-hour i, .az-reach-bar i { transition: none; }
+}

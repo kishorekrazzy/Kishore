@@ -39,6 +39,7 @@ import WarpText from './WarpText';
 import ErrorBoundary from './ErrorBoundary';
 import AiBotDock from './AiBotDock';
 import { useContent } from './content/store';
+import { startAnalytics, trackEvent, trackPage } from './services/analytics';
 
 // ── 4 HERO SECTION DATA ─────────────────────────────────────────────
 // Fallback only. The live values come from Firestore via useContent — see
@@ -428,6 +429,27 @@ export default function App() {
   // saved position with 0.
   const subPageRef = useRef(anySubPage);
   useEffect(() => { subPageRef.current = anySubPage; }, [anySubPage]);
+
+  /* ── Analytics ──────────────────────────────────────────────────────
+     Started once, off the critical path: it opens a Firestore connection
+     and nothing about it should compete with first paint. The collector
+     bails out on its own for the admin route, for bots and when Do Not
+     Track is set. */
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
+    const id = idle(() => startAnalytics());
+    return () => (window.cancelIdleCallback || clearTimeout)(id);
+  }, []);
+
+  /* The sub-pages are overlays rather than routes, so they generate no
+     navigation of their own for the collector to notice. */
+  useEffect(() => {
+    if (page && page !== 'admin') trackPage(page);
+  }, [page]);
+
+  useEffect(() => { if (showChat)    trackEvent('chatOpened'); }, [showChat]);
+  useEffect(() => { if (showProfile) trackEvent('idCardOpened'); }, [showProfile]);
+  useEffect(() => { if (showWarning) trackEvent('warningOpened'); }, [showWarning]);
 
   // Latest home scroll position, updated synchronously on every scroll
   // event. Storage writes are debounced, but this is not — so whenever we

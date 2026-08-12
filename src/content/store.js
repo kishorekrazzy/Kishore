@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { DEFAULT_CONTENT } from './defaults';
+import { DEFAULT_CONTENT, IMAGE_GROUP_LABELS } from './defaults.js';
 
 /* Content store internals: the context object, the path helpers and the
    read hooks. Kept out of ContentContext.jsx because that file exports a
@@ -122,4 +122,52 @@ export function describeImagePath(path, groupLabels = {}) {
   return parts
     .map((p) => (/^\d+$/.test(p) ? `${Number(p) + 1}` : p))
     .join(' › ');
+}
+
+/* Ordered so the tabs read down the page rather than in whatever order the
+   registry happens to be declared in. Anything not listed keeps its
+   discovered position at the end, so a new registry key still shows up
+   without touching this. */
+const MEDIA_ORDER = [
+  'hero.sections', 'nav.logo', 'aboutMe', 'about.cards', 'about.extraCards',
+  'team', 'bentoCards', 'banners', 'deck',
+  'widgetPlates', 'finderWorks', 'netflixHero', 'netflixGrid',
+  'music', 'musicPlate', 'dock', 'videoThumbs', 'skillPacks',
+  'aiGallery', 'certs', 'lanyard', 'warning',
+];
+
+/* Images that live in the content tree rather than the registry — hero
+   plates, the About cards, the AI gallery. Without this they all landed in
+   one "Elsewhere" bucket, which is exactly the pile this split was meant
+   to break up. Longest prefix wins. */
+const PATH_GROUPS = [
+  ['hero.sections',    'Hero — backgrounds'],
+  ['nav.logo',         'Island logo'],
+  ['about.extraCards', 'About — reveal grid'],
+  ['about.cards',      'About — card stack'],
+  ['aiGallery',        'AI Images gallery'],
+];
+
+export function buildMediaGroups(content) {
+  const groups = new Map();
+  for (const path of findImagePaths(content)) {
+    const parts = path.split('.');
+    const inRegistry = parts[0] === 'images';
+    const hit = inRegistry ? null : PATH_GROUPS.find(([prefix]) => path.startsWith(prefix));
+    const key   = inRegistry ? parts[1] : (hit ? hit[0] : '__elsewhere');
+    const title = inRegistry
+      ? (IMAGE_GROUP_LABELS[key] || key)
+      : (hit ? hit[1] : 'Elsewhere on the site');
+    if (!groups.has(key)) groups.set(key, { id: `img:${key}`, key, title, fields: [] });
+    groups.get(key).fields.push({
+      path,
+      label: describeImagePath(path, IMAGE_GROUP_LABELS),
+      type: 'image',
+    });
+  }
+  const rank = (g) => {
+    const i = MEDIA_ORDER.indexOf(g.key);
+    return i === -1 ? MEDIA_ORDER.length + (g.key === '__elsewhere' ? 1 : 0) : i;
+  };
+  return [...groups.values()].sort((a, b) => rank(a) - rank(b));
 }

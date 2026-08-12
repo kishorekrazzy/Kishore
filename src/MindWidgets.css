@@ -1,0 +1,133 @@
+/* ══════════════════════════════════════════════════════════════════════
+   MIND WIDGETS — brainwave + thought stream
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mw-wave, .mw-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mw-hdr { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mw-eyebrow {
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.mw-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.54rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(120, 240, 190, 0.9);
+}
+.mw-live i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor;
+  animation: mwPulse 1.6s ease-in-out infinite;
+}
+@keyframes mwPulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+.mw-count {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.56rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Brainwave ── */
+.mw-wave-canvas {
+  flex: 1;
+  min-height: 46px;
+  width: 100%;
+  display: block;
+}
+
+.mw-wave-load { display: flex; align-items: baseline; gap: 8px; }
+.mw-wave-n {
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.mw-wave-n i { font-style: normal; font-size: 0.55em; color: rgba(255,255,255,0.4); margin-left: 1px; }
+.mw-wave-cap {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+}
+
+.mw-bands { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.mw-bands li { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 9px; }
+.mw-band-label { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.mw-band-rail {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.mw-band-rail i {
+  display: block;
+  height: 100%;
+  background: rgba(120, 240, 190, 0.75);
+  transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ── Thought stream ── */
+.mw-stream-list {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+  min-height: 0;
+}
+.mw-thought {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  /* Each row is dimmer than the one above, so the column reads as a
+     stream moving through rather than a static list. */
+  opacity: calc(1 - var(--k) * 0.34);
+  animation: mwIn 0.6s cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation-delay: calc(var(--k) * 0.06s);
+}
+@keyframes mwIn { from { opacity: 0; transform: translateY(7px); } }
+
+.mw-thought-tag {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.1);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+.mw-thought-t {
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.88);
+}
+
+.mw-stream-foot {
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.3);
+}
+.mw-stream-foot span { color: rgba(120, 240, 190, 0.7); margin-right: 5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mw-live i, .mw-thought { animation: none; }
+}

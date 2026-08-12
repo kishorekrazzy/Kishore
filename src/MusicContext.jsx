@@ -1,3 +1,4 @@
+import { trackEvent } from './services/analytics';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useContent, withImages } from './content/store';
 
@@ -235,6 +236,7 @@ export function MusicProvider({ children }) {
   };
 
   const playAt = (idx) => {
+    trackEvent('musicPlayed');
     setSongIdx(idx);
     setPlaying(true);
   };

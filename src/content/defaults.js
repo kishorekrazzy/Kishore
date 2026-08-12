@@ -231,6 +231,195 @@ export const DEFAULT_CONTENT = {
       title: 'Signal Room', model: 'Midjourney v6' },
   ],
 
+
+  /* ── Theme ────────────────────────────────────────────────────────────
+     The site's colour is driven by one hue number per section, composed
+     in OKLCH against shared lightness/chroma scalars (see theme.css). So
+     recolouring the entire site is a matter of these numbers — no CSS
+     edit, no redeploy. 0-360, and the wheel is: 0 red, 30 amber, 100
+     yellow, 150 green, 195 cyan, 260 indigo, 300 violet, 340 rose. */
+  theme: {
+    hues: {
+      hero: 28, about: 355, team: 320, bento: 275, banner: 235,
+      widget: 195, room: 150, video: 15, notes: 256, contact: 100, mind: 22,
+    },
+    /* Accent strength. Lightness is perceptual in OKLCH, so one value
+       reads equally bright on every hue. */
+    accentLightDark: 75,
+    accentChromaDark: 0.18,
+    accentLightLight: 45,
+    accentChromaLight: 0.165,
+    /* Page grounds. */
+    bgLightnessDark: 14.5,
+    bgLightnessLight: 97.4,
+    grain: 0.05,
+    seam: 1,
+  },
+
+  /* ── Edit Suite board ───────────────────────────────────────────────
+     Every label on the draggable card board. The component already read
+     these through a fallback helper; they had no defaults and no
+     dashboard fields, so nothing could reach them. */
+  deck: {
+    captionTitle: '( Edit Suite )',
+    timelineTitle: 'Edit Timeline',
+    timelineRange: '21 – 29 December',
+    posterATitle: 'Chennai',
+    posterASub: 'in Golden Hour',
+    posterAKind: 'Street Walk',
+    posterAAddr: '6545 Old Denton Rd,\nMarina Beach, Chennai',
+    posterATime: '8:30 AM',
+    posterBTitle: 'The Long Take',
+    posterBSub: 'to Start Grading & Joy',
+    posterBKind: 'Call Time',
+    posterBAddr: '900 Logan St, Denver 80203,\nSouthwest, Colorado, USA',
+    posterBTime: '4:25 PM',
+    voice: 'Auto Captions',
+    renderTitle: 'Render',
+    renderNum: '94',
+    renderStats: 'ETA 13m · 4K ProRes',
+    clock: 'Cut at 20:35',
+    plateTc: '00:04:12:08',
+    plateTitle: 'B-Roll',
+    plateSub: '48 clips · 4K',
+    bestTitle: 'Best Frames',
+    bestSub: '290 Clips',
+    nleTc: '00:00:26:14',
+    nleSeq: 'GOLDEN_HOUR_v07.prproj',
+  },
+
+  /* ── Syndicate ──────────────────────────────────────────────────────
+     Portraits live in images.team; the text of each member is here. Skills are comma-separated in one field —
+     three short chips, not a list worth its own five inputs. */
+  team: {
+    heading: 'THE SYNDICATE',
+    members: [
+      { num: '01', role: 'Video Editor',      tagline: 'Cuts silence into sequences',   skills: 'Premiere Pro, DaVinci Resolve, Color Grading', bio: 'Every frame deliberate, every transition earned. Specialized in cinematic storytelling, color narrative, and building emotional rhythm through motion at 24fps.' },
+      { num: '02', role: 'AI Artist',         tagline: 'Prompts pixels into poetry',    skills: 'Midjourney, Stable Diffusion, ComfyUI',        bio: 'Blending machine intelligence with human intuition to generate visuals that have never existed before — from concept to final artwork in a single workflow.' },
+      { num: '03', role: 'Vibe Coder',        tagline: 'Ships interfaces that breathe', skills: 'React, Three.js, GSAP',                        bio: 'Where logic meets aesthetics — turning abstract concepts into interactive digital experiences with motion, depth, and personality baked right in.' },
+      { num: '04', role: 'Creative Director', tagline: 'The vision behind the vision',  skills: 'Art Direction, Brand Strategy, Motion Design',  bio: 'Shapes brand language, visual systems, and the emotional truth that connects through every project — from the first napkin sketch to the final frame.' },
+      { num: '05', role: 'Tools Builder',     tagline: 'Engineers the unfair advantage', skills: 'Python, API Design, LLM Chains',               bio: 'Builds custom pipelines, automation systems, and AI workflows that make the impossible routine — so the team creates at the speed of raw thought.' },
+    ],
+  },
+
+  /* ── Showcase marquee ───────────────────────────────────────────── */
+  banners: {
+    heading: 'Selected Work',
+    items: [
+      { label: 'Visual Story' },
+      { label: 'Cinematic Grade' },
+      { label: 'AI Crafted' },
+    ],
+  },
+
+  /* ── Working notes ──────────────────────────────────────────────────
+     `body` is one string, paragraphs separated by a blank line. A
+     textarea is the right tool for prose; six numbered inputs is not. */
+  notes: {
+    eyebrow: 'Notes',
+    title: 'Working',
+    titleAccent: 'notes',
+    sub: 'Short pieces on colour, cutting, prompting and weight.',
+    items: [
+      {
+        kicker: 'Colour',
+        title: 'A grade is not a filter',
+        date: '2026-07-28',
+        read: '3 min',
+        excerpt: 'Balance first, look second. Doing it in that order is why a grade survives being watched on a phone in daylight.',
+        body: [
+          'Most people who say they colour grade are applying a look. A look is the last five per cent. The first ninety-five is balance: making every shot in the sequence agree about what white is, what black is, and where the skin sits.',
+          'The reason this matters is that a look applied to unbalanced footage falls apart the moment the viewing conditions change. It was graded on a calibrated monitor in a dark room; it gets watched on a phone at a bus stop. If the underlying shots disagree with each other, that disagreement is what survives — not your look.',
+          'So: neutralise, match, then grade. Node trees, not presets. A preset cannot know what your white balance was, which is exactly the thing that needs fixing first.',
+          'The test I use is boring and reliable. Turn the look off. If the sequence still cuts together cleanly with no look at all, the grade will hold up anywhere. If it only works with the look on, the look is hiding a problem rather than adding something.',
+        ].join('\n\n'),
+      },
+      {
+        kicker: 'AI',
+        title: 'A prompt is not a prompt, it is a system',
+        date: '2026-06-14',
+        read: '4 min',
+        excerpt: 'The prompt that worked once is worthless. The thing worth keeping is the harness around it that tells you when it stops working.',
+        body: [
+          'Everyone keeps a prompt that worked. Almost nobody keeps the thing that tells them it stopped working. Models get updated, and the prompt that produced exactly the right output in March quietly produces something slightly worse in June. You will not notice, because you are looking at the output and it still looks fine.',
+          'What makes prompting production-grade is unglamorous: version the prompt, keep a small set of inputs with known-good outputs, and re-run them when anything changes. That is it. Ten inputs is enough. You are not building an evaluation framework, you are building a smoke alarm.',
+          'The other half is a failure catalogue. Every time a prompt produces something wrong, write down what wrong looked like. After thirty entries you stop writing prompts by intuition and start writing them against known failure modes, which is a completely different and much faster activity.',
+          'I found the catalogue more useful than the prompts themselves. The prompts are disposable. The knowledge of how this particular model fails is not.',
+        ].join('\n\n'),
+      },
+      {
+        kicker: 'Editing',
+        title: 'The edit is mostly deletion',
+        date: '2026-05-02',
+        read: '2 min',
+        excerpt: 'Eleven passes on a fourteen-minute film. Almost all of the work was deciding what to remove.',
+        body: [
+          'A short film I cut last year went through eleven passes. Somewhere around pass four it stopped being about finding the good material and started being about removing the material I liked that was not helping.',
+          'That is the actual skill. Anyone can keep the good shot. Cutting the good shot because the scene is better without it is the part that takes years, and it never stops being uncomfortable.',
+          'The useful question is not "is this good?" — it is "what breaks if this is gone?" If the answer is nothing, it goes, however much it cost to get. The audience never sees what you removed. They only feel the pace of what is left.',
+        ].join('\n\n'),
+      },
+      {
+        kicker: 'Web',
+        title: 'Weight is a feature',
+        date: '2026-03-19',
+        read: '3 min',
+        excerpt: 'A page that ships 700 MB of assets is not a rich experience. It is an unfinished one.',
+        body: [
+          'This portfolio used to ship over 700 MB of images. Not because it needed to — because an easter egg was implemented as a folder of 212 PNG frames exported straight out of After Effects, and nobody had asked what that cost.',
+          'The interesting part is that fixing it did not require losing anything. The same animation as a short MP4 is around one per cent of the size. The same background photograph served in AVIF at the size it is actually displayed is a tenth. Nothing on screen changed.',
+          'That is the general shape of it: weight is almost never a trade against quality, it is a trade against not having checked. Every heavy thing on a site is heavy for a specific, findable reason, and most of those reasons dissolve the moment you look at them.',
+          'Then design for the budget from the start. Deciding a page must load in under a second on a bad connection is a design constraint like any other, and it makes better pages — the same way a runtime limit makes a better edit.',
+        ].join('\n\n'),
+      },
+    ],
+  },
+
+  /* ── Personal OS ────────────────────────────────────────────────────
+     The desktop widgets. Images for each of these are already in the
+     registry; this is the text painted over them. */
+  os: {
+    netflix: {
+      title: 'INTERSTELLAR',
+      genre: 'Sci-Fi · 4K',
+      cards: [
+        { title: 'DARK',      sub: 'Mystery'  },
+        { title: 'INCEPTION', sub: 'Thriller' },
+        { title: 'SIGNAL',    sub: 'Drama'    },
+        { title: 'MOTION',    sub: 'Series'   },
+      ],
+    },
+    finder: {
+      works: [
+        { name: 'Editorial Shoot' }, { name: 'Portrait Series' }, { name: 'Visual FX' },
+        { name: 'Motion Study'    }, { name: 'Color Grade'     }, { name: 'Campaign'  },
+      ],
+    },
+    hobbies: {
+      eyebrow: 'When not working',
+      title: 'Hobbies',
+      items: [
+        { label: 'Guitar'      }, { label: 'Cinema' }, { label: 'Gaming' }, { label: 'AI Art' },
+        { label: 'Photography' }, { label: 'Coding' }, { label: 'Music'  }, { label: 'Travel' },
+      ],
+    },
+  },
+
+  /* ── Inside the mind ───────────────────────────────────────────────
+     The ticker under the brainwave card. One line per thought. */
+  mind: {
+    thoughts: [
+      'what if the edit is the story, not the footage',
+      'a prompt is a system, not a sentence',
+      'the grade nobody notices is the one that worked',
+      'build the tool before the deadline needs it',
+      'silence is a cut you did not have to make',
+      'every finished thing is a data point',
+      'the rival is my own head, not the market',
+      'ship it, then find out what was wrong',
+    ],
+  },
+
   /* ── Image registry ────────────────────────────────────────────────
      Every image URL on the site that is not already a field above, as
      flat arrays of strings keyed by where it appears.
@@ -244,10 +433,25 @@ export const DEFAULT_CONTENT = {
      The dashboard discovers these automatically; nothing here needs a
      SCHEMA entry. */
   images: {
+    // Music card — monochrome plate
+    musicPlate: [
+      'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80&sat=-100',
+    ],
+    // Video Editing — card thumbnails
+    videoThumbs: [
+      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=900&q=80',
+    ],
     // Lanyard card — [0] front face, [1] back face
     lanyard: [
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=900&q=80',
+      '/idcard-front.png',
+      '/idcard-back.png',
     ],
     // Certificates — swap these for the real scans
     certs: [
@@ -290,17 +494,19 @@ export const DEFAULT_CONTENT = {
       'https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=1400&q=78',
     ],
     // Syndicate — members
+    // Syndicate — member portraits, one per member.
+    /* These were previously authored as interleaved portrait/backdrop
+       pairs, but withImages() overlays by index — so members 2-5 were
+       being handed the previous member's backdrop as their portrait, and
+       entries 6-10 were dropped on the floor. The backdrops are gone: the
+       component never rendered them — the section's background is the
+       WebGL scanner. */
     team: [
       'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=600&q=80&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=85&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=600&q=80&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=85&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=85&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?w=600&q=80&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=85&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=85&auto=format&fit=crop',
     ],
     // Showcase banners
     banners: [
@@ -400,12 +606,14 @@ export const DEFAULT_CONTENT = {
 };
 
 export const IMAGE_GROUP_LABELS = {
+  'musicPlate': 'Music card — plate',
+  'videoThumbs': 'Video Editing — card thumbnails',
   'lanyard': 'Profile card (lanyard)',
   'certs': 'Certificates',
   'deck': 'Edit Suite board',
   'warning': 'Warning stack — windows',
   'aboutMe': 'About Me \u2014 gallery',
-  'team': 'Syndicate \u2014 members',
+  'team': 'Syndicate \u2014 portraits',
   'banners': 'Showcase banners',
   'skillPacks': 'Skills \u2014 pack covers',
   'finderWorks': 'Personal OS \u2014 Finder',
@@ -449,6 +657,32 @@ const cardFields = (base, count, titlePrefix) =>
   ])).flat();
 
 export const SCHEMA = [
+  {
+    id: 'theme',
+    title: 'Colour & theme',
+    intro: 'One hue per section drives every accent, glow and tint in it. Changes apply live.',
+    fields: [
+      { path: 'theme.hues.hero',    label: 'Hero',        type: 'hue' },
+      { path: 'theme.hues.about',   label: 'About',       type: 'hue' },
+      { path: 'theme.hues.team',    label: 'Syndicate',   type: 'hue' },
+      { path: 'theme.hues.bento',   label: 'Work',        type: 'hue' },
+      { path: 'theme.hues.banner',  label: 'Showcase',    type: 'hue' },
+      { path: 'theme.hues.notes',   label: 'Notes',       type: 'hue' },
+      { path: 'theme.hues.widget',  label: 'Personal OS', type: 'hue' },
+      { path: 'theme.hues.mind',    label: 'Personal OS (dark)', type: 'hue' },
+      { path: 'theme.hues.contact', label: 'Contact',     type: 'hue' },
+      { path: 'theme.hues.room',    label: 'The Room',    type: 'hue' },
+      { path: 'theme.hues.video',   label: 'Video page',  type: 'hue' },
+      { path: 'theme.accentLightDark',  label: 'Accent lightness · dark',  type: 'range', min: 40, max: 95, step: 0.5, unit: '%' },
+      { path: 'theme.accentChromaDark', label: 'Accent chroma · dark',     type: 'range', min: 0, max: 0.32, step: 0.005 },
+      { path: 'theme.accentLightLight', label: 'Accent lightness · light', type: 'range', min: 25, max: 80, step: 0.5, unit: '%' },
+      { path: 'theme.accentChromaLight',label: 'Accent chroma · light',    type: 'range', min: 0, max: 0.28, step: 0.005 },
+      { path: 'theme.bgLightnessDark',  label: 'Background · dark',        type: 'range', min: 4, max: 30, step: 0.5, unit: '%' },
+      { path: 'theme.bgLightnessLight', label: 'Background · light',       type: 'range', min: 88, max: 100, step: 0.2, unit: '%' },
+      { path: 'theme.grain',            label: 'Film grain',               type: 'range', min: 0, max: 0.2, step: 0.005 },
+      { path: 'theme.seam',             label: 'Section seams',            type: 'range', min: 0, max: 1, step: 1 },
+    ],
+  },
   heroGroup(0, 'Video Editing'),
   heroGroup(1, 'AI Images'),
   heroGroup(2, 'Color Grading'),
@@ -564,6 +798,114 @@ export const SCHEMA = [
       { path: `aiGallery.${i}.title`,  label: `Image ${i + 1} — title`,  type: 'text'  },
       { path: `aiGallery.${i}.model`,  label: `Image ${i + 1} — model`,  type: 'text'  },
     ])).flat(),
+  },
+  {
+    id: 'team',
+    title: 'Syndicate',
+    intro: 'The five roles on the card stack.',
+    fields: [
+      { path: 'team.heading', label: 'Section heading', type: 'text' },
+      ...Array.from({ length: 5 }, (_, i) => ([
+        { path: `team.members.${i}.num`,     label: `Member ${i + 1} — number`,  type: 'text' },
+        { path: `team.members.${i}.role`,    label: `Member ${i + 1} — role`,    type: 'text' },
+        { path: `team.members.${i}.tagline`, label: `Member ${i + 1} — tagline`, type: 'text' },
+        { path: `team.members.${i}.skills`,  label: `Member ${i + 1} — skills`,  type: 'text', hint: 'Comma-separated — each becomes a chip' },
+        { path: `team.members.${i}.bio`,     label: `Member ${i + 1} — bio`,     type: 'multiline' },
+        { path: `images.team.${i}`,          label: `Member ${i + 1} — portrait`, type: 'image' },
+      ])).flat(),
+    ],
+  },
+  {
+    id: 'banners',
+    title: 'Showcase marquee',
+    intro: 'The scrolling strip of work between Syndicate and Notes.',
+    fields: [
+      { path: 'banners.heading', label: 'Strip label', type: 'text' },
+      ...Array.from({ length: 3 }, (_, i) => ([
+        { path: `images.banners.${i}`,      label: `Banner ${i + 1} — image`,   type: 'image' },
+        { path: `banners.items.${i}.label`, label: `Banner ${i + 1} — caption`, type: 'text'  },
+      ])).flat(),
+    ],
+  },
+  {
+    id: 'notes',
+    title: 'Working notes',
+    intro: 'Four written pieces. Separate paragraphs in the body with a blank line.',
+    fields: [
+      { path: 'notes.eyebrow',     label: 'Eyebrow',     type: 'text' },
+      { path: 'notes.title',       label: 'Title',       type: 'text' },
+      { path: 'notes.titleAccent', label: 'Accent word', type: 'text' },
+      { path: 'notes.sub',         label: 'Subtitle',    type: 'multiline' },
+      ...Array.from({ length: 4 }, (_, i) => ([
+        { path: `notes.items.${i}.kicker`,  label: `Note ${i + 1} — category`,  type: 'text' },
+        { path: `notes.items.${i}.title`,   label: `Note ${i + 1} — title`,     type: 'text' },
+        { path: `notes.items.${i}.date`,    label: `Note ${i + 1} — date`,      type: 'text', hint: 'YYYY-MM-DD' },
+        { path: `notes.items.${i}.read`,    label: `Note ${i + 1} — read time`, type: 'text' },
+        { path: `notes.items.${i}.excerpt`, label: `Note ${i + 1} — excerpt`,   type: 'multiline' },
+        { path: `notes.items.${i}.body`,    label: `Note ${i + 1} — full text`, type: 'multiline', hint: 'Blank line between paragraphs' },
+      ])).flat(),
+    ],
+  },
+  {
+    id: 'os',
+    title: 'Personal OS',
+    intro: 'Text painted over the desktop widgets. Their pictures are in Images → Personal OS.',
+    fields: [
+      { path: 'os.netflix.title', label: 'Feature — title', type: 'text' },
+      { path: 'os.netflix.genre', label: 'Feature — genre line', type: 'text' },
+      ...Array.from({ length: 4 }, (_, i) => ([
+        { path: `os.netflix.cards.${i}.title`, label: `Poster ${i + 1} — title`,    type: 'text' },
+        { path: `os.netflix.cards.${i}.sub`,   label: `Poster ${i + 1} — subtitle`, type: 'text' },
+      ])).flat(),
+      ...Array.from({ length: 6 }, (_, i) => (
+        { path: `os.finder.works.${i}.name`, label: `Finder file ${i + 1} — name`, type: 'text' }
+      )),
+      { path: 'os.hobbies.eyebrow', label: 'Hobbies — eyebrow', type: 'text' },
+      { path: 'os.hobbies.title',   label: 'Hobbies — title',   type: 'text' },
+      ...Array.from({ length: 8 }, (_, i) => (
+        { path: `os.hobbies.items.${i}.label`, label: `Hobby ${i + 1}`, type: 'text' }
+      )),
+    ],
+  },
+  {
+    id: 'mind',
+    title: 'Inside the mind',
+    intro: 'The thought ticker under the brainwave reader. One line each; they cycle in order.',
+    fields: Array.from({ length: 8 }, (_, i) => (
+      { path: `mind.thoughts.${i}`, label: `Thought ${i + 1}`, type: 'text' }
+    )),
+  },
+  {
+    id: 'deck',
+    title: 'Edit Suite board',
+    intro: 'Every label on the draggable board. Pictures are in Images → Edit Suite board.',
+    fields: [
+      { path: 'deck.captionTitle',  label: 'Board caption',      type: 'text' },
+      { path: 'deck.timelineTitle', label: 'Timeline — title',   type: 'text' },
+      { path: 'deck.timelineRange', label: 'Timeline — dates',   type: 'text' },
+      { path: 'deck.posterATitle',  label: 'Poster A — title',   type: 'text' },
+      { path: 'deck.posterASub',    label: 'Poster A — subtitle', type: 'text' },
+      { path: 'deck.posterAKind',   label: 'Poster A — kind',    type: 'text' },
+      { path: 'deck.posterAAddr',   label: 'Poster A — address', type: 'multiline' },
+      { path: 'deck.posterATime',   label: 'Poster A — time',    type: 'text' },
+      { path: 'deck.posterBTitle',  label: 'Poster B — title',   type: 'text' },
+      { path: 'deck.posterBSub',    label: 'Poster B — subtitle', type: 'text' },
+      { path: 'deck.posterBKind',   label: 'Poster B — kind',    type: 'text' },
+      { path: 'deck.posterBAddr',   label: 'Poster B — address', type: 'multiline' },
+      { path: 'deck.posterBTime',   label: 'Poster B — time',    type: 'text' },
+      { path: 'deck.voice',         label: 'Voice pill',         type: 'text' },
+      { path: 'deck.renderTitle',   label: 'Render — title',     type: 'text' },
+      { path: 'deck.renderNum',     label: 'Render — percent',   type: 'text' },
+      { path: 'deck.renderStats',   label: 'Render — stats',     type: 'text' },
+      { path: 'deck.clock',         label: 'Clock chip',         type: 'text' },
+      { path: 'deck.plateTc',       label: 'Plate — timecode',   type: 'text' },
+      { path: 'deck.plateTitle',    label: 'Plate — title',      type: 'text' },
+      { path: 'deck.plateSub',      label: 'Plate — subtitle',   type: 'text' },
+      { path: 'deck.bestTitle',     label: 'Best frames — title', type: 'text' },
+      { path: 'deck.bestSub',       label: 'Best frames — count', type: 'text' },
+      { path: 'deck.nleTc',         label: 'NLE — timecode',     type: 'text' },
+      { path: 'deck.nleSeq',        label: 'NLE — sequence name', type: 'text' },
+    ],
   },
   {
     id: 'contact',

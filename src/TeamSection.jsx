@@ -14,7 +14,6 @@ const DEFAULT_TEAM = [
     skills: ['Premiere Pro', 'DaVinci Resolve', 'Color Grading'],
     accent: '#7f76dc',
     img: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=600&q=80&auto=format&fit=crop',
-    bgImg: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=85&auto=format&fit=crop',
   },
   {
     num: '02',
@@ -24,7 +23,6 @@ const DEFAULT_TEAM = [
     skills: ['Midjourney', 'Stable Diffusion', 'ComfyUI'],
     accent: '#986dd0',
     img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=600&q=80&auto=format&fit=crop',
-    bgImg: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=85&auto=format&fit=crop',
   },
   {
     num: '03',
@@ -34,7 +32,6 @@ const DEFAULT_TEAM = [
     skills: ['React', 'Three.js', 'GSAP'],
     accent: '#ad65be',
     img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80&auto=format&fit=crop',
-    bgImg: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=85&auto=format&fit=crop',
   },
   {
     num: '04',
@@ -44,7 +41,6 @@ const DEFAULT_TEAM = [
     skills: ['Art Direction', 'Brand Strategy', 'Motion Design'],
     accent: '#be5ea5',
     img: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?w=600&q=80&auto=format&fit=crop',
-    bgImg: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=85&auto=format&fit=crop',
   },
   {
     num: '05',
@@ -54,12 +50,31 @@ const DEFAULT_TEAM = [
     skills: ['Python', 'API Design', 'LLM Chains'],
     accent: '#c95a8b',
     img: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80&auto=format&fit=crop',
-    bgImg: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=85&auto=format&fit=crop',
   },
 ];
 
 export default function TeamSection() {
-  const TEAM = withImages(DEFAULT_TEAM, useContent('images.team', null), 'img');
+  /* Text from the CMS, pictures from the registry. Merged per member and
+     per key so a blank field in Firestore falls back to the default here
+     rather than emptying the card. `skills` is stored as one comma-
+     separated string — three chips do not warrant five inputs. */
+  const heading = useContent('team.heading', 'THE SYNDICATE');
+  const copy    = useContent('team.members', null);
+  const TEAM = withImages(DEFAULT_TEAM, useContent('images.team', null), 'img')
+    .map((m, i) => {
+      const c = copy?.[i];
+      const skills = typeof c?.skills === 'string'
+        ? c.skills.split(',').map((t) => t.trim()).filter(Boolean)
+        : null;
+      return {
+        ...m,
+        num:     c?.num     || m.num,
+        role:    c?.role    || m.role,
+        tagline: c?.tagline || m.tagline,
+        bio:     c?.bio     || m.bio,
+        skills:  skills?.length ? skills : m.skills,
+      };
+    });
   const [activeIdx, setActiveIdx] = useState(0);
   const [displayedIdx, setDisplayedIdx] = useState(0);
   const [isOut, setIsOut] = useState(false);
@@ -119,7 +134,7 @@ export default function TeamSection() {
 
       {/* ── SECTION LABEL ── */}
       <div className="ts-section-header">
-        <h2 className="ts-sh-title">THE SYNDICATE</h2>
+        <h2 className="ts-sh-title">{heading}</h2>
         <div className="ts-sh-line" />
       </div>
 

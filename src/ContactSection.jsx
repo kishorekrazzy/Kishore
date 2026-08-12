@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ScrollReveal from './ScrollReveal';
 import './ContactSection.css';
+import { trackEvent } from './services/analytics';
 import { useContent } from './content/store';
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -98,6 +99,7 @@ export default function ContactSection() {
       setState('sent');
       setForm({ name: '', email: '', message: '' });
       setTouched({});
+      trackEvent('contactSent');
     } catch (err) {
       setState('error');
       setErrorMsg(

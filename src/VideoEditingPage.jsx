@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useContent, withImages } from './content/store';
 import './VideoEditingPage.css';
 
-const VIDEOS = [
+// Thumbnails are CMS-managed — see images.videoThumbs.
+const DEFAULT_VIDEOS = [
   {
     id: 'v1', src: '/Video1.mp4',
+    thumb: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=900&q=80',
     title: 'Cinematic Reel 2025', subtitle: 'Annual Showreel · KishoreditX',
     genre: 'Showreel', year: '2025', duration: '2:30',
     desc: 'A full-year compilation of cinematic edits, precise colour grades, and visual storytelling. Every frame intentional.',
@@ -14,6 +17,7 @@ const VIDEOS = [
   },
   {
     id: 'v2', src: '/Glitchvd.mp4',
+    thumb: 'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=900&q=80',
     title: 'Glitch Art Series', subtitle: 'Experimental · Digital Decay',
     genre: 'Experimental', year: '2025', duration: '1:45',
     desc: 'An experimental visual essay exploring digital corruption, glitch aesthetics, and the strange beauty of broken signals.',
@@ -24,6 +28,7 @@ const VIDEOS = [
   },
   {
     id: 'v3', src: null,
+    thumb: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=900&q=80',
     title: 'Brand Film: Aurora', subtitle: 'Commercial · Identity',
     genre: 'Commercial', year: '2024', duration: '3:15',
     desc: 'A premium brand identity film blending atmospheric fog, volumetric light, and product narrative into a visual poem.',
@@ -34,6 +39,7 @@ const VIDEOS = [
   },
   {
     id: 'v4', src: null,
+    thumb: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=900&q=80',
     title: 'Motion Type Study', subtitle: 'Typography · Kinetic',
     genre: 'Motion Design', year: '2024', duration: '1:20',
     desc: 'Kinetic typography meets cinematic motion — a study in the relationship between text, rhythm, and visual tension.',
@@ -44,6 +50,7 @@ const VIDEOS = [
   },
   {
     id: 'v5', src: null,
+    thumb: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=900&q=80',
     title: 'Fragments', subtitle: 'Short Documentary',
     genre: 'Narrative', year: '2024', duration: '8:40',
     desc: 'Disconnected moments woven into a cohesive emotional arc — the art of invisible editing at its most precise.',
@@ -54,6 +61,7 @@ const VIDEOS = [
   },
   {
     id: 'v6', src: null,
+    thumb: 'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=900&q=80',
     title: 'Colour Grade: Noir', subtitle: 'Colour · Grading',
     genre: 'Colour Work', year: '2024', duration: '2:00',
     desc: 'From flat log footage to a noir masterpiece — a deep dive into the craft of cinematic colour grading.',
@@ -64,6 +72,7 @@ const VIDEOS = [
   },
   {
     id: 'v7', src: null,
+    thumb: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
     title: 'AI × Live Blend', subtitle: 'AI Art · VFX Hybrid',
     genre: 'AI Hybrid', year: '2025', duration: '2:55',
     desc: 'Seamlessly blending AI-generated imagery with live footage to create impossible worlds with photorealistic fidelity.',
@@ -74,6 +83,7 @@ const VIDEOS = [
   },
   {
     id: 'v8', src: null,
+    thumb: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=900&q=80',
     title: 'VFX Breakdown', subtitle: 'VFX · Compositing',
     genre: 'VFX', year: '2024', duration: '4:30',
     desc: 'Behind-the-scenes breakdown of complex VFX shots — from raw plate to final composite, step by step.',
@@ -200,6 +210,7 @@ function formatTime(s) {
 
 // ── MAIN COMPONENT ──────────────────────────────────────────
 export default function VideoEditingPage({ onBack }) {
+  const VIDEOS = withImages(DEFAULT_VIDEOS, useContent('images.videoThumbs', null), 'thumb');
   const [idx, setIdx]               = useState(0);
   const [fade, setFade]             = useState(false);
   const [watching, setWatching]     = useState(false);
@@ -545,6 +556,11 @@ export default function VideoEditingPage({ onBack }) {
                     aria-label={`Play: ${item.title}`}
                   >
                     <div className="vep-card-bg" style={{ background: item.bg }} />
+                    {/* Thumbnail is the resting state; the clip fades in over
+                        it on hover, so a card is never just a gradient. */}
+                    {item.thumb && (
+                      <img className="vep-card-thumb" src={item.thumb} alt="" loading="lazy" draggable="false" />
+                    )}
                     {item.src && <video className="vep-card-vid" muted playsInline preload="none" src={item.src} loop />}
                     <div className="vep-card-grad" aria-hidden="true" />
                     <div className="vep-card-info">
