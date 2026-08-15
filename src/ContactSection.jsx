@@ -39,20 +39,30 @@ export default function ContactSection() {
   const [copied, setCopied] = useState(false);
 
   const sectionRef = useRef(null);
+  const innerRef = useRef(null);
   const trapRef = useRef(null);                    // honeypot
   const openedAt = useRef(Date.now());
   const copyTimer = useRef(null);
 
   useEffect(() => () => clearTimeout(copyTimer.current), []);
 
+  /* Watch the CONTENT, not the section.
+
+     The section is 16:9 and taller than most viewports, so a threshold on
+     it fired the moment its top edge cleared the fold — with everything
+     still a screen below. That was survivable when the whole block faded
+     as one, but a staggered reveal would have finished playing before any
+     of it was on screen. Observing .ct-inner asks the question that
+     matters: can you actually see the thing that is about to move? */
   useEffect(() => {
     const el = sectionRef.current;
-    if (!el || !('IntersectionObserver' in window)) return;
+    const inner = innerRef.current;
+    if (!el || !inner || !('IntersectionObserver' in window)) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { el.classList.add('ct-in'); obs.disconnect(); } },
-      { threshold: 0, rootMargin: '0px 0px -60px 0px' },
+      { threshold: 0.2 },
     );
-    obs.observe(el);
+    obs.observe(inner);
     return () => obs.disconnect();
   }, []);
 
@@ -118,33 +128,37 @@ export default function ContactSection() {
       <div className="ct-overlay" aria-hidden="true">
         <img src="/deadpool_overlay.png" alt="" draggable="false" />
       </div>
-      <div className="ct-inner">
+      <div className="ct-inner" ref={innerRef}>
 
         <div className="ct-left">
-          <div className="ct-head-row">
+          <div className="ct-head-row ct-r" style={{ '--i': 0 }}>
             <div className="ct-head-line" />
             <span className="ct-head-eyebrow">{t('eyebrow', 'Contact')}</span>
           </div>
-          <h2 className="ct-title">
+          <h2 className="ct-title ct-r" style={{ '--i': 1 }}>
             {t('title', "Let's build")}<br /><span className="ct-title-accent">{t('titleAccent', 'something.')}</span>
           </h2>
-          <ScrollReveal
-            as="div"
-            containerClassName="sr-plain"
-            textClassName="ct-lede sr-plain"
-            baseOpacity={0.12}
-            baseRotation={2}
-            blurStrength={5}
-          >
-            {t('lede', 'Briefs, half-formed ideas and "is this even possible" all welcome. I read everything and reply to anything real.')}
-          </ScrollReveal>
+          {/* Wrapped rather than classed: ScrollReveal does not forward
+              style, and GSAP owns the transform on its own container. */}
+          <div className="ct-r" style={{ '--i': 2 }}>
+            <ScrollReveal
+              as="div"
+              containerClassName="sr-plain"
+              textClassName="ct-lede sr-plain"
+              baseOpacity={0.12}
+              baseRotation={2}
+              blurStrength={5}
+            >
+              {t('lede', 'Briefs, half-formed ideas and "is this even possible" all welcome. I read everything and reply to anything real.')}
+            </ScrollReveal>
+          </div>
 
-          <button className="ct-email" onClick={copyEmail}>
+          <button className="ct-email ct-r" style={{ '--i': 3 }} onClick={copyEmail}>
             <span className="ct-email-label">{copied ? 'Copied to clipboard' : EMAIL}</span>
             <span className="ct-email-icon" aria-hidden="true">{copied ? '✓' : '⧉'}</span>
           </button>
 
-          <dl className="ct-facts">
+          <dl className="ct-facts ct-r" style={{ '--i': 4 }}>
             <div><dt>{facts.basedLabel || 'Based'}</dt><dd>{facts.basedValue || 'India · IST'}</dd></div>
             <div><dt>{facts.repliesLabel || 'Replies'}</dt><dd>{facts.repliesValue || 'Within 2 days'}</dd></div>
             <div><dt>{facts.statusLabel || 'Status'}</dt><dd className="ct-open">{facts.statusValue || 'Open for work'}</dd></div>
@@ -153,7 +167,7 @@ export default function ContactSection() {
 
         <div className="ct-right">
           {state === 'sent' ? (
-            <div className="ct-done" role="status">
+            <div className="ct-done ct-r" style={{ '--i': 2 }} role="status">
               <div className="ct-done-mark" aria-hidden="true">✓</div>
               <h3>{t('doneTitle', 'Message sent')}</h3>
               <p>{t('doneBody', "It landed. I'll come back to you at the address you gave.")}</p>
@@ -174,7 +188,7 @@ export default function ContactSection() {
                 aria-hidden="true"
               />
 
-              <div className={field('name')}>
+              <div className={`${field('name')} ct-r`} style={{ '--i': 2 }}>
                 <label htmlFor="ct-name">Name</label>
                 <input
                   id="ct-name" type="text" value={form.name}
@@ -186,7 +200,7 @@ export default function ContactSection() {
                 {touched.name && errors.name && <span id="ct-name-err" className="ct-err">{errors.name}</span>}
               </div>
 
-              <div className={field('email')}>
+              <div className={`${field('email')} ct-r`} style={{ '--i': 3 }}>
                 <label htmlFor="ct-email">Email</label>
                 <input
                   id="ct-email" type="email" value={form.email}
@@ -198,7 +212,7 @@ export default function ContactSection() {
                 {touched.email && errors.email && <span id="ct-email-err" className="ct-err">{errors.email}</span>}
               </div>
 
-              <div className={field('message')}>
+              <div className={`${field('message')} ct-r`} style={{ '--i': 4 }}>
                 <label htmlFor="ct-msg">
                   Message
                   <span className="ct-count">{form.message.length}/{LIMITS.message}</span>
@@ -219,7 +233,7 @@ export default function ContactSection() {
                 </p>
               )}
 
-              <button className="ct-submit" type="submit" disabled={state === 'sending'}>
+              <button className="ct-submit ct-r" style={{ '--i': 5 }} type="submit" disabled={state === 'sending'}>
                 {state === 'sending' ? (
                   <><span className="ct-spin" aria-hidden="true" /> Sending…</>
                 ) : (
@@ -227,7 +241,7 @@ export default function ContactSection() {
                 )}
               </button>
 
-              <p className="ct-note">
+              <p className="ct-note ct-r" style={{ '--i': 6 }}>
                 {t('note', 'Goes straight to my inbox. No list, no newsletter, no follow-up sequence.')}
               </p>
             </form>

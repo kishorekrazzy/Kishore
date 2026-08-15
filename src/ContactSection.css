@@ -65,14 +65,41 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   gap: clamp(2rem, 6vw, 5rem);
   align-items: start;
-  opacity: 0;
-  transform: translateY(24px);
 }
-.ct-in .ct-inner {
+
+/* ── the reveal ──
+   Every piece of content rises and scales into place on its own beat,
+   one after another, while the artwork above it does not move at all.
+   That contrast is the whole effect: the frame is already there and the
+   page assembles itself underneath it.
+
+   Two rules, deliberately. The resting state carries no transition, so
+   the hidden position is applied instantly on first paint — putting the
+   transition on the base rule would animate every element up from
+   nothing on mount, before anyone has scrolled. */
+.ct-r {
+  opacity: 0;
+  transform: translateY(46px) scale(0.93);
+  transform-origin: 50% 100%;
+}
+.ct-in .ct-r {
   opacity: 1;
   transform: none;
-  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-              transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 780ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 85ms),
+    transform 1000ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i, 0) * 85ms);
+}
+
+/* The artwork is the fixed point — it must never inherit the reveal. */
+.ct-overlay,
+.ct-overlay img {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-r { opacity: 1; transform: none; }
+  .ct-in .ct-r { transition: none; }
 }
 @media (max-width: 900px) {
   .ct-inner { grid-template-columns: 1fr; }
