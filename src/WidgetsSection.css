@@ -2972,14 +2972,15 @@ button.wg-chip--travel:active {
   z-index: 5;
 }
 
-.wg-music--clickable:hover .wg-music-djhint {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+/* The console announces itself in the Dynamic Island on hover, so this
+   pill would be saying the same thing twice. It stays only where there is
+   no hover to carry the label. */
+.wg-music-djhint { display: none; }
+@media (hover: none) {
+  .wg-music-djhint { display: inline-flex; opacity: 1; transform: none; }
 }
 
-.wg-music--dj .wg-music-djhint {
-  opacity: 0;
-}
+.wg-music--dj .wg-music-djhint { display: none; }
 
 .wg-music-djhint-dot {
   width: 6px;

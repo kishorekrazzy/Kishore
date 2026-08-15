@@ -286,7 +286,6 @@ export function startAnalytics() {
   bump(`referrers.${readReferrer().replace(/[.~/[\]*]/g, '_')}`);
   bump(`hours.${new Date().getHours()}`);
   bump(`langs.${(navigator.language || 'unknown').replace(/[.~/[\]*]/g, '_')}`);
-  bump(`themes.${document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'}`);
   bump(`viewports.${window.innerWidth < 640 ? 'sm' : window.innerWidth < 1024 ? 'md' : window.innerWidth < 1600 ? 'lg' : 'xl'}`);
 
   const scroller = document.getElementById('main-scroll') || document.documentElement;

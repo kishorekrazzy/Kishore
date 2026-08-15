@@ -14,8 +14,7 @@
       content="Portfolio of Kishore (KishoreditX) — AI-driven video editing, cinematic colour grading, generative imagery and web development. Based in India, working worldwide."
     />
     <meta name="author" content="Kishore" />
-    <meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#111318" />
 
     <!-- Update to the real domain before launch: canonical and og:url
          must be absolute, and social scrapers ignore relative paths. -->
@@ -105,22 +104,6 @@
       rel="stylesheet"
     />
 
-    <script>
-      // Resolve the theme before first paint so a visitor never sees a
-      // flash of the wrong one. There are only two themes and both are
-      // explicit, so this always sets the attribute — including for the
-      // retired 'system' value, which resolves to what the OS was showing.
-      // Must stay in step with readMode() in ThemeToggle.jsx.
-      (function () {
-        var m = 'dark';
-        try {
-          var s = localStorage.getItem('kish.theme');
-          if (s === 'light' || s === 'dark') m = s;
-          else if (s === 'system' && matchMedia('(prefers-color-scheme: light)').matches) m = 'light';
-        } catch (e) {}
-        document.documentElement.setAttribute('data-theme', m);
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

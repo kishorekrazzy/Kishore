@@ -28,24 +28,11 @@ export default function ThemeVars() {
 
     Object.entries(t.hues || {}).forEach(([k, v]) => put(`--h-${k}`, v));
 
-    put('--l-acc',  t.accentLightDark  != null ? `${t.accentLightDark}%`  : null);
-    put('--c-acc',  t.accentChromaDark);
-    put('--l-bg',   t.bgLightnessDark  != null ? `${t.bgLightnessDark}%`  : null);
+    put('--l-acc',  t.accentLight != null ? `${t.accentLight}%` : null);
+    put('--c-acc',  t.accentChroma);
+    put('--l-bg',   t.bgLightness != null ? `${t.bgLightness}%`  : null);
     put('--grain-opacity', t.grain);
     put('--seam',   t.seam);
-
-    /* Light-theme scalars live in a different block, so they need their own
-       rule rather than a root variable — otherwise the dark values would
-       leak into light mode. */
-    const id = 'cms-theme-light';
-    let tag = document.getElementById(id);
-    if (!tag) { tag = document.createElement('style'); tag.id = id; document.head.appendChild(tag); }
-    tag.textContent = `
-      :root[data-theme='light'] {
-        ${t.accentLightLight  != null ? `--l-acc: ${t.accentLightLight}%;` : ''}
-        ${t.accentChromaLight != null ? `--c-acc: ${t.accentChromaLight};` : ''}
-        ${t.bgLightnessLight  != null ? `--l-bg: ${t.bgLightnessLight}%;`  : ''}
-      }`;
 
     return () => { set.forEach((n) => root.style.removeProperty(n)); };
   }, [t]);

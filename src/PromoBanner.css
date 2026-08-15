@@ -1,0 +1,181 @@
+/* ══════════════════════════════════════════════════════════════════════
+   PROMO BANNER
+
+   5.27:1 — measured off the banner inside the reference (it sits at
+   (25,8) and is 1950x370), not the file around it.
+
+   Hue 335 throughout: About is 355, Syndicate is 320, so this is the
+   midpoint and the strip reads as the step between them. The section
+   background is composed from the same hue in OKLCH, which is what the
+   rest of the site does and what keeps the surround tied to the banner.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.pb-section {
+  --h: 335;
+  position: relative;
+  z-index: 2;
+  padding: clamp(26px, 4.5vh, 60px) clamp(14px, 2.2vw, 40px);
+  /* The ground the strip sits on. Tinted rather than neutral — the whole
+     band is the same hue as the banner, lit from where the magenta is, so
+     the strip belongs to the page instead of being dropped onto it. */
+  background:
+    radial-gradient(62% 140% at 20% 50%, oklch(36% 0.14 var(--h) / 0.62), transparent 74%),
+    radial-gradient(72% 150% at 86% 50%, oklch(29% 0.10 var(--h) / 0.45), transparent 72%),
+    oklch(17% 0.055 var(--h));
+}
+
+.pb-banner {
+  position: relative;
+  width: 100%;
+  max-width: 1800px;
+  margin-inline: auto;
+  aspect-ratio: 1950 / 370;
+  border-radius: clamp(14px, 1.3vw, 24px);
+  overflow: hidden;
+  background: oklch(18% 0.05 var(--h));
+  box-shadow: 0 24px 70px oklch(12% 0.06 var(--h) / 0.55);
+  container-type: inline-size;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  color: #fff;
+}
+
+.pb-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pb-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(168deg,
+      oklch(56% 0.20 var(--h) / 0.30) 0%,
+      transparent 62%),
+    linear-gradient(to right,
+      oklch(48% 0.21 var(--h)) 0%,
+      oklch(46% 0.21 var(--h) / 0.95) 20%,
+      oklch(44% 0.20 var(--h) / 0.64) 34%,
+      oklch(42% 0.19 var(--h) / 0.24) 48%,
+      transparent 60%);
+}
+
+/* ── Copy ── */
+.pb-body {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.7cqw;
+  padding: 0 1.9cqw;
+}
+
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4cqw;
+  padding: 0.4cqw 0.8cqw;
+  border-radius: 99px;
+  box-shadow: inset 0 0 0 0.07cqw rgba(255, 255, 255, 0.62);
+  font-size: 0.62cqw;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+.pb-badge svg { width: 0.72cqw; height: 0.72cqw; }
+
+.pb-title {
+  font-size: 2.05cqw;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+}
+.pb-sub {
+  font-size: 0.72cqw;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 46ch;
+}
+.pb-cta {
+  margin-top: 0.35cqw;
+  padding: 0.85cqw 2.1cqw;
+  border-radius: 99px;
+  background: #fbf4f7;
+  color: #14090e;
+  font-size: 0.78cqw;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+}
+.pb-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
+}
+
+/* ── Watermark ── */
+.pb-mark {
+  position: absolute;
+  right: 2.2%;
+  bottom: 9%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3cqw;
+  pointer-events: none;
+  text-shadow: 0 0.15cqw 0.9cqw rgba(0, 0, 0, 0.45);
+}
+.pb-mark-kicker {
+  font-size: 0.55cqw;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  /* The tracking pushes the block right; pull it back to stay centred. */
+  text-indent: 0.42em;
+  color: rgba(255, 255, 255, 0.92);
+}
+.pb-mark-name {
+  font-size: 2.3cqw;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  /* Condensed, the way a wordmark is set. */
+  transform: scaleX(0.9);
+  transform-origin: center;
+}
+
+/* ══ Responsive ══
+   At phone width a 5.3:1 strip is 70px tall, so the banner deepens and
+   the watermark steps aside rather than colliding with the button. */
+@media (max-width: 900px) {
+  .pb-banner { aspect-ratio: 4 / 3; }
+  .pb-body { gap: 10px; padding: 0 22px; }
+  .pb-badge { gap: 6px; padding: 6px 11px; font-size: 0.6rem; }
+  .pb-badge svg { width: 11px; height: 11px; }
+  .pb-title { font-size: clamp(1.5rem, 6.6vw, 2.1rem); }
+  .pb-sub   { font-size: 0.84rem; }
+  .pb-cta   { margin-top: 4px; padding: 12px 26px; font-size: 0.88rem; }
+  .pb-wash {
+    background:
+      linear-gradient(to bottom,
+        oklch(48% 0.21 var(--h) / 0.55) 0%,
+        oklch(44% 0.20 var(--h) / 0.86) 46%,
+        oklch(42% 0.19 var(--h) / 0.96) 100%);
+  }
+  .pb-mark { right: 5%; bottom: 5%; gap: 2px; }
+  .pb-mark-kicker { font-size: 0.5rem; letter-spacing: 0.3em; text-indent: 0.3em; }
+  .pb-mark-name   { font-size: 1.15rem; }
+}
+@media (max-width: 560px) {
+  /* Below this the watermark and the button want the same corner. */
+  .pb-mark { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-cta { transition: none; }
+}

@@ -50,48 +50,6 @@
   pointer-events: none;
 }
 
-/* ── Light sheet ── */
-:root[data-theme='light'] .dk-section {
-  --dk-bg: #f2efe9;
-  --dk-card: #ffffff;
-  --dk-card-ink: #2b2723;
-  --dk-ink: #2b2723;
-  --dk-ink2: #6f675f;
-  --dk-ink3: #9d958b;
-  --dk-glass: rgba(255, 255, 255, 0.62);
-  --dk-glass-line: rgba(255, 255, 255, 0.8);
-  --dk-line: rgba(0, 0, 0, 0.07);
-  --dk-sh-s: 0 2px 6px rgba(88, 74, 58, 0.10);
-  --dk-sh-m: 0 8px 22px rgba(88, 74, 58, 0.13);
-  --dk-sh-l: 0 20px 48px rgba(88, 74, 58, 0.18);
-}
-:root[data-theme='light'] .dk-section::before {
-  background:
-    radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, 0.85) 0%, transparent 55%),
-    radial-gradient(90% 70% at 100% 100%, rgba(214, 203, 188, 0.35) 0%, transparent 60%);
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .dk-section {
-    --dk-bg: #f2efe9;
-    --dk-card: #ffffff;
-    --dk-card-ink: #2b2723;
-    --dk-ink: #2b2723;
-    --dk-ink2: #6f675f;
-    --dk-ink3: #9d958b;
-    --dk-glass: rgba(255, 255, 255, 0.62);
-    --dk-glass-line: rgba(255, 255, 255, 0.8);
-    --dk-line: rgba(0, 0, 0, 0.07);
-    --dk-sh-s: 0 2px 6px rgba(88, 74, 58, 0.10);
-    --dk-sh-m: 0 8px 22px rgba(88, 74, 58, 0.13);
-    --dk-sh-l: 0 20px 48px rgba(88, 74, 58, 0.18);
-  }
-  :root:not([data-theme='dark']) .dk-section::before {
-    background:
-      radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, 0.85) 0%, transparent 55%),
-      radial-gradient(90% 70% at 100% 100%, rgba(214, 203, 188, 0.35) 0%, transparent 60%);
-  }
-}
-
 /* Sized by whichever axis runs out first. max-height cannot constrain a
    width-driven aspect-ratio, so the height cap is folded into the width
    calculation instead — otherwise the board overflows a short viewport. */

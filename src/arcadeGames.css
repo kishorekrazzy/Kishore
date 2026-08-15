@@ -1,0 +1,561 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ARCADE — game chrome
+
+   One frame for all thirteen: a row of stat chips, a stage, a footer.
+   Each game paints inside the stage and inherits --h from the dialog, so
+   a game is one colour throughout without declaring a palette of its own.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.gm {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 22px;
+  width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  place-items: center;
+  --line: rgba(255, 255, 255, 0.09);
+  --dim: rgba(240, 240, 245, 0.52);
+  --hot: oklch(70% 0.18 var(--h, 275));
+}
+
+/* ── HUD ── */
+.gm-hud { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.gm-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 92px;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.gm-chip em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+.gm-chip b {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.gm-stage { display: grid; place-items: center; width: 100%; min-height: 0; }
+.gm-foot { display: flex; align-items: center; gap: 12px; min-height: 40px; }
+.gm-hint { font-size: 0.95rem; color: var(--dim); }
+
+.gm-btn {
+  padding: 14px 34px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--hot);
+  color: #07070a;
+  font: inherit;
+  font-size: 1.02rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.gm-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.gm-btn:disabled { opacity: 0.55; cursor: default; }
+
+/* ── Curtain ── */
+.gm-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px;
+  border-radius: inherit;
+  background: rgba(9, 9, 13, 0.88);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  text-align: center;
+}
+.gm-curtain strong { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em; }
+.gm-curtain span { font-size: 1rem; color: var(--dim); }
+.gm-curtain .gm-btn { margin-top: 16px; }
+
+/* ── Boards ── */
+.gm-board, .gm-2048, .gm-mines, .gm-simon, .gm-ttt,
+.gm-colour, .gm-mem, .gm-field, .gm-wheel, .gm-frame {
+  position: relative;
+  border-radius: 14px;
+}
+
+/* Snake */
+.gm-snake {
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  width: min(46vh, 380px);
+  aspect-ratio: 1;
+  padding: 6px;
+  background: #0b0d10;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: calc(100% / var(--n)) calc(100% / var(--n));
+}
+.gm-cell {
+  position: absolute;
+  width: calc((100% - 10px) / var(--n));
+  height: calc((100% - 10px) / var(--n));
+  left: calc(5px + var(--x) * (100% - 10px) / var(--n));
+  top: calc(5px + var(--y) * (100% - 10px) / var(--n));
+  border-radius: 3px;
+}
+.gm-snake-seg { background: var(--hot); opacity: calc(1 - var(--i) * 0.012); }
+.gm-snake-seg.is-head { border-radius: 4px; box-shadow: 0 0 12px var(--hot); }
+.gm-food { background: #ff4d6a; border-radius: 50%; box-shadow: 0 0 12px #ff4d6a; }
+
+/* Pong & Breakout share a court.
+
+   container-type: size turns cqw/cqh into a percentage of this box, which
+   is what the games write their transforms in — so the play area scales
+   with the dialog and the physics never has to know the pixel size.
+   The box needs its own dimensions for that to mean anything: without
+   them the container resolves to 0 and everything inside collapses. */
+.gm-court {
+  position: relative;
+  width: min(100%, 460px);
+  aspect-ratio: 300 / 190;
+  border-radius: 14px;
+  background: #0b0d10;
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+  container-type: size;
+}
+.gm-brk { aspect-ratio: 320 / 220; }
+
+.gm-net {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  bottom: 6%;
+  width: 2px;
+  margin-left: -1px;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.2) 0 7px, transparent 7px 15px);
+}
+
+/* Positioned by CSS on one axis, driven by transform on the other. */
+.gm-paddle {
+  position: absolute;
+  top: 0;
+  width: 1.4%;
+  height: 22%;
+  border-radius: 3px;
+  background: #fff;
+}
+.gm-paddle--l { left: 3%; }
+.gm-paddle--r { left: 95.6%; background: var(--hot); }
+
+.gm-ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3.2%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+}
+
+.gm-brick {
+  position: absolute;
+  left: calc(var(--c) * 12.5% + 0.7%);
+  top: calc(7.3% + var(--r) * 8.2%);
+  width: 11.2%;
+  height: 5.4%;
+  border-radius: 3px;
+  background: oklch(calc(74% - var(--r) * 8%) 0.17 calc(var(--h) + var(--r) * 24));
+}
+
+.gm-pad {
+  position: absolute;
+  left: 0;
+  bottom: 3%;
+  width: 21%;
+  height: 3.2%;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* 2048 */
+.gm-2048 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  width: min(44vh, 350px);
+  aspect-ratio: 1;
+  padding: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.gm-tile {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  font-size: clamp(1.1rem, 4vh, 1.7rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0a0a0c;
+  transition: background-color 0.16s ease;
+}
+.gm-tile.is-on { animation: gmPop 0.16s ease; }
+@keyframes gmPop { from { transform: scale(0.82); } }
+/* The classic ramp, rebuilt in the site's colour space. */
+.gm-tile[data-v="2"]    { background: #e9e4da; }
+.gm-tile[data-v="4"]    { background: #e6dcc2; }
+.gm-tile[data-v="8"]    { background: #f0a868; }
+.gm-tile[data-v="16"]   { background: #ef8c56; }
+.gm-tile[data-v="32"]   { background: #ef6f4e; }
+.gm-tile[data-v="64"]   { background: #ee5232; }
+.gm-tile[data-v="128"]  { background: #ecc850; font-size: 1rem; }
+.gm-tile[data-v="256"]  { background: #edc53f; font-size: 1rem; }
+.gm-tile[data-v="512"]  { background: #edc22e; font-size: 1rem; }
+.gm-tile[data-v="1024"] { background: #eec22b; font-size: 0.82rem; }
+.gm-tile[data-v="2048"] { background: #edc22e; font-size: 0.82rem; box-shadow: 0 0 22px rgba(237,194,46,0.6); }
+
+/* Minesweeper */
+.gm-mines {
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  gap: 3px;
+  width: min(44vh, 350px);
+  aspect-ratio: 1;
+}
+.gm-ms {
+  border: 0;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eaeaf0;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+}
+.gm-ms:hover { background: rgba(255, 255, 255, 0.15); }
+.gm-ms.is-open { background: rgba(255, 255, 255, 0.028); cursor: default; }
+.gm-ms.is-boom { background: #ff3b5c; color: #fff; }
+.gm-ms[data-n="1"] { color: #6ea8ff; }
+.gm-ms[data-n="2"] { color: #57d38c; }
+.gm-ms[data-n="3"] { color: #ff7a7a; }
+.gm-ms[data-n="4"] { color: #b78cff; }
+.gm-ms[data-n="5"] { color: #ffb454; }
+.gm-ms[data-n="6"] { color: #5ad6d6; }
+
+/* Simon */
+.gm-simon {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: min(42vh, 330px);
+  aspect-ratio: 1;
+}
+.gm-pad-btn {
+  border: 0;
+  cursor: pointer;
+  transition: filter 0.12s ease, transform 0.12s ease;
+  filter: brightness(0.45) saturate(0.7);
+}
+.gm-pad-btn.is-lit { filter: brightness(1.25); transform: scale(0.97); }
+.gm-pad-0 { background: #2ecc71; border-radius: 100% 0 0 0; }
+.gm-pad-1 { background: #ff4d6a; border-radius: 0 100% 0 0; }
+.gm-pad-2 { background: #f5c518; border-radius: 0 0 0 100%; }
+.gm-pad-3 { background: #4d9fff; border-radius: 0 0 100% 0; }
+
+/* Tic tac toe */
+.gm-ttt {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: min(40vh, 320px);
+  aspect-ratio: 1;
+}
+.gm-ttt-c {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: #f0f0f5;
+  font: inherit;
+  font-size: 2.8rem;
+  font-weight: 300;
+  cursor: pointer;
+  transition: background-color 0.16s ease;
+}
+.gm-ttt-c:hover { background: rgba(255, 255, 255, 0.1); }
+.gm-ttt-c.is-win { background: var(--hot); color: #07070a; font-weight: 500; }
+
+/* Reaction */
+.gm-react {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: min(100%, 420px);
+  aspect-ratio: 4 / 3;
+  max-height: 46vh;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.14s linear;
+}
+.gm-react strong { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 700; letter-spacing: -0.045em; }
+.gm-react span { font-size: 1rem; color: rgba(255, 255, 255, 0.75); }
+.gm-react.is-wait { background: #b3261e; }
+.gm-react.is-go   { background: #12b76a; }
+.gm-react.is-foul { background: #7a2e28; }
+
+/* Frame perfect */
+.gm-frame { width: min(100%, 500px); display: flex; flex-direction: column; gap: 12px; }
+.gm-frame-track {
+  position: relative;
+  height: 96px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+  overflow: hidden;
+}
+.gm-frame-tick { position: absolute; top: 0; width: 1px; height: 11px; background: rgba(255,255,255,0.18); }
+.gm-frame-band { position: absolute; top: 0; bottom: 0; background: oklch(70% 0.18 var(--h) / 0.2); box-shadow: inset 0 0 0 1px oklch(70% 0.18 var(--h) / 0.5); }
+.gm-frame-mark { position: absolute; top: 7px; bottom: 7px; width: 2px; translate: -50% 0; background: oklch(85% 0.15 var(--h)); }
+.gm-frame-head { position: absolute; top: 0; bottom: 0; width: 3px; translate: -50% 0; background: #fff; box-shadow: 0 0 14px rgba(255,255,255,0.85); }
+.gm-frame-out { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 40px; opacity: 0; transition: opacity 0.3s ease; }
+.gm-frame-out.is-in { opacity: 1; }
+.gm-frame-out strong { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
+.gm-frame-out span { font-size: 0.92rem; color: var(--dim); }
+
+/* Colour match */
+.gm-colour {
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  gap: 7px;
+  width: min(40vh, 330px);
+  aspect-ratio: 1;
+}
+.gm-swatch { border: 0; border-radius: 9px; cursor: pointer; transition: transform 0.16s ease; }
+.gm-swatch:hover { transform: scale(1.06); }
+.gm-swatch.is-wrong { animation: gmShake 0.36s ease; }
+@keyframes gmShake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* Memory */
+.gm-mem { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: min(40vh, 330px); }
+.gm-card { aspect-ratio: 3 / 4; padding: 0; border: 0; background: none; cursor: pointer; perspective: 700px; }
+.gm-card-in { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.32,0.72,0,1); }
+.gm-card.is-up .gm-card-in { transform: rotateY(180deg); }
+.gm-card-back, .gm-card-face {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  border-radius: 9px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.gm-card-back { background: oklch(42% 0.13 var(--h) / 0.5); box-shadow: inset 0 0 0 1px oklch(80% 0.12 var(--h) / 0.26); }
+.gm-card-face { transform: rotateY(180deg); background: rgba(255,255,255,0.1); box-shadow: inset 0 0 0 1px var(--line); font-size: 1.6rem; color: var(--hot); }
+.gm-card.is-done { opacity: 0.4; cursor: default; }
+
+/* Bug hunt */
+.gm-field {
+  width: min(100%, 470px);
+  aspect-ratio: 4 / 3;
+  max-height: 46vh;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.gm-bug {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: crosshair;
+  background: radial-gradient(circle at 34% 30%, #ff8a9b, #d81f3c 62%, #8d0f22 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 -3px 6px rgba(0, 0, 0, 0.35);
+  /* No transition on position: it must teleport, or a fast player chases
+     a tween instead of the target. */
+  transition: transform 0.9s linear;
+}
+
+/* Wheel */
+.gm-wheel { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.gm-wheel-cv {
+  width: min(44vh, 320px);
+  height: min(44vh, 320px);
+  border-radius: 50%;
+  box-shadow: 0 20px 60px oklch(30% 0.1 var(--h) / 0.55), inset 0 0 0 5px rgba(255,255,255,0.06);
+}
+.gm-wheel-pin {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 3;
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 20px solid #fff;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.55));
+}
+.gm-wheel-out { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 40px; opacity: 0; transition: opacity 0.35s ease; }
+.gm-wheel-out.is-in { opacity: 1; }
+.gm-wheel-out strong { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.035em; }
+.gm-wheel-out span { font-size: 0.95rem; color: var(--dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gm-card-in, .gm-btn, .gm-swatch, .gm-tile, .gm-bug { transition: none; }
+  .gm-tile.is-on, .gm-swatch.is-wrong { animation: none; }
+}
+
+/* ══ TYPING SPEED ═════════════════════════════════════════════════════ */
+.gm-type {
+  position: relative;
+  width: min(100%, 480px);
+  min-height: 230px;
+  padding: 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: text;
+}
+.gm-type-text {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 1.05rem;
+  line-height: 1.95;
+  letter-spacing: 0.01em;
+  color: rgba(240, 240, 245, 0.3);
+  word-break: break-word;
+}
+.gm-type-text .is-ok  { color: #f2f2f5; }
+.gm-type-text .is-bad { color: #ff5c72; background: rgba(255, 92, 114, 0.16); border-radius: 2px; }
+/* A caret drawn on the next character, since the real input is hidden. */
+.gm-type-text .is-cur { box-shadow: inset 2px 0 0 var(--hot); background: rgba(255, 255, 255, 0.06); }
+/* Off-screen rather than display:none — a hidden input cannot hold focus,
+   and focus is the whole interaction here. */
+.gm-type-in {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+  padding: 0; border: 0;
+  left: 12px; bottom: 12px;
+}
+
+/* ══ AIM TRAINER ══════════════════════════════════════════════════════ */
+.gm-aim {
+  position: relative;
+  width: min(100%, 470px);
+  aspect-ratio: 4 / 3;
+  max-height: 46vh;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.gm-target {
+  position: absolute;
+  width: 58px; height: 58px;
+  translate: -50% -50%;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: crosshair;
+  background:
+    radial-gradient(circle, #fff 0 22%, transparent 23%),
+    radial-gradient(circle, var(--hot) 0 46%, transparent 47%),
+    radial-gradient(circle, #fff 0 70%, transparent 71%),
+    radial-gradient(circle, var(--hot) 0 100%);
+  box-shadow: 0 0 22px oklch(70% 0.18 var(--h) / 0.55);
+  animation: gmPip 0.16s var(--ease, ease) both;
+}
+@keyframes gmPip { from { transform: scale(0.55); opacity: 0; } }
+
+/* ══ NUMBER MEMORY ════════════════════════════════════════════════════ */
+.gm-num {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 470px);
+  min-height: 240px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.gm-num-show {
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  animation: gmPop 0.2s ease;
+}
+.gm-num-form { display: flex; gap: 9px; align-items: center; }
+.gm-num-in {
+  width: 210px;
+  padding: 15px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: #f2f2f5;
+  font: inherit;
+  font-size: 1.3rem;
+  letter-spacing: 0.16em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.gm-num-in:focus { box-shadow: inset 0 0 0 1.5px var(--hot); }
+
+/* ══ CHIMP TEST ═══════════════════════════════════════════════════════ */
+.gm-chimp {
+  position: relative;
+  width: min(100%, 470px);
+  aspect-ratio: 4 / 3;
+  max-height: 46vh;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.gm-chimp-c {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 54px; height: 54px;
+  translate: -50% -50%;
+  border: 0;
+  border-radius: 14px;
+  background: #f2f2f5;
+  color: #0b0b0f;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.14s ease;
+}
+.gm-chimp-c:hover { transform: translate(-50%, -50%) scale(1.06); }
+/* Blank once the run starts — the numbers are the memory, not the board. */
+.gm-chimp-c.is-blank { background: var(--hot); }

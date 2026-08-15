@@ -151,17 +151,23 @@ export const DEFAULT_CONTENT = {
 
   /* The ⚠ easter egg in the nav — a scatter of fake browser windows and a
      system alert, styled after an investigation board. */
-  warning: {
-    dialogTitle: 'Unsecured Connection',
-    dialogBody: 'Someone has been reading this portfolio for an unusual length of time. Their session has been logged, traced and — frankly — appreciated.',
-    okLabel: 'OK',
-    tabs: [
-      { url: 'search.locations',   caption: 'Last known position' },
-      { url: 'wanted.poster.jpg',  caption: 'Subject identified'  },
-      { url: 'archive.reel.mov',   caption: 'Footage recovered'   },
-      { url: 'signal.feed',        caption: 'Feed intercepted'    },
-      { url: 'traces.log',         caption: 'Trace active'        },
-      { url: 'profile.render',     caption: 'Match confirmed'     },
+  /* ── Timeline ───────────────────────────────────────────────────────
+     The scrapbook calendar behind the island's logo button. Entries are
+     dated 'YYYY-MM-DD'; a day with one shows a dot and opens it. Anything
+     before 4 Feb 2004 gets the refusal instead, which is the joke.
+
+     These are placeholders with real dates — put your own in. */
+  timeline: {
+    blankTitle: 'Nothing written',
+    blankNote: 'An ordinary day. Most of them are — that is rather the point.',
+    captions: ['first frame', 'the room', 'on location'],
+    entries: [
+      { date: '2004-02-04', title: 'Day zero',            note: 'The timeline starts here. Everything before this returns a 404.' },
+      { date: '2016-06-12', title: 'The Lenovo on the road', note: 'Found a discarded smartphone walking home. Took it apart with my attention, broke every setting, put them back. Photography happened by accident a month later.' },
+      { date: '2019-08-21', title: 'First paid edit',     note: 'Someone transferred money for something I would have done for free. That was the moment it stopped being a hobby.' },
+      { date: '2021-03-09', title: 'Learned the grade',   note: 'Realised balance comes before look. Spent a week matching two cameras and never edited the same way again.' },
+      { date: '2023-11-02', title: 'First prompt that worked', note: 'Not the image — the harness around it. Started keeping a failure catalogue the same night.' },
+      { date: '2025-05-18', title: 'Built this site',     note: 'From scratch, no template. Every section is a thing I wanted to find out how to build.' },
     ],
   },
 
@@ -245,15 +251,104 @@ export const DEFAULT_CONTENT = {
     },
     /* Accent strength. Lightness is perceptual in OKLCH, so one value
        reads equally bright on every hue. */
-    accentLightDark: 75,
-    accentChromaDark: 0.18,
-    accentLightLight: 45,
-    accentChromaLight: 0.165,
-    /* Page grounds. */
-    bgLightnessDark: 14.5,
-    bgLightnessLight: 97.4,
+    accentLight: 75,
+    accentChroma: 0.18,
+    /* Page ground. */
+    bgLightness: 14.5,
     grain: 0.05,
     seam: 1,
+  },
+
+  /* ── Feature banner ─────────────────────────────────────────────────
+     The wide strip under Notes: one image with the copy over the left of
+     it. The artwork is images.feature.0. */
+  feature: {
+    eyebrow: 'NEW FEATURE',
+    title1: 'ONE CANVAS.',
+    title2: 'EVERY WORKFLOW.',
+    sub1: 'Moodboard, chain workflows, and share',
+    sub2: 'with your team - all on one canvas',
+    cta: 'Try Canvas',
+    ctaHref: '#work',
+    /* How much the artwork is darkened behind the words. 0 turns it off
+       for images that already leave the left-hand side clear. */
+    scrim: 0.55,
+  },
+
+  /* ── Footer ─────────────────────────────────────────────────────────
+     The panel under Contact: nav row, pitch and stats, a collage whose
+     two columns crawl in opposite directions, then the wordmark strip. */
+  footer: {
+    logo: 'KishoreditX',
+    badge: 'Available for freelance work',
+    title1: 'Let\u2019s make something',
+    title2: 'worth watching',
+    title3: 'together',
+    sub: 'Editing, colour, AI images and the web \u2014 one person, one pipeline, no handoffs.',
+    cta: 'Start a project',
+    ctaHref: '#contact',
+    cta2: 'See the work',
+    cta2Href: '#work',
+    /* Placeholders. Put your own numbers here — these are the shape the
+       reference uses, not measurements of anything. */
+    stats: [
+      { cap: 'UP TO', value: '288%', label: 'Uplift in watch time' },
+      { cap: 'UP TO', value: '20X',  label: 'Faster turnaround'    },
+      { cap: 'UP TO', value: '392%', label: 'More engagement'      },
+    ],
+    cardAValue: '11.17 mins',
+    cardALabel: 'Average watch time',
+    cardBKicker: '\u2014 Up to',
+    cardBValue: '60%',
+    cardBLabel: 'More replies this week',
+    marksLabel: 'Tools I work in every day',
+    /* Brand slugs, resolved against simple-icons in footerLogos.js.
+       Anything that is not a known slug renders as plain text, so a brand
+       with no logo available (Adobe, OpenAI, Canva — all removed from the
+       icon set at their own request) can still sit on the strip. */
+    marks: [
+      'davinciresolve', 'blackmagicdesign', 'blender', 'figma', 'framer',
+      'notion', 'github', 'react', 'threedotjs', 'greensock', 'javascript',
+      'nodedotjs', 'vite', 'python', 'html5', 'css', 'firebase', 'netlify',
+      'vercel', 'claude', 'youtube', 'instagram', 'tiktok', 'spotify',
+      'obsstudio', 'behance',
+    ],
+    copyright: '\u00a9 2026 Kishore. Built from scratch.',
+  },
+
+  /* ── Promo banner ───────────────────────────────────────────────────
+     The magenta strip between About and Syndicate. Its hue (335) is the
+     midpoint of those two sections, so it reads as the step between them
+     rather than as an insert. */
+  promo: {
+    badge: 'OPEN FOR WORK',
+    title1: 'START A PROJECT WITH',
+    title2: 'KISHOREDITX',
+    sub: 'Video, AI images and the web — one person, one pipeline',
+    cta: 'Start a project',
+    ctaHref: '#contact',
+    markKicker: 'CREATED WITH',
+    markName: 'KISHOREDITX',
+  },
+
+  /* ── Feature grid ───────────────────────────────────────────────────
+     The promo card and six entry cards under Personal OS. Each card opens
+     the sub-page named in DEFAULT_CARDS in FeatureGrid.jsx; only the
+     wording is editable here, so a renamed card cannot break its link. */
+  grid: {
+    heroTitle1: 'SIX GAMES.',
+    heroTitle2: 'ONE VERTICAL FEED.',
+    heroSub: 'Spin the wheel, beat your reaction time, and cut on the frame',
+    heroCta: 'Open the arcade',
+    heroHref: '#/games',
+    cards: [
+      { title: 'Video Editing', sub: 'Cuts, grades and rhythm',     badge: 'SHOWREEL' },
+      { title: 'About Me',      sub: 'The long version',            badge: ''         },
+      { title: 'AI Images',     sub: 'Prompted, curated, printed',  badge: 'GALLERY'  },
+      { title: 'Websites',      sub: 'Designed, built and shipped', badge: ''         },
+      { title: 'Skills',        sub: 'Everything in the toolkit',   badge: ''         },
+      { title: 'The Room',      sub: 'A CRT and too many ideas',    badge: 'NEW'      },
+    ],
   },
 
   /* ── Edit Suite board ───────────────────────────────────────────────
@@ -448,6 +543,54 @@ export const DEFAULT_CONTENT = {
       'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
       'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=900&q=80',
     ],
+    // Feature banner — the artwork behind the copy
+    feature: [
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2400&q=80',
+    ],
+    // Working notes — one cover per piece
+    notes: [
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?auto=format&fit=crop&w=1200&q=80',
+    ],
+    /* Arcade — one cover per game, in library order. Placeholders: they
+       are here so the launcher is never empty, not because they are the
+       right pictures. */
+    arcade: [
+      'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1531525645387-7f14be1bdbbd?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1553481187-be93c21490a9?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1516110833967-0b5716ca1387?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=600&q=80',
+    ],
+    // Footer collage — the four photographs in the crawling columns
+    footer: [
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80',
+    ],
+    // Promo banner — the artwork behind the magenta wash
+    promo: [
+      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=2400&q=80',
+    ],
+    // Feature grid — the promo card's artwork
+    gridHero: [
+      'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1600&q=80',
+    ],
     // Lanyard card — [0] front face, [1] back face
     lanyard: [
       '/idcard-front.png',
@@ -472,14 +615,17 @@ export const DEFAULT_CONTENT = {
       'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80',
       'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80',
     ],
-    // Warning stack — browser window plates
-    warning: [
-      'https://images.unsplash.com/photo-1451847251646-8a6c0dd1510c?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=80',
+    /* Timeline — eight photographs for the board, in the order they are
+       laid out. No backdrop: the page behind is blurred instead. */
+    timeline: [
+      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1520390138845-fd2d229dd553?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80',
     ],
     // About Me — gallery
     aboutMe: [
@@ -608,10 +754,16 @@ export const DEFAULT_CONTENT = {
 export const IMAGE_GROUP_LABELS = {
   'musicPlate': 'Music card — plate',
   'videoThumbs': 'Video Editing — card thumbnails',
+  'feature': 'Feature banner',
+  'notes': 'Working notes \u2014 covers',
+  'arcade': 'Arcade \u2014 game covers',
+  'footer': 'Footer \u2014 collage',
+  'promo': 'Promo banner \u2014 artwork',
+  'gridHero': 'Feature grid \u2014 promo art',
   'lanyard': 'Profile card (lanyard)',
   'certs': 'Certificates',
   'deck': 'Edit Suite board',
-  'warning': 'Warning stack — windows',
+  'timeline': 'Timeline — scrapbook',
   'aboutMe': 'About Me \u2014 gallery',
   'team': 'Syndicate \u2014 portraits',
   'banners': 'Showcase banners',
@@ -673,12 +825,9 @@ export const SCHEMA = [
       { path: 'theme.hues.contact', label: 'Contact',     type: 'hue' },
       { path: 'theme.hues.room',    label: 'The Room',    type: 'hue' },
       { path: 'theme.hues.video',   label: 'Video page',  type: 'hue' },
-      { path: 'theme.accentLightDark',  label: 'Accent lightness · dark',  type: 'range', min: 40, max: 95, step: 0.5, unit: '%' },
-      { path: 'theme.accentChromaDark', label: 'Accent chroma · dark',     type: 'range', min: 0, max: 0.32, step: 0.005 },
-      { path: 'theme.accentLightLight', label: 'Accent lightness · light', type: 'range', min: 25, max: 80, step: 0.5, unit: '%' },
-      { path: 'theme.accentChromaLight',label: 'Accent chroma · light',    type: 'range', min: 0, max: 0.28, step: 0.005 },
-      { path: 'theme.bgLightnessDark',  label: 'Background · dark',        type: 'range', min: 4, max: 30, step: 0.5, unit: '%' },
-      { path: 'theme.bgLightnessLight', label: 'Background · light',       type: 'range', min: 88, max: 100, step: 0.2, unit: '%' },
+      { path: 'theme.accentLight',  label: 'Accent lightness', type: 'range', min: 40, max: 95, step: 0.5, unit: '%' },
+      { path: 'theme.accentChroma', label: 'Accent chroma',    type: 'range', min: 0, max: 0.32, step: 0.005 },
+      { path: 'theme.bgLightness',  label: 'Background lightness', type: 'range', min: 4, max: 30, step: 0.5, unit: '%' },
       { path: 'theme.grain',            label: 'Film grain',               type: 'range', min: 0, max: 0.2, step: 0.005 },
       { path: 'theme.seam',             label: 'Section seams',            type: 'range', min: 0, max: 1, step: 1 },
     ],
@@ -740,15 +889,22 @@ export const SCHEMA = [
     ],
   },
   {
-    id: 'warning',
-    title: 'Warning pop-up (⚠ nav button)',
+    id: 'timeline',
+    title: 'Timeline',
+    intro: 'The scrapbook calendar behind the island button. Dates are YYYY-MM-DD; anything before 4 Feb 2004 gets the refusal message instead of an entry.',
     fields: [
-      { path: 'warning.dialogTitle', label: 'Alert title', type: 'text' },
-      { path: 'warning.dialogBody',  label: 'Alert message', type: 'multiline' },
-      { path: 'warning.okLabel',     label: 'Button label', type: 'text' },
+      ...Array.from({ length: 8 }, (_, i) => (
+        { path: `images.timeline.${i}`, label: `Photo ${i + 1}`, type: 'image' }
+      )),
+      ...Array.from({ length: 3 }, (_, i) => (
+        { path: `timeline.captions.${i}`, label: `Caption ${i + 1} (matted prints only)`, type: 'text' }
+      )),
+      { path: 'timeline.blankTitle', label: 'Empty day — title', type: 'text' },
+      { path: 'timeline.blankNote',  label: 'Empty day — note',  type: 'multiline' },
       ...Array.from({ length: 6 }, (_, i) => ([
-        { path: `warning.tabs.${i}.url`,     label: `Window ${i + 1} — address bar`, type: 'text' },
-        { path: `warning.tabs.${i}.caption`, label: `Window ${i + 1} — caption`,     type: 'text' },
+        { path: `timeline.entries.${i}.date`,  label: `Entry ${i + 1} — date`,  type: 'text', hint: 'YYYY-MM-DD' },
+        { path: `timeline.entries.${i}.title`, label: `Entry ${i + 1} — title`, type: 'text' },
+        { path: `timeline.entries.${i}.note`,  label: `Entry ${i + 1} — note`,  type: 'multiline' },
       ])).flat(),
     ],
   },
@@ -837,6 +993,7 @@ export const SCHEMA = [
       { path: 'notes.titleAccent', label: 'Accent word', type: 'text' },
       { path: 'notes.sub',         label: 'Subtitle',    type: 'multiline' },
       ...Array.from({ length: 4 }, (_, i) => ([
+        { path: `images.notes.${i}`,        label: `Note ${i + 1} — cover image`, type: 'image' },
         { path: `notes.items.${i}.kicker`,  label: `Note ${i + 1} — category`,  type: 'text' },
         { path: `notes.items.${i}.title`,   label: `Note ${i + 1} — title`,     type: 'text' },
         { path: `notes.items.${i}.date`,    label: `Note ${i + 1} — date`,      type: 'text', hint: 'YYYY-MM-DD' },
@@ -874,6 +1031,116 @@ export const SCHEMA = [
     fields: Array.from({ length: 8 }, (_, i) => (
       { path: `mind.thoughts.${i}`, label: `Thought ${i + 1}`, type: 'text' }
     )),
+  },
+  {
+    id: 'feature',
+    title: 'Feature banner',
+    intro: 'The wide strip under Notes. One image with the copy laid over the left of it.',
+    fields: [
+      { path: 'images.feature.0', label: 'Banner artwork', type: 'image',
+        hint: 'Fills the whole strip, cropped to cover. Roughly 5.5:1 (e.g. 2400x435) fits without cropping.' },
+      { path: 'feature.eyebrow', label: 'Eyebrow',         type: 'text', hint: 'Leave blank to hide' },
+      { path: 'feature.title1',  label: 'Headline line 1', type: 'text' },
+      { path: 'feature.title2',  label: 'Headline line 2', type: 'text', hint: 'Leave blank for a one-line headline' },
+      { path: 'feature.sub1',    label: 'Subtitle line 1', type: 'text' },
+      { path: 'feature.sub2',    label: 'Subtitle line 2', type: 'text' },
+      { path: 'feature.cta',     label: 'Button label',    type: 'text', hint: 'Leave blank to hide the button' },
+      { path: 'feature.ctaHref', label: 'Button target',   type: 'text', hint: 'An anchor like #work, or a full URL' },
+      { path: 'feature.scrim',   label: 'Darken behind the text', type: 'range', min: 0, max: 0.85, step: 0.05,
+        hint: 'Keeps the copy legible over a busy image. 0 turns it off.' },
+    ],
+  },
+  {
+    id: 'arcade',
+    title: 'Arcade covers',
+    intro: 'One thumbnail per game, in library order. The defaults are placeholders — replace each with your own URL.',
+    fields: [
+      { path: 'images.arcade.0', label: 'Snake — cover', type: 'image' },
+      { path: 'images.arcade.1', label: 'Pong — cover', type: 'image' },
+      { path: 'images.arcade.2', label: 'Breakout — cover', type: 'image' },
+      { path: 'images.arcade.3', label: '2048 — cover', type: 'image' },
+      { path: 'images.arcade.4', label: 'Minesweeper — cover', type: 'image' },
+      { path: 'images.arcade.5', label: 'Simon — cover', type: 'image' },
+      { path: 'images.arcade.6', label: 'Tic Tac Toe — cover', type: 'image' },
+      { path: 'images.arcade.7', label: 'Reaction Test — cover', type: 'image' },
+      { path: 'images.arcade.8', label: 'Frame Perfect — cover', type: 'image' },
+      { path: 'images.arcade.9', label: 'Colour Match — cover', type: 'image' },
+      { path: 'images.arcade.10', label: 'Memory — cover', type: 'image' },
+      { path: 'images.arcade.11', label: 'Bug Hunt — cover', type: 'image' },
+      { path: 'images.arcade.12', label: 'Spin the Wheel — cover', type: 'image' },
+      { path: 'images.arcade.13', label: 'Typing Speed — cover', type: 'image' },
+      { path: 'images.arcade.14', label: 'Aim Trainer — cover', type: 'image' },
+      { path: 'images.arcade.15', label: 'Number Memory — cover', type: 'image' },
+      { path: 'images.arcade.16', label: 'Chimp Test — cover', type: 'image' },
+    ],
+  },
+  {
+    id: 'footer',
+    title: 'Footer',
+    intro: 'The panel under Contact. The stat figures are placeholders taken from the reference layout — replace them with your own.',
+    fields: [
+      { path: 'footer.logo',    label: 'Wordmark',        type: 'text' },
+      { path: 'footer.badge',   label: 'Badge',           type: 'text' },
+      { path: 'footer.title1',  label: 'Headline line 1', type: 'text' },
+      { path: 'footer.title2',  label: 'Headline line 2', type: 'text' },
+      { path: 'footer.title3',  label: 'Headline line 3 (muted)', type: 'text' },
+      { path: 'footer.sub',     label: 'Subtitle',        type: 'multiline' },
+      { path: 'footer.cta',     label: 'Primary button',  type: 'text' },
+      { path: 'footer.ctaHref', label: 'Primary target',  type: 'text' },
+      { path: 'footer.cta2',    label: 'Secondary button', type: 'text' },
+      { path: 'footer.cta2Href', label: 'Secondary target', type: 'text' },
+      ...Array.from({ length: 3 }, (_, i) => ([
+        { path: `footer.stats.${i}.cap`,   label: `Stat ${i + 1} — caption`, type: 'text' },
+        { path: `footer.stats.${i}.value`, label: `Stat ${i + 1} — figure`,  type: 'text' },
+        { path: `footer.stats.${i}.label`, label: `Stat ${i + 1} — label`,   type: 'text' },
+      ])).flat(),
+      ...Array.from({ length: 4 }, (_, i) => (
+        { path: `images.footer.${i}`, label: `Collage photo ${i + 1}`, type: 'image' }
+      )),
+      { path: 'footer.cardAValue',  label: 'Amber card — figure', type: 'text' },
+      { path: 'footer.cardALabel',  label: 'Amber card — label',  type: 'text' },
+      { path: 'footer.cardBKicker', label: 'Mint card — kicker',  type: 'text' },
+      { path: 'footer.cardBValue',  label: 'Mint card — figure',  type: 'text' },
+      { path: 'footer.cardBLabel',  label: 'Mint card — label',   type: 'text' },
+      { path: 'footer.marksLabel',  label: 'Wordmark strip — caption', type: 'text' },
+      { path: 'footer.copyright',   label: 'Copyright line', type: 'text' },
+    ],
+  },
+  {
+    id: 'promo',
+    title: 'Promo banner',
+    intro: 'The magenta strip between About and Syndicate. Its colour sits between those two sections on purpose, so the surround follows it.',
+    fields: [
+      { path: 'images.promo.0', label: 'Banner artwork', type: 'image',
+        hint: 'Fills the strip, cropped to cover. The magenta wash covers its left half, so put the subject on the right.' },
+      { path: 'promo.badge',      label: 'Badge',            type: 'text', hint: 'Leave blank to hide' },
+      { path: 'promo.title1',     label: 'Headline line 1',  type: 'text' },
+      { path: 'promo.title2',     label: 'Headline line 2',  type: 'text', hint: 'Leave blank for a one-line headline' },
+      { path: 'promo.sub',        label: 'Subtitle',         type: 'multiline' },
+      { path: 'promo.cta',        label: 'Button label',     type: 'text', hint: 'Leave blank to hide the button' },
+      { path: 'promo.ctaHref',    label: 'Button target',    type: 'text', hint: 'An anchor like #contact, or a full URL' },
+      { path: 'promo.markKicker', label: 'Watermark — kicker', type: 'text' },
+      { path: 'promo.markName',   label: 'Watermark — name',   type: 'text', hint: 'Leave blank to hide the watermark' },
+    ],
+  },
+  {
+    id: 'grid',
+    title: 'Feature grid',
+    intro: 'The promo card and six entry cards under Personal OS. Each card keeps the sub-page it opens; only its wording is editable, so renaming one cannot break the link.',
+    fields: [
+      { path: 'images.gridHero.0', label: 'Promo artwork', type: 'image',
+        hint: 'Fills the promo card, cropped to cover. The copy sits over its left-hand side.' },
+      { path: 'grid.heroTitle1', label: 'Promo — line 1 (lime)', type: 'text' },
+      { path: 'grid.heroTitle2', label: 'Promo — line 2 (grey)', type: 'text' },
+      { path: 'grid.heroSub',    label: 'Promo — subtitle',      type: 'multiline' },
+      { path: 'grid.heroCta',    label: 'Promo — button label',  type: 'text' },
+      { path: 'grid.heroHref',   label: 'Promo — button target', type: 'text', hint: 'A route like #/games, an anchor like #work, or a full URL' },
+      ...Array.from({ length: 6 }, (_, i) => ([
+        { path: `grid.cards.${i}.title`, label: `Card ${i + 1} — title`,    type: 'text' },
+        { path: `grid.cards.${i}.sub`,   label: `Card ${i + 1} — subtitle`, type: 'text' },
+        { path: `grid.cards.${i}.badge`, label: `Card ${i + 1} — badge`,    type: 'text', hint: 'Leave blank for no badge' },
+      ])).flat(),
+    ],
   },
   {
     id: 'deck',

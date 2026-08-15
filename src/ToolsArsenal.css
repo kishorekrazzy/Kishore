@@ -1,0 +1,511 @@
+/* ══════════════════════════════════════════════════════════════════════
+   THE ARSENAL — comic-book weapons locker
+
+   Deliberately loud: red, bone, ink black, thick borders, halftone. It is
+   the one place on the site allowed to shout, and it works because the
+   contact section already established the motif.
+
+   Each weapon carries its own --h and composes its accent in OKLCH, the
+   same discipline the rest of the site uses — so ten different colours
+   still read as one set of objects.
+
+   A dialog, not a page: the grid stays visible behind the scrim so this
+   reads as opening a drawer on the card you clicked.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ta-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vh, 40px) clamp(12px, 3vw, 40px);
+  background: rgba(6, 4, 6, 0.72);
+  backdrop-filter: blur(7px) saturate(0.85);
+  -webkit-backdrop-filter: blur(7px) saturate(0.85);
+  animation: taScrimIn 0.28s ease both;
+}
+@keyframes taScrimIn { from { opacity: 0; } }
+
+/* Fills the scrim so a click anywhere outside the panel closes it. */
+.ta-scrim-hit {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.ta-root {
+  position: relative;
+  z-index: 1;
+  width: min(1040px, 100%);
+  height: min(700px, 100%);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  border: 3px solid #000;
+  border-radius: 6px;
+  box-shadow: 10px 10px 0 rgba(212, 39, 46, 0.9), 0 40px 90px rgba(0, 0, 0, 0.7);
+  background: #0a0709;
+  animation: taPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  color: #f6f2ea;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  cursor: crosshair;
+
+  --red:  #d4272e;
+  --bone: #f6f2ea;
+  --ink:  #0a0709;
+  --gold: #f5c518;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Slams in off-axis and settles square — a panel being thrown down. */
+@keyframes taPop {
+  from { opacity: 0; transform: translateY(22px) scale(0.94) rotate(-1.2deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Comic ground ── */
+.ta-halftone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(212, 39, 46, 0.5) 1.1px, transparent 1.2px);
+  background-size: 9px 9px;
+  opacity: 0.3;
+}
+.ta-speed {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(212, 39, 46, 0.2), transparent 62%),
+    repeating-conic-gradient(from 0deg at 50% 42%,
+      rgba(246, 242, 234, 0.045) 0deg 0.7deg, transparent 0.7deg 5deg);
+  mask-image: radial-gradient(70% 60% at 50% 42%, transparent 38%, #000 78%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 42%, transparent 38%, #000 78%);
+}
+
+/* ── Bullet holes ── */
+.ta-hole {
+  position: absolute;
+  z-index: 6;
+  width: 26px;
+  height: 26px;
+  translate: -50% -50%;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #000 0 34%, rgba(0, 0, 0, 0.72) 40%, transparent 66%);
+  box-shadow: 0 0 0 1.5px rgba(246, 242, 234, 0.22);
+  animation: taPunch 0.34s var(--ease) both;
+}
+@keyframes taPunch {
+  0%   { transform: scale(2.2); opacity: 0; }
+  60%  { transform: scale(0.86); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Chrome ── */
+.ta-chrome {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 3vw, 34px);
+  padding: clamp(14px, 2vw, 20px) clamp(16px, 2.4vw, 26px) 12px;
+  cursor: default;
+}
+.ta-back {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--bone);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--red);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.ta-back:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--red); }
+
+.ta-title-wrap { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ta-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(246, 242, 234, 0.5);
+}
+.ta-title {
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  color: var(--bone);
+  /* The comic ink outline: a hard red offset behind bone type. */
+  text-shadow: 3px 3px 0 var(--red), 5px 5px 0 rgba(0, 0, 0, 0.55);
+  -webkit-text-stroke: 1px var(--ink);
+}
+
+/* ── Completion meter ── */
+.ta-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.ta-meter-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+}
+.ta-meter-track {
+  width: clamp(70px, 14vw, 170px);
+  height: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+  background: rgba(246, 242, 234, 0.14);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.ta-meter-track i {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(-45deg, var(--red) 0 7px, #a81f24 7px 14px);
+  transition: width 0.6s var(--ease);
+}
+.ta-meter-track i.is-full {
+  background: repeating-linear-gradient(-45deg, var(--gold) 0 7px, #d9a900 7px 14px);
+}
+.ta-meter-num {
+  font-size: 0.74rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+/* ── Narrator caption ── */
+.ta-caption {
+  position: relative;
+  z-index: 8;
+  margin: 0 clamp(16px, 2.4vw, 26px) 12px;
+  padding: 12px 16px 12px 92px;
+  border: 2.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--gold);
+  color: #1a1206;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.55);
+  cursor: default;
+  animation: taCaption 0.4s var(--ease) both;
+}
+@keyframes taCaption {
+  from { opacity: 0; transform: translateY(-8px) rotate(-0.4deg); }
+  to   { opacity: 1; transform: none; }
+}
+.ta-caption-tab {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  translate: 0 -50%;
+  padding: 3px 8px;
+  border: 2px solid #1a1206;
+  border-radius: 2px;
+  background: #1a1206;
+  color: var(--gold);
+  font-size: 0.56rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+.ta-caption p {
+  font-size: clamp(0.82rem, 1.5vw, 0.95rem);
+  font-weight: 600;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* ── Body ── */
+.ta-body {
+  position: relative;
+  z-index: 7;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(14px, 2.4vw, 28px);
+  padding: 0 clamp(16px, 2.4vw, 26px) clamp(16px, 2vw, 22px);
+  min-height: 0;
+}
+
+/* ── The rack ── */
+.ta-rack {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  grid-auto-rows: min-content;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 4px 4px 20px;
+  scrollbar-width: thin;
+}
+.ta-rack::-webkit-scrollbar { width: 6px; }
+.ta-rack::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+
+.ta-weapon {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 13px 13px 15px;
+  border: 2.5px solid var(--ink);
+  border-radius: 4px;
+  background: linear-gradient(150deg,
+    oklch(38% 0.12 var(--h) / 0.9), oklch(22% 0.07 var(--h) / 0.92));
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6);
+  color: var(--bone);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* Every card sits at a slightly different angle — a rack, not a table. */
+  transform: rotate(calc((var(--i) - 4.5) * 0.34deg));
+  transition: transform 0.26s var(--ease), box-shadow 0.26s var(--ease);
+  animation: taDeal 0.44s var(--ease) both;
+  animation-delay: calc(var(--i) * 0.035s);
+}
+@keyframes taDeal {
+  from { opacity: 0; transform: translateY(16px) rotate(-3deg); }
+}
+.ta-weapon:hover {
+  transform: translate(-3px, -4px) rotate(calc((var(--i) - 4.5) * 0.34deg));
+  box-shadow: 8px 9px 0 rgba(0, 0, 0, 0.62);
+}
+.ta-weapon.is-picked {
+  border-color: var(--gold);
+  box-shadow: 5px 5px 0 var(--red);
+  transform: translate(-2px, -3px) rotate(0deg) scale(1.02);
+}
+
+.ta-weapon-glyph {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: oklch(80% 0.16 var(--h));
+  text-shadow: 0 0 14px oklch(70% 0.18 var(--h) / 0.6);
+}
+.ta-weapon-name {
+  font-size: 0.94rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.ta-weapon-kind {
+  font-size: 0.57rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: oklch(82% 0.13 var(--h));
+}
+.ta-weapon-yrs {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(246, 242, 234, 0.32);
+  font-variant-numeric: tabular-nums;
+}
+.ta-weapon-yrs em { font-style: normal; font-size: 0.5rem; letter-spacing: 0.08em; }
+.ta-weapon-tick {
+  position: absolute;
+  right: 9px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+/* ── Detail panel ── */
+.ta-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(16px, 2.2vw, 26px);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  background:
+    linear-gradient(165deg, oklch(30% 0.1 var(--h) / 0.55), rgba(10, 7, 9, 0.94));
+  box-shadow: 7px 7px 0 rgba(0, 0, 0, 0.62);
+  overflow-y: auto;
+  cursor: default;
+  transition: box-shadow 0.4s var(--ease);
+}
+.ta-panel.is-open { box-shadow: 7px 7px 0 var(--red); }
+
+/* The onomatopoeia burst. Fires on every pick because the node is keyed
+   on a timestamp, so re-picking the same tool replays it. */
+.ta-burst {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 3;
+  font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.04em;
+  color: var(--gold);
+  -webkit-text-stroke: 2px var(--ink);
+  text-shadow: 3px 3px 0 var(--red);
+  pointer-events: none;
+  animation: taBurst 0.85s var(--ease) both;
+}
+@keyframes taBurst {
+  0%   { opacity: 0; transform: scale(0.3) rotate(-18deg); }
+  35%  { opacity: 1; transform: scale(1.18) rotate(-7deg); }
+  60%  { transform: scale(1) rotate(-7deg); }
+  100% { opacity: 0; transform: scale(1.06) rotate(-7deg) translateY(-14px); }
+}
+
+.ta-panel-kind {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: oklch(82% 0.14 var(--h));
+}
+.ta-panel-name {
+  font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-shadow: 2px 2px 0 var(--red);
+}
+.ta-panel-spec {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: rgba(246, 242, 234, 0.76);
+}
+
+.ta-stat { display: flex; flex-direction: column; gap: 5px; }
+.ta-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: rgba(246, 242, 234, 0.5);
+}
+.ta-stat-row b { font-size: 0.92rem; color: var(--bone); font-variant-numeric: tabular-nums; }
+.ta-stat-track {
+  height: 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: 2px;
+  background: rgba(246, 242, 234, 0.1);
+  overflow: hidden;
+}
+.ta-stat-track i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: repeating-linear-gradient(-45deg,
+    oklch(70% 0.19 var(--h)) 0 8px, oklch(52% 0.16 var(--h)) 8px 16px);
+  animation: taFill 0.85s var(--ease) 0.12s both;
+}
+@keyframes taFill { to { width: var(--to); } }
+
+.ta-pips { display: flex; gap: 5px; }
+.ta-pips i {
+  flex: 1;
+  height: 10px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: rgba(246, 242, 234, 0.12);
+}
+.ta-pips i.is-on { background: oklch(72% 0.18 var(--h)); }
+
+/* Speech bubble with the tail, because a quote in a box is just a box. */
+.ta-bubble {
+  position: relative;
+  margin-top: auto;
+  padding: 14px 16px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  background: var(--bone);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.5;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+}
+.ta-bubble::after {
+  content: '';
+  position: absolute;
+  left: 30px;
+  bottom: -15px;
+  border: 8px solid transparent;
+  border-top-color: var(--ink);
+  border-right-width: 15px;
+}
+
+.ta-panel-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+  color: rgba(246, 242, 234, 0.5);
+}
+.ta-panel-empty span { font-size: 2rem; color: var(--red); }
+.ta-panel-empty p { font-size: 1rem; font-weight: 700; color: var(--bone); }
+.ta-panel-empty small { font-size: 0.72rem; max-width: 28ch; line-height: 1.45; }
+
+/* ── The reward ── */
+.ta-party { position: absolute; inset: 0; z-index: 9; pointer-events: none; overflow: hidden; }
+.ta-taco {
+  position: absolute;
+  top: -8%;
+  left: calc(var(--i) * 4.6%);
+  font-size: 1.7rem;
+  animation: taRain 2.6s linear var(--d) infinite;
+}
+@keyframes taRain {
+  0%   { transform: translateY(0) rotate(0deg);      opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(112vh) rotate(420deg); opacity: 0.9; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .ta-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  .ta-panel { max-height: 40vh; }
+  .ta-meter-label { display: none; }
+}
+@media (max-width: 700px), (max-height: 620px) {
+  /* Below this a bordered dialog wastes more room than it earns. */
+  .ta-scrim { padding: 0; }
+  .ta-root { width: 100%; height: 100%; border-width: 0; border-radius: 0; box-shadow: none; }
+}
+@media (max-width: 560px) {
+  .ta-caption { padding-left: 16px; padding-top: 30px; }
+  .ta-caption-tab { top: 8px; left: 12px; translate: none; }
+  .ta-rack { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ta-weapon, .ta-caption, .ta-hole, .ta-burst, .ta-stat-track i, .ta-taco,
+  .ta-root, .ta-scrim {
+    animation: none;
+  }
+  .ta-stat-track i { width: var(--to); }
+  .ta-weapon, .ta-panel, .ta-back { transition: none; }
+}

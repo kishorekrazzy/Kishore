@@ -278,16 +278,6 @@ function TerminalWindow({ visible, onClose }) {
       }
 
       // ── things that actually drive the site ──
-      case 'theme': {
-        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-        const next = ['dark', 'light'].includes(args[0]) ? args[0]
-          : args[0] === 'd' ? 'dark' : args[0] === 'l' ? 'light'
-          : cur === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem('kish.theme', next); } catch { /* private mode */ }
-        return say(`theme → ${next}`, 'ok');
-      }
-
       case 'music': {
         const sub = args[0] || 'now';
         if (sub === 'play')  { music.setPlaying(true);  return say(`▶ ${music.song?.title || 'playing'}`, 'ok'); }

@@ -1,0 +1,294 @@
+/* ══════════════════════════════════════════════════════════════════════
+   SITE FOOTER
+
+   Full-bleed, not a panel. The pitch sits left with a lot of air, the
+   collage runs off the right edge of the screen, and the wordmark strip
+   spans the whole width. Nothing is boxed — a card floating inside a
+   section made the footer read as one more block rather than the end of
+   the page.
+
+   THE LOOPS
+   Every marquee renders its content twice and translates by exactly -50%
+   of the track. At the halfway point the second copy sits where the first
+   began, so it repeats seamlessly — no measuring, no resize observer, and
+   it does not matter how many cards there are.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ft-section {
+  position: relative;
+  z-index: 2;
+  padding-top: clamp(44px, 7vh, 100px);
+  /* Matte black rather than var(--bg): the page ground carries the
+     section hue, and the footer reads better as a flat, unlit surface at
+     the end of it. Not #000 — a true black next to the site's tinted
+     darks looks like a hole rather than a material. */
+  --matte: #0a0a0b;
+  background: var(--matte);
+  /* One hairline is the whole separation. */
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+/* ── Body ──
+   Padded on the left only. The collage is the last column and the grid
+   has no right padding, so it reaches the viewport edge and the cards
+   carry on past it. */
+.ft-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 43vw, 740px);
+  gap: clamp(28px, 5vw, 90px);
+  align-items: center;
+  padding-left: clamp(20px, 6vw, 112px);
+}
+
+/* ── Pitch ── */
+.ft-pitch { display: flex; flex-direction: column; align-items: flex-start; max-width: 32rem; }
+
+.ft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: clamp(16px, 2vw, 26px);
+  font-size: 0.78rem;
+  color: var(--ink-2);
+}
+.ft-badge-mark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-size: 0.6rem;
+}
+
+.ft-title {
+  font-size: clamp(1.9rem, 3.5vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  margin-bottom: clamp(14px, 1.8vw, 22px);
+}
+.ft-title-mute { color: var(--ink-faint); }
+
+.ft-sub {
+  max-width: 46ch;
+  margin-bottom: clamp(20px, 2.6vw, 32px);
+  font-size: clamp(0.86rem, 1vw, 0.95rem);
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+.ft-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: clamp(26px, 4vw, 52px); }
+.ft-btn {
+  padding: 13px 26px;
+  border-radius: 99px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.26s ease;
+}
+.ft-btn:hover { transform: translateY(-2px); }
+.ft-btn--go {
+  background: var(--acc);
+  color: var(--acc-ink);
+  box-shadow: 0 10px 26px oklch(var(--l-acc) var(--c-acc) var(--h) / 0.28);
+}
+.ft-btn--line {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.ft-btn--line:hover { box-shadow: inset 0 0 0 1px var(--line-hi, var(--acc)); }
+
+/* ── Stats ── */
+.ft-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 30px);
+  width: 100%;
+  margin-top: auto;
+  padding-top: clamp(18px, 2.4vw, 28px);
+  border-top: 1px solid var(--line-soft);
+}
+.ft-stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ft-stat-cap {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+}
+.ft-stat strong {
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.ft-stat-sub { font-size: 0.72rem; color: var(--ink-3); line-height: 1.35; }
+
+/* ══ COLLAGE ══════════════════════════════════════════════════════════ */
+.ft-collage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(10px, 1vw, 16px);
+  /* Fixed height, so the columns crawl behind a window rather than
+     stretching the footer to the length of the loop. */
+  height: clamp(420px, 48vw, 700px);
+  overflow: hidden;
+  position: relative;
+  /* A short feather top and bottom — just enough that cards arrive and
+     leave rather than being cut at a line, without eating into the
+     images. */
+  mask-image: linear-gradient(to bottom, transparent, #000 3.5%, #000 96.5%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 3.5%, #000 96.5%, transparent);
+}
+
+.ft-col { position: relative; overflow: hidden; }
+.ft-col-run { display: flex; flex-direction: column; }
+.ft-col-set { display: flex; flex-direction: column; gap: clamp(10px, 1vw, 16px); padding-bottom: clamp(10px, 1vw, 16px); }
+
+/* One column climbs, the other falls. The second starts at -50% and runs
+   to 0, which is the same motion in reverse without needing a second
+   keyframe set. */
+.ft-col--up   .ft-col-run { animation: ftUp 34s linear infinite; }
+.ft-col--down .ft-col-run { animation: ftUp 34s linear infinite reverse; }
+@keyframes ftUp {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+.ft-collage:hover .ft-col-run { animation-play-state: paused; }
+
+.ft-card {
+  border-radius: clamp(12px, 1.1vw, 18px);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ft-card--photo { aspect-ratio: 4 / 5; background: #17171a; }
+.ft-card--photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.ft-card--stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 15px 18px;
+  color: #14140c;
+}
+.ft-card--amber { background: #f5d24a; }
+.ft-card--mint  { background: #7fe3a8; }
+.ft-stat-kicker { font-size: 0.68rem; font-weight: 600; opacity: 0.66; }
+.ft-stat-value {
+  font-size: clamp(1.2rem, 1.9vw, 1.55rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.ft-stat-label { font-size: 0.68rem; line-height: 1.35; opacity: 0.72; }
+
+.ft-card--product {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  background: #17171b;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* ══ WORDMARK STRIP ═══════════════════════════════════════════════════ */
+.ft-marks {
+  margin-top: clamp(46px, 8vh, 96px);
+  padding: clamp(18px, 2.2vw, 28px) 0 clamp(20px, 2.4vw, 30px);
+  background: #f4f4f2;
+  overflow: hidden;
+}
+.ft-marks-cap {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8b8b86;
+}
+.ft-marks-track {
+  display: flex;
+  width: max-content;
+  animation: ftSlide 38s linear infinite;
+}
+.ft-marks:hover .ft-marks-track { animation-play-state: paused; }
+@keyframes ftSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ft-marks-set {
+  display: flex;
+  align-items: center;
+  gap: clamp(26px, 3.6vw, 62px);
+  padding-right: clamp(26px, 3.6vw, 62px);
+}
+/* Monochrome at rest, brand colour on hover. A strip of two dozen logos
+   in full colour is a rainbow; one lighting up as you pass it is not. */
+.ft-mark {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #1b1b1b;
+  opacity: 0.62;
+  transition: opacity 0.25s ease, color 0.25s ease;
+}
+.ft-mark svg {
+  width: auto;
+  height: clamp(20px, 2vw, 28px);
+  fill: currentColor;
+  display: block;
+}
+.ft-mark:hover { opacity: 1; color: var(--brand, #1b1b1b); }
+/* Names with no logo available keep their place as type. */
+.ft-mark--txt {
+  font-size: clamp(0.9rem, 1.4vw, 1.16rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* ── Base line ── */
+.ft-base {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: clamp(16px, 2vw, 24px) clamp(20px, 6vw, 112px) clamp(22px, 3vw, 34px);
+  font-size: 0.74rem;
+  color: var(--ink-3);
+}
+.ft-top {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--acc);
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+/* ══ RESPONSIVE ═══════════════════════════════════════════════════════ */
+@media (max-width: 1000px) {
+  .ft-body {
+    grid-template-columns: 1fr;
+    padding-right: clamp(20px, 6vw, 112px);
+  }
+  .ft-collage { height: 340px; }
+}
+@media (max-width: 640px) {
+  .ft-stats { grid-template-columns: 1fr; gap: 14px; }
+  .ft-btn { flex: 1; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Still legible, just still. */
+  .ft-col-run, .ft-marks-track { animation: none; }
+}

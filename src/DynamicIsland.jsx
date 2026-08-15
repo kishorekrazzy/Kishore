@@ -1,6 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
 import './DynamicIsland.css';
-import ThemeToggle from './ThemeToggle';
+/* Imported rather than referenced by path: the filename has a space in
+   it, and this way Vite fingerprints and copies it like any other asset. */
+import spideyLogo from './assets/spidey logo.gif';
+import stingUrl from './assets/audiocweb.mp3';
+import { subscribeIslandHint, getIslandHint } from './islandHint';
 import { useContent } from './content/store';
 import { useMusicPlayer, fmt } from './MusicContext';
 
@@ -108,6 +112,11 @@ export default function DynamicIsland({ onRoomClick, onWarnClick, onProfileClick
   const LINKS    = useContent('nav.links', DEFAULT_LINKS);
 
   const [section, setSection] = useState(SECTIONS[0]);
+  /* A transient label something else on the page has asked for — the DJ
+     console announces itself here on hover. useSyncExternalStore rather
+     than an effect, so the read is a subscription and not a setState in a
+     render cycle. */
+  const hint = useSyncExternalStore(subscribeIslandHint, getIslandHint, () => null);
   const [badLogo, setBadLogo] = useState(null);
   const logoOk = Boolean(LOGO_SRC) && badLogo !== LOGO_SRC;
 
@@ -125,6 +134,44 @@ export default function DynamicIsland({ onRoomClick, onWarnClick, onProfileClick
   const { song, playing, setPlaying, progress, duration, prev, next, volume, setVolume } = useMusicPlayer();
   const [preMuteVol, setPreMuteVol] = useState(0.72);
   const muted = volume === 0;
+
+  /* ── The sting on the logo button ──────────────────────────────────
+     One Audio element, built on first hover so the file is buffered by
+     the time the click lands, and reused after that — a fresh element per
+     click would leak one per press and re-download on some browsers.
+
+     Muting the site mutes this too: it is a sound the site makes, and the
+     mute control should mean what it says. */
+  const sting = useRef(null);
+
+  const armSting = useCallback(() => {
+    if (sting.current) return;
+    const a = new Audio(stingUrl);
+    a.preload = 'auto';
+    a.loop = false;
+    sting.current = a;
+  }, []);
+
+  const playSting = useCallback(() => {
+    if (muted) return;
+    armSting();
+    const a = sting.current;
+    if (!a) return;
+    a.volume = Math.max(0, Math.min(1, volume));
+    // Rewind rather than overlap, so a second press restarts it.
+    a.currentTime = 0;
+    // A rejected play() is a browser policy decision, not a fault worth
+    // surfacing — the button still does its job either way.
+    a.play().catch(() => {});
+  }, [muted, volume, armSting]);
+
+  useEffect(() => () => {
+    const a = sting.current;
+    if (!a) return;
+    a.pause();
+    a.src = '';
+    sting.current = null;
+  }, []);
 
   const toggleMute = useCallback((e) => {
     e.stopPropagation();
@@ -239,10 +286,19 @@ export default function DynamicIsland({ onRoomClick, onWarnClick, onProfileClick
           tabIndex={open ? -1 : 0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(); } }}
           aria-expanded={open}
-          aria-label={`Current section: ${section.label}. Open navigation`}
+          aria-label={hint || `Current section: ${section.label}. Open navigation`}
           aria-hidden={open ? 'true' : undefined}
         >
-          {playing ? (
+          {/* A hint outranks both: it is a direct response to the
+              pointer, so it should not have to wait for the music to
+              stop. It rolls in and back out on the same flap animation
+              the section name uses. */}
+          {hint ? (
+            <>
+              <span className="di-dot di-dot--hint" aria-hidden="true" />
+              <RollingText text={hint} />
+            </>
+          ) : playing ? (
             <>
               <span className="di-bars" aria-hidden="true"><i /><i /><i /><i /></span>
               <RollingText text={(song?.title || 'Now playing').toUpperCase()} />
@@ -289,15 +345,16 @@ export default function DynamicIsland({ onRoomClick, onWarnClick, onProfileClick
           <li>
             <button
               className="di-warn"
-              onClick={() => { dismiss(); onWarnClick?.(); }}
+              onClick={() => { playSting(); dismiss(); onWarnClick?.(); }}
+              onPointerEnter={armSting}
+              onFocus={armSting}
               tabIndex={open ? 0 : -1}
               aria-label="Open security notice"
               title="Security notice"
             >
-              <span aria-hidden="true">⚠️</span>
+              <img src={spideyLogo} alt="" aria-hidden="true" draggable="false" />
             </button>
           </li>
-          <li className="di-theme"><ThemeToggle /></li>
         </ul>
 
         {/* Expanded music row — only present while something is playing, so

@@ -129,17 +129,19 @@ export default function NotesSection() {
   /* CMS text over the defaults, per post and per key. `body` is stored as
      one string with blank lines between paragraphs — prose belongs in a
      textarea, not in four numbered inputs — and is split back out here. */
-  const head  = useContent('notes', {});
-  const items = useContent('notes.items', null);
+  const head   = useContent('notes', {});
+  const items  = useContent('notes.items', null);
+  const covers = useContent('images.notes', null);
   const NOTES = DEFAULT_NOTES.map((n, i) => {
     const c = items?.[i];
-    if (!c) return n;
+    if (!c) return { ...n, cover: covers?.[i] || n.cover };
     const body = typeof c.body === 'string'
       ? c.body.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean)
       : null;
     return {
       ...n,
       kicker:  c.kicker  || n.kicker,
+      cover:   covers?.[i] || n.cover,
       title:   c.title   || n.title,
       date:    c.date    || n.date,
       read:    c.read    || n.read,
@@ -191,18 +193,59 @@ export default function NotesSection() {
         </ScrollReveal>
       </div>
 
+      {/* A media grid: cover, title, the two facts that matter, and the
+          category carrying a mark. The first piece takes the accent panel,
+          the way a featured item does in the reference. */}
       <ol className="nt-list">
         {NOTES.map((n, i) => (
           <li key={n.id} className="nt-item" style={{ '--i': i }}>
             <button className="nt-card" onClick={() => setOpenId(n.id)} aria-label={`Read: ${n.title}`}>
-              <span className="nt-card-kicker">{n.kicker}</span>
-              <h3 className="nt-card-title">{n.title}</h3>
-              <p className="nt-card-excerpt">{n.excerpt}</p>
-              <span className="nt-card-foot">
-                <time dateTime={n.date}>{fmtDate(n.date)}</time>
-                <span className="nt-card-read">{n.read}</span>
+              <span className="nt-thumb">
+                {n.cover
+                  ? <img src={n.cover} alt="" loading="lazy" draggable="false" />
+                  : <i className="nt-thumb-fallback" aria-hidden="true" />}
+                <span className="nt-thumb-play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5.5h11a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"
+                          stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M17 10.5 22 7.5v9l-5-3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                  </svg>
+                </span>
               </span>
-              <span className="nt-card-cta" aria-hidden="true">Read →</span>
+
+              <span className="nt-row">
+                <h3 className="nt-card-title">{n.title}</h3>
+                <span className="nt-stats">
+                  {/* Read time and date rather than views and likes: this
+                      is writing, not a feed, and inventing counters for it
+                      would be inventing numbers. */}
+                  <span className="nt-stat">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="6.2" stroke="currentColor" strokeWidth="1.4" />
+                      <path d="M8 4.6V8l2.4 1.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                    {n.read}
+                  </span>
+                  <span className="nt-stat">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <rect x="2.2" y="3.4" width="11.6" height="10.4" rx="2" stroke="currentColor" strokeWidth="1.4" />
+                      <path d="M2.2 6.6h11.6M5.6 2.2v2.4M10.4 2.2v2.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                    <time dateTime={n.date}>{fmtDate(n.date)}</time>
+                  </span>
+                </span>
+              </span>
+
+              <span className="nt-by">
+                <span className="nt-by-av" aria-hidden="true">K</span>
+                <span className="nt-by-name">{n.kicker}</span>
+                <span className="nt-by-mark" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none">
+                    <path d="M3.4 7.2 5.9 9.7l4.7-5.4" stroke="currentColor" strokeWidth="1.9"
+                          strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
             </button>
           </li>
         ))}

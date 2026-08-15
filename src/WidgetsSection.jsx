@@ -6,13 +6,24 @@ import { BrainwaveCard, ThoughtStream } from './MindWidgets';
 import { LocationMap } from './components/ui/location-map';
 import { fmt, useMusicPlayer } from './MusicContext';
 import { playTick, playDetent, playGrip, playRelease, primeAudio } from './components/dj-tactile-audio';
+import { setIslandHint, clearIslandHint } from './islandHint';
 import { PngSequenceOverlay } from './components/PngSequenceOverlay';
 import './WidgetsSection.css';
 
 
 // ── MUSIC PLAYER ─────────────────────────────────────────────────────────────
 
+const DJ_HINT = 'Open DJ Console';
+
 function MusicCard({ onActivate, djMode }) {
+  /* The pointer can leave without a mouseleave — the card can unmount, or
+     DJ mode can open over it — and the island would keep the invitation up
+     with nothing under the cursor. */
+  useEffect(() => {
+    if (djMode) clearIslandHint(DJ_HINT);
+    return () => clearIslandHint(DJ_HINT);
+  }, [djMode]);
+
   const musicPlate = useContent('images.musicPlate.0', null);
   const { song, playing, setPlaying, progress, seek, prev, next, duration } = useMusicPlayer();
 
@@ -40,6 +51,13 @@ function MusicCard({ onActivate, djMode }) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !djMode && onActivate?.()}
+      /* The console names itself in the island rather than on this card.
+         Guarded on djMode: once you are inside it, the invitation is
+         stale. */
+      onMouseEnter={() => !djMode && setIslandHint(DJ_HINT)}
+      onMouseLeave={() => clearIslandHint(DJ_HINT)}
+      onFocus={() => !djMode && setIslandHint(DJ_HINT)}
+      onBlur={() => clearIslandHint(DJ_HINT)}
       aria-label="Music player — click to open DJ console"
     >
       {/* Monochrome plate behind the player — greyscale on purpose so it
@@ -49,6 +67,9 @@ function MusicCard({ onActivate, djMode }) {
       <div className="wg-music-aura" aria-hidden="true" />
 
       {/* Subtle DJ console hint (visible on hover when not in DJ mode) */}
+      {/* Kept for touch, where there is no hover to move the label into
+          the island and this would otherwise be the card's only clue that
+          it opens something. Hidden on pointer devices by CSS. */}
       <div className="wg-music-djhint" aria-hidden="true">
         <span className="wg-music-djhint-dot" />
         <span>Open DJ Console</span>

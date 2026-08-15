@@ -266,9 +266,9 @@ function applyThemePreview(t) {
   if (!t) return;
   const root = document.documentElement;
   Object.entries(t.hues || {}).forEach(([k, v]) => root.style.setProperty(`--h-${k}`, String(v)));
-  if (t.accentLightDark  != null) root.style.setProperty('--l-acc', `${t.accentLightDark}%`);
-  if (t.accentChromaDark != null) root.style.setProperty('--c-acc', String(t.accentChromaDark));
-  if (t.bgLightnessDark  != null) root.style.setProperty('--l-bg',  `${t.bgLightnessDark}%`);
+  if (t.accentLight  != null) root.style.setProperty('--l-acc', `${t.accentLight}%`);
+  if (t.accentChroma != null) root.style.setProperty('--c-acc', String(t.accentChroma));
+  if (t.bgLightness  != null) root.style.setProperty('--l-bg',  `${t.bgLightness}%`);
   if (t.grain != null) root.style.setProperty('--grain-opacity', String(t.grain));
   if (t.seam  != null) root.style.setProperty('--seam', String(t.seam));
 }

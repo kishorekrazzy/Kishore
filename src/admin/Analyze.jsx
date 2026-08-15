@@ -426,7 +426,6 @@ export default function Analyze() {
       os:      sumMap(days, 'os'),
       referrers: sumMap(days, 'referrers'),
       langs:   sumMap(days, 'langs'),
-      themes:  sumMap(days, 'themes'),
       viewports: sumMap(days, 'viewports'),
       depths:  sumMap(days, 'depths'),
       durations: sumMap(days, 'durations'),
@@ -660,10 +659,8 @@ export default function Analyze() {
           )}
         </Panel>
 
-        <Panel title="Preference" note="Theme chosen at the time of the visit, and language.">
-          <BarList data={d.themes} total={d.sessions} limit={2} />
-          <h4 className="az-sub">Language</h4>
-          <BarList data={d.langs} total={d.sessions} limit={5} />
+        <Panel title="Language" note="Browser language at the time of the visit.">
+          <BarList data={d.langs} total={d.sessions} limit={6} />
         </Panel>
 
         {/* Reads as a page map rather than a ranking: the order is the

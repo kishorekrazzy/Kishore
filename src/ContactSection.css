@@ -14,8 +14,8 @@
   background: #ffffff !important;
   transition: background-color 520ms cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  /* Space below the section */
-  margin-bottom: clamp(3rem, 8vh, 6rem);
+  /* No margin below: the footer follows directly now, and this left a
+     band of empty page between the two. */
 }
 
 /* ── overlay artwork ──

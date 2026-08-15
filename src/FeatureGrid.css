@@ -1,0 +1,247 @@
+/* ══════════════════════════════════════════════════════════════════════
+   FEATURE GRID
+
+   Measured off the reference: the block is 1980x300 with the hero card
+   taking 722 of that width (36.5%) and a three-column, two-row grid
+   filling the rest. Gaps are 20px between the two halves and 14px inside
+   the grid.
+
+   One aspect ratio for the whole block, type in cqw, so it scales as a
+   single composition. Below 1100px it stops being a strip and becomes
+   stacked rows.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.fg-section {
+  position: relative;
+  z-index: 2;
+  padding: clamp(24px, 4vh, 54px) clamp(14px, 2.2vw, 40px);
+  background: var(--bg);
+}
+
+.fg-wrap {
+  display: grid;
+  grid-template-columns: 36.5% minmax(0, 1fr);
+  gap: 1%;
+  width: 100%;
+  max-width: 1800px;
+  margin-inline: auto;
+  aspect-ratio: 1980 / 300;
+  container-type: inline-size;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+}
+
+/* ── Hero promo ── */
+.fg-hero {
+  position: relative;
+  display: block;
+  border-radius: 0.81cqw;
+  overflow: hidden;
+  background: #101013;
+  text-decoration: none;
+  isolation: isolate;
+}
+.fg-hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fg-hero:hover .fg-hero-art { transform: scale(1.04); }
+
+/* Weighted left, so the copy has ground under it whatever the artwork. */
+.fg-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(8, 8, 10, 0.92) 0%,
+    rgba(8, 8, 10, 0.78) 34%,
+    rgba(8, 8, 10, 0.35) 62%,
+    rgba(8, 8, 10, 0.12) 100%
+  );
+}
+
+.fg-hero-body {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5cqw;
+  padding: 0 1.6cqw;
+}
+.fg-hero-title {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.92cqw;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+}
+.fg-hero-t1 { color: #d8f84a; }
+.fg-hero-t2 { color: #a9a9ad; }
+.fg-hero-sub {
+  font-size: 0.66cqw;
+  line-height: 1.45;
+  color: rgba(233, 233, 238, 0.72);
+  max-width: 34ch;
+}
+.fg-hero-cta {
+  align-self: flex-start;
+  margin-top: 0.7cqw;
+  padding: 0.62cqw 1.15cqw;
+  border-radius: 0.5cqw;
+  background: #d8f84a;
+  color: #10120a;
+  font-size: 0.71cqw;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  /* The hard offset the reference puts under the button. */
+  box-shadow: 0.2cqw 0.2cqw 0 rgba(0, 0, 0, 0.55);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fg-hero:hover .fg-hero-cta { transform: translate(-0.1cqw, -0.1cqw); }
+
+/* ── Card grid ── */
+.fg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 0.71cqw;
+  min-width: 0;
+}
+
+.fg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25cqw;
+  padding: 0.91cqw 1cqw;
+  border: 0;
+  border-radius: 0.71cqw;
+  background: #161619;
+  box-shadow: inset 0 0 0 0.05cqw rgba(255, 255, 255, 0.06);
+  color: #f2f2f4;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fg-card:hover {
+  background: #1d1d21;
+  box-shadow: inset 0 0 0 0.05cqw rgba(255, 255, 255, 0.14);
+  transform: translateY(-0.12cqw);
+}
+
+/* The one card carrying the announcement. */
+.fg-card.is-featured {
+  background:
+    radial-gradient(120% 130% at 8% 0%, rgba(96, 152, 255, 0.5), transparent 62%),
+    linear-gradient(135deg, #17398f 0%, #14246b 46%, #0d1740 100%);
+  box-shadow: inset 0 0 0 0.05cqw rgba(150, 190, 255, 0.35);
+}
+.fg-card.is-featured:hover {
+  box-shadow: inset 0 0 0 0.05cqw rgba(180, 210, 255, 0.55);
+}
+
+.fg-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: auto;
+}
+.fg-card-icon {
+  display: block;
+  width: 1cqw;
+  height: 1cqw;
+  color: #e8e8ec;
+  flex-shrink: 0;
+}
+.fg-card-icon svg { width: 100%; height: 100%; display: block; }
+
+.fg-badge {
+  padding: 0.2cqw 0.45cqw;
+  border-radius: 0.3cqw;
+  font-size: 0.45cqw;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+.fg-badge--hot  { background: #f0286a; color: #fff; }
+.fg-badge--lime { background: #d8f84a; color: #10120a; }
+.fg-badge--mute {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(240, 240, 245, 0.86);
+  box-shadow: inset 0 0 0 0.04cqw rgba(255, 255, 255, 0.12);
+}
+
+.fg-card-title {
+  font-size: 0.76cqw;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.fg-card-sub {
+  font-size: 0.61cqw;
+  line-height: 1.35;
+  color: rgba(232, 232, 238, 0.55);
+}
+
+/* ══ Responsive ══
+   A six-column strip at phone width gives cards 45px wide. Below 1100px
+   the hero takes its own row and the grid drops to two columns, then to
+   one — with natural heights, since the block is no longer one artwork. */
+@media (max-width: 1100px) {
+  .fg-wrap {
+    grid-template-columns: 1fr;
+    aspect-ratio: auto;
+    gap: 12px;
+  }
+  .fg-hero { aspect-ratio: 16 / 7; border-radius: 16px; }
+  .fg-hero-body { gap: 8px; padding: 0 22px; }
+  .fg-hero-title { font-size: clamp(1.35rem, 4.4vw, 2rem); }
+  .fg-hero-sub   { font-size: 0.82rem; }
+  .fg-hero-cta   {
+    margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+  }
+  .fg-hero:hover .fg-hero-cta { transform: translate(-2px, -2px); }
+
+  .fg-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; gap: 10px; }
+  .fg-card {
+    gap: 3px;
+    padding: 14px;
+    border-radius: 14px;
+    min-height: 118px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+  .fg-card:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+  .fg-card.is-featured { box-shadow: inset 0 0 0 1px rgba(150, 190, 255, 0.35); }
+  .fg-card-icon  { width: 20px; height: 20px; }
+  .fg-card-title { font-size: 0.95rem; }
+  .fg-card-sub   { font-size: 0.76rem; }
+  .fg-badge      { padding: 3px 6px; border-radius: 5px; font-size: 0.55rem; }
+}
+
+@media (max-width: 720px) {
+  .fg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fg-hero { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 430px) {
+  .fg-grid { grid-template-columns: 1fr; }
+  .fg-card { min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-hero-art, .fg-hero-cta, .fg-card { transition: none; }
+  .fg-hero:hover .fg-hero-art { transform: none; }
+}

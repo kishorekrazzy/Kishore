@@ -16,11 +16,13 @@ const AIImagesPage     = lazy(() => import('./AIImagesPage'));
 const WebsitePage      = lazy(() => import('./WebsitePage'));
 const SkillsPage       = lazy(() => import('./SkillsPage'));
 const CertificatesPage = lazy(() => import('./CertificatesPage'));
+const GamesHub         = lazy(() => import('./GamesHub'));
+const ToolsArsenal     = lazy(() => import('./ToolsArsenal'));
 // The admin dashboard pulls in Firebase Auth — it must never land in a
 // visitor's bundle.
 const AdminDashboard   = lazy(() => import('./admin/AdminDashboard'));
 // Only downloaded if somebody actually presses the ⚠ button.
-const WarningStack     = lazy(() => import('./WarningStack'));
+const TimelineCalendar = lazy(() => import('./TimelineCalendar'));
 // Three.js + rapier + drei is a heavy graph — it must never be in the
 // first-load bundle, only fetched when the logo is actually clicked.
 const LanyardOverlay   = lazy(() => import('./LanyardOverlay'));
@@ -32,6 +34,10 @@ import { TerminalWindowManager }   from './TerminalWindow';
 import { CalculatorWindowManager } from './CalculatorWindow';
 import WidgetsSection from './WidgetsSection';
 import NotesSection from './NotesSection';
+import FeatureBanner from './FeatureBanner';
+import FeatureGrid from './FeatureGrid';
+import PromoBanner from './PromoBanner';
+import SiteFooter from './SiteFooter';
 import ContactSection from './ContactSection';
 import DeckSection from './DeckSection';
 import DynamicIsland from './DynamicIsland';
@@ -118,21 +124,9 @@ function CheckIcon() {
 /* ── Warped headlines ────────────────────────────────────────────────
    The headline is rasterised into a canvas and pushed through a glass
    shader, so it cannot take a CSS colour — ctx.fillStyle needs a literal.
-   These two are the computed values of the rules in theme.css: --ink at
-   the hero's amber hue for dark, and the explicit light-theme headline
-   red. If either is retuned there, retune it here too. */
-const HEADLINE_INK = { dark: '#fcf3f1', light: '#ae0000' };
-
-function useHeadlineInk() {
-  const read = () => document.documentElement.getAttribute('data-theme') || 'dark';
-  const [mode, setMode] = useState(read);
-  useEffect(() => {
-    const obs = new MutationObserver(() => setMode(read()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => obs.disconnect();
-  }, []);
-  return HEADLINE_INK[mode] ?? HEADLINE_INK.dark;
-}
+   This is the computed value of --ink at the hero's amber hue. If that is
+   retuned in theme.css, retune it here too. */
+const HEADLINE_INK = '#fcf3f1';
 
 /* Shared warp settings. Each layout differs only in its box and type
    scale, which ride on the class — see .hl-warp in index.css. */
@@ -182,7 +176,7 @@ function Stat({ val, label }) {
 // ── 4 UNIQUE HERO LAYOUTS ────────────────────────────────────────────
 function HeroLayout({ section, fading }) {
   const fade = fading ? ' hero-content--fade' : '';
-  const ink  = useHeadlineInk();
+  const ink  = HEADLINE_INK;
 
   // ── VIDEO EDITING: big headline bottom-left, editorial description top-right ──
   if (section.id === 'video') return (
@@ -282,7 +276,7 @@ function HeroLayout({ section, fading }) {
 // put something in the URL themselves; otherwise a refresh always lands
 // back on the home page.
 
-const PAGE_IDS = ['about', 'video', 'room', 'ai', 'web', 'skills', 'certs', 'admin'];
+const PAGE_IDS = ['about', 'video', 'room', 'ai', 'web', 'skills', 'certs', 'games', 'admin'];
 
 // Routes are namespaced under "#/" on purpose. The nav already uses bare
 // anchors (#about, #work, #contact) to jump between sections, so matching
@@ -346,6 +340,7 @@ export default function App() {
   const showWebsite   = page === 'web';
   const showSkills    = page === 'skills';
   const showCerts     = page === 'certs';
+  const showGames     = page === 'games';
   const showAdmin     = page === 'admin';
 
   // Boolean-shaped setters so every existing call site keeps working.
@@ -357,14 +352,16 @@ export default function App() {
   const setShowWebsite   = openPage('web');
   const setShowSkills    = openPage('skills');
   const setShowCerts     = openPage('certs');
+  const setShowGames     = openPage('games');
   const [showWarning, setShowWarning] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const scrollRef = useRef(null);
 
-  const anySubPage = showAboutMe || showVideoPage || showRoomPage || showAIImages || showWebsite || showSkills || showCerts;
+  const anySubPage = showAboutMe || showVideoPage || showRoomPage || showAIImages || showWebsite || showSkills || showCerts || showGames;
   const heroSections  = useContent('hero.sections', HERO_SECTIONS);
   const activeSection = heroSections[activeIdx] ?? HERO_SECTIONS[activeIdx];
 
@@ -449,7 +446,8 @@ export default function App() {
 
   useEffect(() => { if (showChat)    trackEvent('chatOpened'); }, [showChat]);
   useEffect(() => { if (showProfile) trackEvent('idCardOpened'); }, [showProfile]);
-  useEffect(() => { if (showWarning) trackEvent('warningOpened'); }, [showWarning]);
+  useEffect(() => { if (showWarning) trackEvent('timelineOpened'); }, [showWarning]);
+  useEffect(() => { if (showTools)   trackEvent('arsenalOpened'); }, [showTools]);
 
   // Latest home scroll position, updated synchronously on every scroll
   // event. Storage writes are debounced, but this is not — so whenever we
@@ -636,6 +634,9 @@ export default function App() {
         <ErrorBoundary name="About">
           <AboutSection />
         </ErrorBoundary>
+        <ErrorBoundary name="Promo banner">
+          <PromoBanner />
+        </ErrorBoundary>
         <ErrorBoundary name="Syndicate">
           <TeamSection />
         </ErrorBoundary>
@@ -646,6 +647,8 @@ export default function App() {
             onAIClick={() => setShowAIImages(true)}
             onWebsiteClick={() => setShowWebsite(true)}
             onSkillsClick={() => setShowSkills(true)}
+            onGamesClick={() => setShowGames(true)}
+            onToolsClick={() => setShowTools(true)}
           />
         </ErrorBoundary>
         <ErrorBoundary name="Showcase">
@@ -662,17 +665,26 @@ export default function App() {
         <ErrorBoundary name="Notes">
           <NotesSection />
         </ErrorBoundary>
+        <ErrorBoundary name="Feature banner">
+          <FeatureBanner />
+        </ErrorBoundary>
         <ErrorBoundary name="Personal OS">
           <WidgetsSection
             onAboutClick={() => setShowAboutMe(true)}
             onSkillsClick={() => setShowSkills(true)}
           />
         </ErrorBoundary>
+        <ErrorBoundary name="Feature grid">
+          <FeatureGrid onOpen={(id) => setPage(id)} />
+        </ErrorBoundary>
         <ErrorBoundary name="Edit Suite">
           <DeckSection />
         </ErrorBoundary>
         <ErrorBoundary name="Contact">
           <ContactSection />
+        </ErrorBoundary>
+        <ErrorBoundary name="Footer">
+          <SiteFooter onOpen={() => document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' })} />
         </ErrorBoundary>
       </div>
 
@@ -697,10 +709,18 @@ export default function App() {
         </ErrorBoundary>
       )}
 
-      {showWarning && (
-        <ErrorBoundary name="Warning" silent>
+      {showTools && (
+        <ErrorBoundary name="Arsenal" silent>
           <Suspense fallback={null}>
-            <WarningStack onClose={() => setShowWarning(false)} />
+            <ToolsArsenal onBack={() => setShowTools(false)} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+
+      {showWarning && (
+        <ErrorBoundary name="Timeline" silent>
+          <Suspense fallback={null}>
+            <TimelineCalendar onClose={() => setShowWarning(false)} />
           </Suspense>
         </ErrorBoundary>
       )}
@@ -715,6 +735,7 @@ export default function App() {
           {showWebsite && <WebsitePage onBack={() => setShowWebsite(false)} />}
           {showSkills  && <SkillsPage  onBack={() => setShowSkills(false)}  />}
           {showCerts   && <CertificatesPage onBack={() => setShowCerts(false)} />}
+          {showGames   && <GamesHub    onBack={() => setShowGames(false)}   />}
         </Suspense>
         </ErrorBoundary>
       )}

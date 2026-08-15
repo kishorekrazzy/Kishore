@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
 import { DeferredLottie } from './components/DeferredLottie';
 import { Play } from 'lucide-react';
@@ -107,7 +107,7 @@ function AfterEffectsMark() {
 
 // ── COMPONENT ──────────────────────────────────────────────────────────────
 
-export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, onWebsiteClick, onSkillsClick }) {
+export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, onWebsiteClick, onSkillsClick, onGamesClick, onToolsClick }) {
   const head = useContent('bento', {
     eyebrow: 'Services & Work',
     title: 'The Full',
@@ -359,7 +359,15 @@ export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, on
         </div>
 
         {/* ══ 9. MY TOOLS ══ */}
-        <div className="bento-card bc-tools" style={{ '--delay': '0.56s' }}>
+        <div
+          className="bento-card bc-tools"
+          style={{ '--delay': '0.56s', cursor: 'pointer' }}
+          onClick={onToolsClick}
+          role="button"
+          tabIndex={0}
+          aria-label="Open the arsenal"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToolsClick?.(); } }}
+        >
           <img className="bc-img-bg" src={cardImg[7]} alt="" aria-hidden="true" />
           <div className="bct-orb" aria-hidden="true" />
           <p className="bc-eyebrow">Arsenal</p>
@@ -367,6 +375,7 @@ export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, on
           <div className="bct-tags">
             {TOOLS.map(t => <span key={t} className="bct-tag">{t}</span>)}
           </div>
+          <span className="bct-open">Open the locker →</span>
         </div>
 
         {/* ══ 10. SOCIAL MEDIA ══ */}
@@ -393,11 +402,19 @@ export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, on
           </div>
         </div>
 
-        {/* ══ 11. VIDEO ══ */}
+        {/* ══ 11. ARCADE ══
+            Was a video with a "DON'T CLICK" overlay that appeared on
+            hover. The card now opens the games feed on click, so the
+            hover state has nothing left to say and the taunt would be
+            actively misleading. */}
         <div
           className="bento-card bc-cta"
-          style={{ '--delay': '0.70s' }}
-          aria-hidden="true"
+          style={{ '--delay': '0.70s', cursor: 'pointer' }}
+          onClick={onGamesClick}
+          role="button"
+          tabIndex={0}
+          aria-label="Open the arcade"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onGamesClick?.(); } }}
         >
           <video
             className="bcc-video"
@@ -410,26 +427,13 @@ export default function BentoSection({ onAboutClick, onVideoClick, onAIClick, on
             aria-hidden="true"
           />
 
-          {/* Hover warning — taunting "Don't click" pop-up */}
-          <div className="bcc-warn" aria-hidden="true">
-            <div className="bcc-warn-stripe">
-              <span className="bcc-warn-stripe-text">
-                ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠
-              </span>
-            </div>
-
-            <div className="bcc-warn-card">
-              <div className="bcc-warn-glyph">⚠</div>
-              <div className="bcc-warn-meta">SYSTEM · ALERT · 0×4F</div>
-              <div className="bcc-warn-title">DON&rsquo;T CLICK</div>
-              <div className="bcc-warn-sub">Restricted footage · viewer discretion advised</div>
-            </div>
-
-            <div className="bcc-warn-stripe">
-              <span className="bcc-warn-stripe-text">
-                ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠ WARNING ⚠
-              </span>
-            </div>
+          <div className="bcc-badge">
+            <span className="bcc-badge-dot" aria-hidden="true" />
+            ARCADE
+          </div>
+          <div className="bcc-label">
+            <h3 className="bcc-label-title">Play something</h3>
+            <p className="bcc-label-sub">Six games. Tap in.</p>
           </div>
         </div>
 
