@@ -1,0 +1,72 @@
+/* ══════════════════════════════════════════════════════════════════════
+   SPIDEY
+
+   Full-viewport-tall box, parked one screen above the top edge and pulled
+   down by `--drop`. Both axes ride the same transform so a move from one
+   anchor to another is a single interpolation — no reflow, no snap.
+
+   The thread flexes to fill whatever is above the figure, so it always
+   reaches off the top of the screen no matter how far he has come down.
+   ══════════════════════════════════════════════════════════════════════ */
+.spidey {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: var(--w, 150px);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(var(--x, 50vw), calc(-100% + var(--drop, 0px)));
+  transition:
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Used for exactly one frame, when he first appears: the horizontal
+   placement is a starting point, not a journey. */
+.spidey.no-glide { transition: none; }
+
+/* Card to card, while already hanging. Slower and even at both ends —
+   he is being carried across, not dropped again. */
+.spidey.is-shift {
+  transition:
+    transform 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+    width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spidey-line {
+  flex: 1;
+  width: 2px;
+  min-height: 0;
+  background: linear-gradient(to bottom,
+    rgba(var(--ink-rgb), 0) 0%,
+    rgba(var(--ink-rgb), 0.32) 14%,
+    rgba(var(--ink-rgb), 0.5) 100%);
+}
+
+.spidey img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 18px 30px rgba(var(--shade-rgb), 0.55));
+  transform-origin: 50% 0;
+  /* Sway only once he has arrived, otherwise the descent wobbles. */
+  animation: spideySway 3.4s ease-in-out 0.9s infinite;
+}
+@keyframes spideySway {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50%      { transform: rotate(1.6deg); }
+}
+
+/* No hover, no Spidey — and nothing to download either. */
+@media (hover: none), (max-width: 760px) {
+  .spidey { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spidey { transition: none; }
+  .spidey img { animation: none; }
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import './TerminalWindow.css';
 import { useMusicPlayer } from './MusicContext';
+import { toggleSpidey } from './spideyBus';
 
 // ── Terminal session lines ────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ const HELP = [
   { type: 'out',  text: '    theme [d|l]     switch the colour theme' },
   { type: 'out',  text: '    music <cmd>     play · pause · next · prev · now' },
   { type: 'out',  text: '    warn            trigger the security notice' },
+  { type: 'out',  text: '    spidey          hang him off the right of the page' },
   { type: 'blank' },
   { type: 'ok',   text: '  FILES' },
   { type: 'out',  text: '    ls [-a]         list files (some are hidden)' },
@@ -161,7 +163,14 @@ function TerminalWindow({ visible, onClose }) {
   const unlockRef = useRef(false);       // wallet stays open once opened
   const music     = useMusicPlayer();
 
-  useEffect(() => () => { aliveRef.current = false; }, []);
+  /* Re-arm on mount, not just disarm on unmount. StrictMode runs
+     mount → cleanup → mount, so a cleanup-only version latches false on
+     the first simulated unmount and never recovers — which silently made
+     write() a no-op for the whole dev session. */
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => { aliveRef.current = false; };
+  }, []);
 
   const write = useCallback((lines) => {
     if (!aliveRef.current) return;
@@ -300,6 +309,14 @@ function TerminalWindow({ visible, onClose }) {
         if (!SECTIONS[id]) return fail(`goto: unknown section — try ${Object.keys(SECTIONS).join(', ')}`);
         say(`↓ ${id}`, 'ok');
         setTimeout(() => { goto(id); onClose(); }, 300);
+        return;
+      }
+
+      case 'spidey': {
+        const down = toggleSpidey({ mode: 'page' });
+        say(down
+          ? '🕷  friendly neighbourhood dropped in — run `spidey` again to send him home'
+          : '🕷  spidey swung off', down ? 'ok' : 'dim');
         return;
       }
 

@@ -44,6 +44,7 @@ import DynamicIsland from './DynamicIsland';
 import WarpText from './WarpText';
 import ErrorBoundary from './ErrorBoundary';
 import AiBotDock from './AiBotDock';
+import Spidey from './Spidey';
 import { useContent } from './content/store';
 import { startAnalytics, trackEvent, trackPage } from './services/analytics';
 
@@ -691,6 +692,7 @@ export default function App() {
       {/* Bottom-right bot. Outside the scroll container so it stays put. */}
       <ErrorBoundary name="Ask bot" silent>
         <AiBotDock onOpen={() => setShowChat(true)} />
+        <Spidey />
       </ErrorBoundary>
 
       {showChat && (

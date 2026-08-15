@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import './AboutSection.css';
 import { useContent } from './content/store';
+import { showSpidey, hideSpidey } from './spideyBus';
 
 // ── DATA ────────────────────────────────────────────────────────────────────
 
@@ -190,12 +191,75 @@ export default function AboutSection() {
     return () => observer.disconnect();
   }, []);
 
+  /* ── Spidey ─────────────────────────────────────────────────────────
+     The figure itself is a single page-level element (<Spidey />) shared
+     with the bot and the terminal. All this does is measure where he
+     should hang for the card under the cursor and publish it; moving
+     between cards publishes a new anchor and he glides there.
+
+     He hangs in the gutter to the RIGHT of the grid, never over a
+     picture. Only the vertical travel tracks the card you are on.
+
+     The hide is deferred. There is a real gap between the cards, so
+     crossing from one to the next fires mouseleave a beat before the
+     next mouseenter — hiding on the spot made him start climbing back
+     out of frame and then drop in again on every single card. A short
+     grace period that any subsequent enter cancels means he only ever
+     leaves when you have actually left the grid. */
+  const hideTimer = useRef(0);
+
+  const showDangle = useCallback((card) => {
+    clearTimeout(hideTimer.current);
+    const cardR = card.getBoundingClientRect();
+    const textR = document.querySelector('.abt-right')?.getBoundingClientRect();
+
+    /* The true right edge of the artwork is the furthest-right card, not
+       the stack's own box — the extra rows are positioned absolutely and
+       reach past it, which is how the figure ended up over a picture the
+       first time. */
+    let gridRight = 0;
+    for (const el of document.querySelectorAll('.abt-card')) {
+      if (Number(getComputedStyle(el).opacity) < 0.5) continue;
+      const b = el.getBoundingClientRect();
+      if (b.width > 20) gridRight = Math.max(gridRight, b.right);
+    }
+
+    /* Sit in the gap between the artwork and the text, then take 30% on
+       top of that. The extra can no longer fit in the gutter, so it is
+       spent to the RIGHT only — his left edge stays pinned at the edge
+       of the artwork and he leans into the text margin instead. He is
+       click-through, so overlapping type costs nothing; overlapping a
+       photograph is the one thing that is not allowed. */
+    const gapL = gridRight + 14;
+    const gapR = textR ? textR.left - 12 : window.innerWidth - 12;
+    const room = Math.max(0, gapR - gapL);
+    const w    = Math.max(64, Math.min(150, room)) * 1.3;
+
+    const centred = gapL + (room - w) / 2;
+    const x = Math.min(Math.max(centred, gapL), window.innerWidth - w - 8);
+
+    showSpidey({ mode: 'card', w, x, drop: Math.max(0, cardR.bottom) });
+  }, []);
+
+  const hideDangle = useCallback(() => {
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(hideSpidey, 260);
+  }, []);
+
+  useEffect(() => () => clearTimeout(hideTimer.current), []);
+
   // Individual card hover glow (CSS class only)
   const bindCardHover = (card) => {
     if (!card || card._hoverBound) return;
     card._hoverBound = true;
-    card.addEventListener('mouseenter', () => card.classList.add('abt-card--hovered'));
-    card.addEventListener('mouseleave', () => card.classList.remove('abt-card--hovered'));
+    card.addEventListener('mouseenter', () => {
+      card.classList.add('abt-card--hovered');
+      showDangle(card);
+    });
+    card.addEventListener('mouseleave', () => {
+      card.classList.remove('abt-card--hovered');
+      hideDangle();
+    });
   };
 
   // Enter left panel → full 3×3 grid: the original three align into the

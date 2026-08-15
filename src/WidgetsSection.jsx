@@ -3,6 +3,7 @@ import { useContent, withImages } from './content/store';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, LayoutGroup, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { BrainwaveCard, ThoughtStream } from './MindWidgets';
+import { setSpideyBase } from './spideyBus';
 import { LocationMap } from './components/ui/location-map';
 import { fmt, useMusicPlayer } from './MusicContext';
 import { playTick, playDetent, playGrip, playRelease, primeAudio } from './components/dj-tactile-audio';
@@ -2033,6 +2034,22 @@ export default function WidgetsSection({ onAboutClick, onSkillsClick }) {
     );
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+
+  /* Spidey drops in with the section and leaves with it. A ratio
+     threshold is no good here — the section is taller than the viewport,
+     so the visible fraction never reaches one. Shrinking the root to its
+     middle band asks the question that actually matters: is this section
+     the thing you are looking at? */
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => setSpideyBase(e.isIntersecting ? { mode: 'mind' } : null),
+      { rootMargin: '-25% 0px -25% 0px' }
+    );
+    obs.observe(el);
+    return () => { obs.disconnect(); setSpideyBase(null); };
   }, []);
 
   // Cleanup any pending restore timer on unmount

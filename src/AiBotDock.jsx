@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { showSpidey, hideSpidey } from './spideyBus';
 import './AiBotDock.css';
 
 /* The robot is three.js — lazy so it never lands in the first-load bundle. */
@@ -18,7 +19,11 @@ const RobotBot = lazy(() => import('./RobotBot'));
 
 export default function AiBotDock({ onOpen }) {
   return (
-    <div className="abd">
+    <div
+      className="abd"
+      onMouseEnter={() => showSpidey({ mode: 'bot' })}
+      onMouseLeave={hideSpidey}
+    >
       <button className="abd-hit" onClick={onOpen} aria-label="Ask Kishore anything">
         <span className="abd-stage" aria-hidden="true">
           <Suspense fallback={null}>
