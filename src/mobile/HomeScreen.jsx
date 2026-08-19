@@ -123,7 +123,7 @@ export default function HomeScreen({ onGo, onOpenDossier, onStory }) {
       <MobileHero onCta={(id) => onGo('work', id)} onScrollDown={onStory} />
 
       {/* ══ ABOUT ══════════════════════════════════════════════════ */}
-      <section className="mb-sec mb-about" id="mb-about">
+      <section className="mb-sec mb-about" id="mb-about" data-section="About">
         <PortraitFan cards={cards} />
 
         <div className="mb-head">
@@ -186,7 +186,7 @@ export default function HomeScreen({ onGo, onOpenDossier, onStory }) {
       <div className="mb-strip" aria-hidden="true" />
 
       {/* ══ PROMO ═════════════════════════════════════════════════ */}
-      <section className="mb-sec mb-sec--tight mb-sec--flush" style={{ '--h': 'var(--h-team)' }}>
+      <section className="mb-sec mb-sec--tight mb-sec--flush" style={{ '--h': 'var(--h-team)' }} data-section="Open for work">
         <Reveal className="mb-promo">
           <span className="mb-promo-badge">{promo.badge || 'OPEN FOR WORK'}</span>
           <h2>
@@ -202,7 +202,7 @@ export default function HomeScreen({ onGo, onOpenDossier, onStory }) {
       </section>
 
       {/* ══ SYNDICATE ═════════════════════════════════════════════ */}
-      <section className="mb-sec mb-sec--flush mb-team">
+      <section className="mb-sec mb-sec--flush mb-team" data-section="The Syndicate">
         <div className="mb-head" style={{ paddingInline: 'var(--mb-pad)' }}>
           <Reveal as="p" className="mb-eyebrow">Five roles, one person</Reveal>
           <Reveal as="h2" className="mb-h2" delay={60}>{team.heading || 'THE SYNDICATE'}</Reveal>
@@ -219,7 +219,7 @@ export default function HomeScreen({ onGo, onOpenDossier, onStory }) {
           the work — but it is muted, inline and lazy so iOS plays it
           without going full-screen and Android does not pre-buffer it
           before you have scrolled anywhere near. */}
-      <section className="mb-reel">
+      <section className="mb-reel" data-section="Selected Work">
         {/* No poster attribute. An empty one resolves against the page
             URL, so the browser fetches the document as an image, fails,
             and some engines then refuse to paint the first frame at all.
@@ -278,7 +278,7 @@ export default function HomeScreen({ onGo, onOpenDossier, onStory }) {
       <div className="mb-strip" aria-hidden="true" />
 
       {/* ══ TIMELINE ══════════════════════════════════════════════ */}
-      <section className="mb-sec" style={{ '--h': 'var(--h-notes)' }}>
+      <section className="mb-sec" style={{ '--h': 'var(--h-notes)' }} data-section="The Record">
         <div className="mb-head">
           <Reveal as="p" className="mb-eyebrow">The record</Reveal>
           <Reveal as="h2" className="mb-h2" delay={60}>How it<br /><span className="mb-accent">got here</span></Reveal>

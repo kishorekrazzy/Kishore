@@ -121,7 +121,7 @@ export default function ContactScreen({ onGo }) {
 
   return (
     <>
-      <section className="mb-sec mb-contact" style={{ paddingTop: 'calc(var(--mb-safe-t) + var(--mb-top) + 12px)' }}>
+      <section className="mb-sec mb-contact" data-section="Say hello" style={{ paddingTop: 'calc(var(--mb-safe-t) + var(--mb-top) + 12px)' }}>
         <div className="mb-head">
           <Reveal as="p" className="mb-eyebrow">{copy.eyebrow || 'Contact'}</Reveal>
           <Reveal as="h1" className="mb-h1" delay={50}>
@@ -253,7 +253,7 @@ export default function ContactScreen({ onGo }) {
       </section>
 
       {/* ══ FOOTER ════════════════════════════════════════════════ */}
-      <footer className="mb-footer">
+      <footer className="mb-footer" data-section="The Wrap">
         <div>
           <p className="mb-eyebrow">{footer.badge || 'Available for freelance work'}</p>
           <h2 className="mb-h2" style={{ marginTop: 14 }}>

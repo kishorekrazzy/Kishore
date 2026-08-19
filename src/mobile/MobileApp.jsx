@@ -95,16 +95,11 @@ function readRoute() {
   return { screen, overlay: (m && m[2]) || null };
 }
 
-/* Scroll fraction → HH:MM:SS:FF at 24fps over a nominal four-minute
-   sequence. Padded so the readout never changes width, which would make
-   the status bar jitter as you scroll. */
-const TOTAL_FRAMES = 24 * 60 * 4;
-const pad = (n) => String(n).padStart(2, '0');
-
-function frames(fraction) {
-  const f = Math.round(fraction * TOTAL_FRAMES);
-  return `${pad(Math.floor(f / 86400))}:${pad(Math.floor(f / 1440) % 60)}:${pad(Math.floor(f / 24) % 60)}:${pad(f % 24)}`;
-}
+/* How far under the status bar a section's top must pass before it
+   counts as the one you are in. Roughly the bar's own height, so the
+   name changes as the heading meets the chrome rather than when the
+   section merely appears at the bottom of the screen. */
+const SPY_BAND = 64;
 
 const routeHash = (screen, overlay) => `#/m/${screen}${overlay ? `/${overlay}` : ''}`;
 
@@ -148,8 +143,8 @@ export default function MobileApp() {
 
   const [topHidden, setTopHidden] = useState(false);
   const [stuck, setStuck] = useState(false);
-  /* Scroll position as a timecode. See the note on the status bar. */
-  const [tc, setTc] = useState(null);
+  /* The name of the section currently under the status bar. */
+  const [sectionName, setSectionName] = useState(null);
 
   const scrollRefs = useRef({});
   const lastY = useRef(0);
@@ -225,7 +220,7 @@ export default function MobileApp() {
     // "View my work" on the hero jumps straight to one tile.
     navigate(id, typeof arg === 'string' ? arg : null);
     setTopHidden(false);
-    setTc(null);
+    setSectionName(null);
     setStuck(false);
   }, [screen, overlay, navigate]);
 
@@ -295,6 +290,37 @@ export default function MobileApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ── Scroll spy ───────────────────────────────────────────────────
+     Which labelled section is under the status bar. An observer rather
+     than arithmetic in the scroll handler: the sections are different
+     heights and some of them are full-bleed, so comparing offsets would
+     mean measuring the whole screen on every frame.
+
+     The root margin is a band across the top of the screen. A section
+     enters it when its heading reaches the chrome and leaves when it has
+     scrolled past. Two can be inside at once — a tall section still
+     spanning the band while the next one's top edge arrives at the
+     bottom of it — and the LAST of those is the right answer: once the
+     newcomer's top is in the band it already owns most of the screen.
+     Taking the first instead meant a long section like About held the
+     label while the strip below it went by unnamed. */
+  useEffect(() => {
+    const root = scrollRefs.current[screen];
+    if (!root || !('IntersectionObserver' in window)) return;
+    const els = Array.from(root.querySelectorAll('[data-section]'));
+    if (!els.length) { setSectionName(null); return; }
+
+    const inBand = new Set();
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => (e.isIntersecting ? inBand.add(e.target) : inBand.delete(e.target)));
+      const current = els.findLast((el) => inBand.has(el));
+      setSectionName(current ? current.dataset.section : null);
+    }, { root, rootMargin: `-${SPY_BAND}px 0px -72% 0px`, threshold: 0 });
+
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [screen]);
+
   /* ── Chrome on scroll ──
      The status bar hides on a downward scroll and returns on an upward
      one. The 8px deadband is what stops it flickering on the tiny
@@ -303,19 +329,6 @@ export default function MobileApp() {
     const el = e.currentTarget;
     const y = el.scrollTop;
     setStuck(y > 10);
-
-    /* ── The timecode ──
-       The screen is treated as a sequence and your scroll position as
-       the playhead: total travel maps onto a duration, which is then
-       printed as HH:MM:SS:FF at 24fps.
-
-       It is decoration, but it is decoration that belongs to this
-       portfolio specifically — the one number an editor reads all day —
-       and it doubles as an honest progress readout, which a plain bar
-       would give more dryly. */
-    const max = el.scrollHeight - el.clientHeight;
-    setTc(max > 40 ? frames(Math.min(1, y / max)) : null);
-
     const dy = y - lastY.current;
     if (Math.abs(dy) < 8) return;
     // Never hidden near the top — there is nothing to gain and the bar
@@ -361,17 +374,18 @@ export default function MobileApp() {
             <i aria-hidden="true" />
             Kish
           </button>
-          {/* At the top of a screen the bar names it; once you are into
-              the sequence it reads out where you are. One slot, so the
-              chrome never grows. */}
-          {stuck && tc ? (
-            <span className="mb-top-tc" key="tc">
-              <i aria-hidden="true" />
-              {tc}
-            </span>
-          ) : (
-            <span className="mb-top-title" key={screen}>{meta.title}</span>
-          )}
+          {/* At the top of a screen the bar names the screen; once you
+              are into it, the section you are reading. One slot, so the
+              chrome never grows — and it is announced politely so a
+              screen reader is told where the page has got to without
+              being interrupted mid-sentence. */}
+          <span
+            className="mb-top-title"
+            key={stuck && sectionName ? sectionName : screen}
+            aria-live="polite"
+          >
+            {stuck && sectionName ? sectionName : meta.title}
+          </span>
           <div className="mb-top-btns">
             <button
               className={`mb-icon-btn mb-hit${screen === 'contact' ? ' mb-icon-btn--on' : ''}`}

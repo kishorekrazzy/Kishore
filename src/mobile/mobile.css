@@ -476,7 +476,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  animation: mb-title-in 420ms var(--mb-ease-out);
+  /* Re-keyed on every change, so this replays as the name swaps. Short,
+     because it fires whenever a section reaches the chrome and anything
+     longer would still be moving when the next one arrives. */
+  animation: mb-title-in 320ms var(--mb-ease-out);
 }
 @keyframes mb-title-in {
   from { opacity: 0; transform: translateY(6px); }
@@ -769,48 +772,164 @@
   transition: background 700ms ease;
 }
 
-/* ── Progress bars ── */
-.mb-hero-bars {
+/* ── The slate ─────────────────────────────────────────────────────────
+   Four segments that name the disciplines, fill as their panel plays,
+   and select it when tapped. One object doing the work that story-style
+   progress bars and a separate chip row were doing between them — two
+   controls for one job, costing 46pt of the only screen that matters. */
+.mb-slate {
   position: absolute;
-  top: calc(var(--mb-safe-t) + var(--mb-top) + 4px);
+  top: calc(var(--mb-safe-t) + var(--mb-top) + 2px);
   left: var(--mb-pad);
   right: var(--mb-pad);
   z-index: 4;
   display: flex;
-  gap: 5px;
+  align-items: stretch;
+  gap: 8px;
+  height: 42px;
 }
-.mb-hero-bar {
+
+/* The clapper. Diagonal stripes from one repeating gradient — no image,
+   and it scales to any height. */
+.mb-slate-clap {
+  flex: none;
+  width: 26px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(
+    -58deg,
+    rgb(var(--on-media-rgb)) 0 6px,
+    rgba(var(--shade-rgb), 0.92) 6px 12px);
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.mb-slate-reels {
   flex: 1;
-  height: 20px;                 /* a 3px bar is not a 44pt target — the */
-  display: flex;                /* hit area is padding around the line  */
-  align-items: center;
-  padding: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
 }
-.mb-hero-bar i {
-  display: block;
-  width: 100%;
-  height: 2.5px;
-  border-radius: 2px;
-  background: rgba(var(--on-media-rgb), 0.24);
-  overflow: hidden;
+
+.mb-reel-seg {
   position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 7px;
+  text-align: left;
+  color: rgba(var(--on-media-rgb), 0.62);
+  background: rgba(var(--shade-rgb), 0.42);
+  border: 1px solid rgba(var(--on-media-rgb), 0.14);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: color 320ms ease, border-color 320ms ease;
+  isolation: isolate;
 }
-.mb-hero-bar i::after {
-  content: '';
+.mb-reel-seg b,
+.mb-reel-seg em {
+  position: relative;
+  z-index: 2;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+.mb-reel-seg b { font-size: 0.5rem; font-weight: 700; opacity: 0.66; }
+.mb-reel-seg em { font-size: 0.6rem; font-weight: 700; }
+
+/* The fill IS the progress: it sweeps the segment over the panel's nine
+   seconds, so the control and the timer are one thing. */
+.mb-reel-seg i {
   position: absolute;
   inset: 0;
-  background: rgb(var(--on-media-rgb));
+  z-index: 1;
+  /* A wash, not a solid fill, plus a hard rule along the bottom edge.
+     The solid version put the label half on accent and half on glass,
+     and the difference blending meant to cope with that chopped each
+     word down the middle — it read as a rendering fault rather than as
+     progress. The wash never fights the text; the rule carries the
+     reading. */
+  background:
+    linear-gradient(to top, var(--acc) 0 3px, transparent 3px),
+    var(--acc-wash);
   transform-origin: left;
   transform: scaleX(0);
 }
-.mb-hero-bar--done i::after { transform: scaleX(1); }
-.mb-hero-bar--on i::after {
-  animation: mb-bar var(--dur, 9s) linear forwards;
+.mb-reel-seg--done i { transform: scaleX(1); opacity: 0.28; }
+.mb-reel-seg--on {
+  color: rgb(var(--on-media-rgb));
+  border-color: var(--acc);
 }
+.mb-reel-seg--on i { animation: mb-reel-fill var(--dur, 9s) linear forwards; }
 /* Paused while a finger is down, so reading is never interrupted by the
    panel changing underneath. */
-.mb-hero--held .mb-hero-bar--on i::after { animation-play-state: paused; }
-@keyframes mb-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.mb-hero--held .mb-reel-seg--on i { animation-play-state: paused; }
+@keyframes mb-reel-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* The active segment's label sits above the wash at full strength. */
+.mb-reel-seg--on em { color: rgb(var(--on-media-rgb)); }
+.mb-reel-seg--on b { color: var(--acc-hi); opacity: 1; }
+
+/* ── Leader rail ──
+   Vertical type down the left edge, in the band above the copy so the
+   two never meet. Film leader, essentially. */
+.mb-hero-rail {
+  position: absolute;
+  left: 6px;
+  top: 24%;
+  z-index: 3;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(var(--on-media-rgb), 0.42);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-height: 34%;
+  overflow: hidden;
+}
+.mb-hero-rail::after {
+  content: '';
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(to bottom, currentColor, transparent);
+}
+
+/* ── Take number ──
+   Watermarked into the frame above the copy. Outline only: a solid
+   numeral at this size competes with the headline instead of sitting
+   behind it. */
+.mb-hero-take {
+  position: absolute;
+  right: 14px;
+  /* Under the slate, not behind the headline — at 44% from the bottom it
+     sat straight through the hollow line and read as clutter rather than
+     as a watermark. */
+  top: calc(var(--mb-safe-t) + var(--mb-top) + 54px);
+  z-index: 2;
+  font-family: var(--mb-display);
+  font-size: 6rem;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(var(--on-media-rgb), 0.16);
+  pointer-events: none;
+  animation: mb-take-in 720ms var(--mb-ease-out) both;
+}
+@keyframes mb-take-in {
+  from { opacity: 0; transform: translateY(14px) scale(1.08); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* ── Hero copy ── */
 .mb-hero-body {
@@ -820,16 +939,13 @@
   right: 0;
   bottom: 0;
   z-index: 3;
-  /* Clears the floating tab bar. Without this the chips row and the CTA
-     sit underneath it — visible, but untappable, which is worse than
-     being off screen. */
+  /* Clears the floating tab bar. Without this the CTA sits underneath
+     it — visible, but untappable, which is worse than off screen. */
   padding: 0 var(--mb-pad) calc(var(--mb-bar) + var(--mb-safe-b) + 22px);
   display: grid;
-  gap: 16px;
+  gap: 15px;
   color: rgb(var(--on-media-rgb));
 }
-/* Re-keyed on every panel change so the whole block replays its
-   entrance — the cross-fade alone was not enough to signal a change. */
 .mb-hero-body > * {
   animation: mb-hero-up 620ms var(--mb-ease-out) both;
   animation-delay: var(--d, 0ms);
@@ -840,105 +956,130 @@
 }
 
 .mb-hero-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--acc-hi);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--acc-hi);
 }
 .mb-hero-eyebrow::before {
   content: '';
-  width: 20px;
+  width: 22px;
   height: 1px;
   background: currentColor;
+  flex: none;
+}
+.mb-hero-eyebrow span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* ── The title card ──
+   Each line wipes up from behind its own edge. The mask is the span's
+   overflow and the motion is a transform on the inner element, which is
+   the cheapest way to get a hard wipe: no clip-path animation, no
+   filter, one compositor transform per line. */
 .mb-hero-title {
-  font-family: var(--mb-display);
-  font-size: clamp(2.7rem, 14.2vw, 4.3rem);
-  font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.045em;
   margin: 0;
+  display: grid;
+  gap: 0;
+  font-family: var(--mb-display);
+  /* 12.1vw, not 13.4: at the larger size the CMS's longest line —
+     "IN THE WORLD" — wrapped, which turned a three-line title card into
+     a four-line paragraph and broke the composition. */
+  font-size: clamp(2.35rem, 12.1vw, 3.7rem);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.045em;
   text-transform: uppercase;
 }
-/* The desktop pushes this headline through a glass shader. A WebGL
-   canvas per headline is the wrong trade on a phone, so the same
-   intention — light moving across the letters — is done with a clipped
-   gradient sweep that costs one compositor layer. */
-.mb-hero-title span {
+.mb-hero-line {
   display: block;
-  background: linear-gradient(
-    100deg,
-    rgb(var(--on-media-rgb)) 0%,
-    rgb(var(--on-media-rgb)) 38%,
-    var(--acc-hi) 50%,
-    rgb(var(--on-media-rgb)) 62%,
-    rgb(var(--on-media-rgb)) 100%);
-  background-size: 260% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: mb-sheen 6.5s ease-in-out infinite;
-  animation-delay: calc(var(--l, 0) * 220ms);
+  overflow: hidden;
+  /* Descender room a tight line-height would otherwise clip away. */
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
 }
-@keyframes mb-sheen {
-  0%, 55%, 100% { background-position: 130% 0; }
-  80%           { background-position: -30% 0; }
+.mb-hero-line > i {
+  display: block;
+  font-style: normal;
+  animation: mb-line-up 760ms var(--mb-ease-out) both;
+  animation-delay: calc(var(--d, 0ms) + var(--l, 0) * 110ms);
+}
+@keyframes mb-line-up {
+  from { transform: translate3d(0, 105%, 0); }
+  to   { transform: none; }
+}
+
+/* One line drawn hollow, so the block reads as designed type rather than
+   as a paragraph set very large. The shadow is what keeps an outline
+   legible over photography. */
+.mb-hero-line > i[data-hollow] {
+  color: transparent;
+  -webkit-text-stroke: 1.6px rgb(var(--on-media-rgb));
+  paint-order: stroke fill;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.55));
 }
 
 .mb-hero-prose {
-  font-size: 0.875rem;
+  margin: 0;
+  font-size: 0.86rem;
   line-height: 1.6;
   color: rgba(var(--on-media-rgb), 0.76);
-  margin: 0;
   max-width: 33ch;
 }
 
-.mb-hero-stats { display: flex; gap: 18px; flex-wrap: wrap; }
-.mb-hero-stat { display: flex; align-items: center; gap: 8px; }
-.mb-hero-stat i {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: var(--acc);
-  color: var(--acc-ink);
+/* ── Specs ──
+   Ruled cells with monospace labels — the way a spec sheet lists
+   figures, rather than the ticked list the desktop uses. */
+.mb-hero-specs {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid rgba(var(--on-media-rgb), 0.22);
+  border-bottom: 1px solid rgba(var(--on-media-rgb), 0.22);
+}
+.mb-hero-spec {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
   display: grid;
-  place-items: center;
-  flex: none;
+  gap: 3px;
 }
-.mb-hero-stat b {
-  display: block;
+.mb-hero-spec + .mb-hero-spec {
+  border-left: 1px solid rgba(var(--on-media-rgb), 0.22);
+  padding-left: 14px;
+}
+.mb-hero-spec b {
   font-family: var(--mb-display);
-  font-size: 0.95rem;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-size: 1.16rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--acc-hi);
 }
-.mb-hero-stat em {
-  display: block;
+.mb-hero-spec em {
   font-style: normal;
-  font-size: 0.63rem;
-  letter-spacing: 0.05em;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
   color: rgba(var(--on-media-rgb), 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mb-hero-cta { display: flex; gap: 10px; align-items: center; }
-
-/* ── Chips: the four disciplines ── */
-.mb-hero-chips {
-  display: flex;
-  gap: 7px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin: 0 calc(var(--mb-pad) * -1);
-  padding: 2px var(--mb-pad) 4px;
-  scroll-snap-type: x proximity;
-}
-.mb-hero-chips::-webkit-scrollbar { display: none; }
+/* ── Chips ──
+   Retained for the assistant's openers. The hero's four disciplines
+   moved into the slate, which is now both the index and the timer. */
 .mb-chip {
   flex: none;
   scroll-snap-align: center;
@@ -2430,7 +2571,11 @@
   .mb-hero-plate--on .mb-img > img { animation: none; transform: none; }
   .mb-marquee-track { animation: none; }
   .mb-img > img { opacity: 1; transform: none; }
-  .mb-hero-bar--on i::after { transform: scaleX(1); animation: none; }
+  /* The slate still has to show which panel is current, so the fill is
+     held complete rather than removed. */
+  .mb-reel-seg--on i { animation: none; transform: scaleX(1); }
+  .mb-hero-line > i { animation: none; transform: none; }
+  .mb-hero-take { animation: none; }
   .mb-sheet { animation: none; transform: none; }
   .mb-scrim { animation: none; opacity: 1; }
 }
@@ -2455,8 +2600,14 @@
      tab bar's clearance, and overriding it here put the primary CTA
      behind the bar on exactly the screens with the least room. */
   .mb-hero-body { gap: 12px; }
-  .mb-hero-title { font-size: 2.35rem; }
-  .mb-hero-prose { font-size: 0.83rem; }
+  .mb-hero-title { font-size: 2.3rem; }
+  .mb-hero-prose { font-size: 0.82rem; }
+  .mb-reel-seg { padding: 0 5px; }
+  .mb-reel-seg em { font-size: 0.55rem; }
+  .mb-hero-take { font-size: 4.6rem; }
+  /* 15px of gutter here, and the rail wants 6–17px of it — it would run
+     under the headline's first letter. The flourish gives way. */
+  .mb-hero-rail { display: none; }
   .mb-note-row { grid-template-columns: 1fr 68px; }
   .mb-note-row .mb-img { width: 68px; height: 52px; }
 }
@@ -2487,7 +2638,9 @@
   .mb-hero {
     height: auto;
     min-height: 0;
-    padding-top: calc(var(--mb-safe-t) + var(--mb-top) + 22px);
+    /* Clears the slate, not just the status bar. At +22 the eyebrow
+       started underneath the segments and printed through them. */
+    padding-top: calc(var(--mb-safe-t) + var(--mb-top) + 48px);
     /* The hero stops filling the viewport here, so its copy no longer
        ends at the screen's bottom edge — the clearance for the tab bar
        has to move onto the hero itself or the primary CTA opens the site
@@ -2508,8 +2661,13 @@
      screen further down, so nothing is actually lost. */
   .mb-hero-body { gap: 10px; }
   .mb-hero-title { font-size: 1.95rem; line-height: 0.92; }
+  .mb-slate { height: 34px; }
+  /* No vertical room for vertical type, and the watermark would sit
+     straight through the headline. */
+  .mb-hero-rail,
+  .mb-hero-take,
   .mb-hero-prose,
-  .mb-hero-stats { display: none; }
+  .mb-hero-specs { display: none; }
   .mb-reel { height: 96svh; min-height: 0; }
   .mb-sec { padding-top: 30px; padding-bottom: 28px; }
   .mb-fan { height: 210px; }
@@ -3225,35 +3383,6 @@
   font-size: 0.62rem;
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   TIMECODE
-
-   Takes the screen-title slot once you start scrolling. Tabular figures
-   and a fixed width, because a readout that changes size as the digits
-   change makes the whole bar twitch.
-   ══════════════════════════════════════════════════════════════════════ */
-.mb-top-tc {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
-  color: var(--acc);
-  animation: mb-title-in 320ms var(--mb-ease-out);
-}
-.mb-top-tc i {
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
-  background: var(--acc);
-  animation: mb-blink 1.2s steps(1, end) infinite;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
