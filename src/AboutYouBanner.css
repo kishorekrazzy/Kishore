@@ -1,0 +1,292 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ABOUT YOU — BANNER
+
+   A near-black strip on a section that is anything but. That contrast is
+   the point: it is modelled on a festival banner, and those are always
+   black-tie regardless of the page they land on. Gold carries the award
+   idea from the laurels through to the title's value word and into the
+   modal, which shares the palette.
+
+   Layout is 1fr / auto / 1fr so the emblem is centred on the banner
+   rather than on whatever is left after the copy — the reference does
+   the same, and it is the reason the strip stays symmetrical when the
+   headline gets longer.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ayb-wrap {
+  --gold:    oklch(84% 0.115 86);
+  --gold-hi: oklch(93% 0.085 90);
+
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 14;
+  /* Clears the card grid, which deliberately overruns its 480px panel by
+     about 84px at the bottom when the stack aligns — measured at ~44px
+     past the grid row itself, since the panel is centred in a taller row. */
+  margin-top: clamp(64px, 7vh, 96px);
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Joins the section's own reveal chain, one beat after the CTA at 1.6s. */
+.abt-revealed .ayb-wrap {
+  animation: aybRise 0.85s cubic-bezier(0.22, 1, 0.36, 1) 1.85s forwards;
+}
+@keyframes aybRise {
+  to { opacity: 1; transform: none; }
+}
+
+.ayb-banner {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+  min-height: clamp(104px, 8.4vw, 128px);
+  padding: 16px clamp(18px, 2.1vw, 30px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    radial-gradient(70% 180% at 50% 130%, rgba(255, 255, 255, 0.05), transparent 62%),
+    linear-gradient(100deg, #08080a 0%, #0e0e12 44%, #101014 58%, #08080a 100%);
+  box-shadow:
+    0 26px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  color: #f2f2f4;
+}
+
+/* A slow light pass, the way a spotlight crosses a stage. Long pause
+   between runs so it registers as an event, not a shimmer. */
+.ayb-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.065) 48%,
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 64%);
+  transform: translateX(-130%);
+  animation: aybSheen 8.5s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+@keyframes aybSheen {
+  0%, 62% { transform: translateX(-130%); }
+  100%    { transform: translateX(130%);  }
+}
+
+.ayb-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(58% 120% at 50% 50%,
+              oklch(84% 0.115 86 / 0.10), transparent 62%);
+}
+
+/* ── COPY ────────────────────────────────────────────────────────────── */
+
+.ayb-copy { position: relative; min-width: 0; }
+
+.ayb-title {
+  margin: 0;
+  font-size: clamp(0.88rem, 1.15vw, 1.06rem);
+  font-weight: 800;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.ayb-mid { color: rgba(255, 255, 255, 0.3); }
+.ayb-value {
+  color: var(--gold);
+  text-shadow: 0 0 22px oklch(84% 0.115 86 / 0.35);
+}
+
+.ayb-sub {
+  margin: 7px 0 0;
+  font-size: clamp(0.74rem, 0.86vw, 0.84rem);
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.5);
+}
+/* Once decoded the subtitle is data, so it is set like data. */
+.ayb-banner[data-unlocked="true"] .ayb-sub {
+  color: rgba(255, 255, 255, 0.62);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── EMBLEM ──────────────────────────────────────────────────────────── */
+
+.ayb-emblem {
+  width: clamp(96px, 11vw, 150px);
+  height: auto;
+  justify-self: center;
+  overflow: visible;
+}
+
+.ayb-halo {
+  opacity: 0.16;
+  filter: blur(16px);
+  transform-origin: 100px 62px;
+  animation: aybHalo 5.5s ease-in-out infinite;
+}
+@keyframes aybHalo {
+  0%, 100% { opacity: 0.13; transform: scale(0.94); }
+  50%      { opacity: 0.24; transform: scale(1.04); }
+}
+
+/* Light running down the gate, on the same clock as the halo. */
+.ayb-gate-sweep { animation: aybGateSweep 5.5s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+@keyframes aybGateSweep {
+  0%       { transform: translateY(-10px); opacity: 0; }
+  18%      { opacity: 0.5; }
+  60%      { transform: translateY(112px); opacity: 0; }
+  100%     { transform: translateY(112px); opacity: 0; }
+}
+
+.ayb-leaf {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.9;
+  animation: aybLeaf 4.6s ease-in-out var(--d) infinite;
+}
+@keyframes aybLeaf {
+  0%, 100% { opacity: 0.72; }
+  50%      { opacity: 1;    }
+}
+.ayb-stem { opacity: 0.55; }
+
+/* ── ACTIONS ─────────────────────────────────────────────────────────── */
+
+.ayb-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.ayb-cta,
+.ayb-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 20px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: clamp(0.76rem, 0.9vw, 0.86rem);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform   0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow  0.28s ease,
+    background  0.24s ease,
+    border-color 0.24s ease;
+}
+
+.ayb-cta {
+  border: 1px solid transparent;
+  background: #fafafa;
+  color: #0a0a0c;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+.ayb-arrow { width: 20px; height: 9px; transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+
+.ayb-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ayb-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 0 3px oklch(84% 0.115 86 / 0.22);
+  }
+  .ayb-cta:hover .ayb-arrow { transform: translateX(4px); }
+  .ayb-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.24);
+    transform: translateY(-1px);
+  }
+  /* Hovering anywhere on the strip brightens the award. */
+  .ayb-banner:hover .ayb-halo { opacity: 0.3; }
+  .ayb-banner:hover .ayb-leaf { opacity: 1; }
+}
+
+.ayb-wrap :focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ── DRAWER ──────────────────────────────────────────────────────────── */
+
+.ayb-more {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ayb-more[data-open="true"] { grid-template-rows: 1fr; }
+.ayb-more-clip { overflow: hidden; }
+
+.ayb-more-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2vw, 30px);
+  margin-top: 10px;
+  padding: 22px clamp(18px, 2.1vw, 30px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.022);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.ayb-more[data-open="true"] .ayb-more-body { opacity: 1; transition-delay: 0.12s; }
+
+.ayb-note h3 {
+  margin: 0 0 7px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.ayb-note p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--ink-3, rgba(255, 255, 255, 0.55));
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────
+   Below 900px the three-across strip stops being a strip: the copy and
+   the buttons stack, and the emblem moves to the top as a crest. */
+
+@media (max-width: 900px) {
+  .ayb-wrap { margin-top: clamp(48px, 7vh, 80px); }
+  .ayb-banner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 26px 20px 24px;
+  }
+  .ayb-banner > .ayb-emblem { order: -1; width: 104px; }
+  .ayb-actions { justify-content: center; width: 100%; }
+  .ayb-cta, .ayb-ghost { flex: 1 1 auto; justify-content: center; }
+  .ayb-more-body { grid-template-columns: 1fr; gap: 18px; }
+}
+
+@media (max-width: 420px) {
+  .ayb-cta, .ayb-ghost { flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ayb-wrap { opacity: 1; transform: none; }
+  .abt-revealed .ayb-wrap { animation: none; }
+  .ayb-sheen, .ayb-halo, .ayb-gate-sweep, .ayb-leaf { animation: none; }
+  .ayb-sheen { opacity: 0; }
+  .ayb-cta, .ayb-ghost, .ayb-arrow, .ayb-more { transition: none; }
+}

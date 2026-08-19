@@ -1,0 +1,889 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ABOUT YOU — THE DECODER (modal)
+
+   Black-tie palette, deliberately its own: the modal is portalled to
+   <body>, so it sits outside the About section's hue and would inherit
+   the hero's accent instead. Gold is the award colour the banner's
+   laurels already establish, and it carries across.
+
+   Naming is prefixed (--ay-*) rather than reusing --ink / --acc, because
+   redefining a global token here would leak into anything nested.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ayu-scrim {
+  --ay-gold:    oklch(84% 0.115 86);
+  --ay-gold-hi: oklch(93% 0.085 90);
+  --ay-gold-lo: oklch(62% 0.105 74);
+  --ay-paper:   #0a0a0d;
+  --ay-ink:     #f3f3f5;
+  --ay-dim:     rgba(255, 255, 255, 0.52);
+  --ay-line:    rgba(255, 255, 255, 0.10);
+
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(4, 4, 6, 0.72);
+  backdrop-filter: blur(14px) saturate(0.8);
+  -webkit-backdrop-filter: blur(14px) saturate(0.8);
+  animation: ayuScrimIn 0.32s ease forwards;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  color: var(--ay-ink);
+}
+.ayu-scrim.is-closing { animation: ayuScrimIn 0.24s ease reverse forwards; }
+
+@keyframes ayuScrimIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── PANEL ───────────────────────────────────────────────────────────
+   Opens like a CRT: a bright slit at the centre line, held for a beat,
+   then unclipped outward while the flare over the top burns off. */
+
+.ayu-panel {
+  position: relative;
+  width: min(560px, 94vw);
+  max-height: min(90vh, 860px);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--ay-line);
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.07), transparent 62%),
+    linear-gradient(168deg, #101014 0%, var(--ay-paper) 46%, #08080a 100%);
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: ayuPanelIn 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ayu-panel.is-closing { animation: ayuPanelOut 0.24s ease forwards; }
+
+@keyframes ayuPanelIn {
+  0%   { opacity: 0; transform: scale(0.9);  clip-path: inset(49.6% 0 49.6% 0 round 22px); }
+  26%  { opacity: 1; transform: scale(1);    clip-path: inset(49.6% 0 49.6% 0 round 22px); }
+  100% { opacity: 1; transform: scale(1);    clip-path: inset(0 0 0 0 round 22px); }
+}
+@keyframes ayuPanelOut {
+  to { opacity: 0; transform: scale(0.96) translateY(6px); }
+}
+
+/* The turn-on flash. Kept as its own layer rather than a filter on the
+   panel — a filter would linger as a containing block over the 3D flip. */
+.ayu-flare {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(120% 40% at 50% 50%, rgba(255, 255, 255, 0.9), transparent 70%);
+  animation: ayuFlare 0.72s ease-out forwards;
+}
+@keyframes ayuFlare {
+  0%   { opacity: 0.85; }
+  30%  { opacity: 0.55; }
+  100% { opacity: 0;    }
+}
+
+/* Standing scanlines — 2px, barely there, the reason the panel reads as
+   a screen rather than a card. */
+.ayu-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.4;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.028) 0 1px,
+    transparent 1px 3px);
+}
+
+.ayu-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 7;
+  width: 30px; height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ay-line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ay-dim);
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.ayu-close svg { width: 11px; height: 11px; }
+.ayu-close:hover { color: var(--ay-ink); background: rgba(255, 255, 255, 0.1); transform: rotate(90deg); }
+
+/* ── THE FLIP ────────────────────────────────────────────────────────
+   Both faces share one box. The front is in flow and sets the height;
+   the back is absolute on top of it, pre-rotated, and only becomes the
+   visible side once the container turns over. */
+
+.ayu-stage { perspective: 1700px; }
+
+.ayu-flip {
+  position: relative;
+  min-height: 566px;
+  transform-style: preserve-3d;
+  transition: transform 1.05s cubic-bezier(0.72, 0, 0.22, 1);
+}
+.ayu-flip[data-face="back"] { transform: rotateY(180deg); }
+
+.ayu-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 34px clamp(22px, 4.4vw, 36px) 30px;
+}
+.ayu-face--front {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.ayu-face--back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── FORM FACE ───────────────────────────────────────────────────────── */
+
+.ayu-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  color: var(--ay-gold);
+}
+.ayu-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--ay-gold);
+  box-shadow: 0 0 10px 2px oklch(84% 0.115 86 / 0.55);
+  animation: ayuPulse 2.2s ease-in-out infinite;
+}
+@keyframes ayuPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+.ayu-title {
+  margin: 14px 0 0;
+  font-size: clamp(1.7rem, 5vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.ayu-lede {
+  margin: 12px 0 26px;
+  max-width: 42ch;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--ay-dim);
+}
+
+.ayu-field { margin-bottom: 22px; }
+
+.ayu-lbl {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* Name — no box, just a rule that lights up under the caret. */
+.ayu-name-wrap { position: relative; }
+.ayu-name {
+  width: 100%;
+  padding: 6px 0 11px;
+  border: 0;
+  background: none;
+  color: var(--ay-ink);
+  font: inherit;
+  font-size: 1.24rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  caret-color: var(--ay-gold);
+  outline: none;
+}
+.ayu-ghost {
+  position: absolute;
+  left: 0; top: 6px;
+  pointer-events: none;
+  font-size: 1.24rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.16);
+}
+.ayu-underline {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--ay-line);
+}
+.ayu-underline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--ay-gold), var(--ay-gold-lo));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ayu-name:focus ~ .ayu-underline::after { transform: scaleX(1); }
+
+/* ── THE DATE LOCK ───────────────────────────────────────────────────
+   Three barrels. The input is transparent and stretched over its cells,
+   so what you see roll is markup, not a text caret. */
+
+.ayu-lock {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(6px, 1.4vw, 10px);
+}
+
+.ayu-reel { position: relative; }
+
+.ayu-reel-cells { display: flex; gap: 5px; }
+
+.ayu-cell {
+  position: relative;
+  width: clamp(30px, 7.4vw, 38px);
+  height: clamp(44px, 10vw, 52px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ay-line);
+  border-radius: 9px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
+  font-size: clamp(1.05rem, 3vw, 1.28rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+/* Unfilled cells sit as ghosted zeroes so the lock reads full even
+   before anything is typed. */
+.ayu-cell-d {
+  display: block;
+  animation: ayuRoll 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ayuRoll {
+  0%   { transform: translateY(-105%) scaleY(1.35); filter: blur(3px); opacity: 0; }
+  55%  { filter: blur(0); opacity: 1; }
+  78%  { transform: translateY(4%) scaleY(0.94); }
+  100% { transform: translateY(0) scaleY(1); }
+}
+
+.ayu-reel[data-focused="true"] .ayu-cell {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.ayu-cell.is-caret {
+  border-color: var(--ay-gold);
+  box-shadow: 0 0 0 1px oklch(84% 0.115 86 / 0.35), 0 0 22px oklch(84% 0.115 86 / 0.22);
+}
+.ayu-cell.is-caret .ayu-cell-d { animation: ayuBlink 1.05s steps(2, end) infinite; }
+@keyframes ayuBlink { 0% { opacity: 0.22; } 50% { opacity: 0.05; } 100% { opacity: 0.22; } }
+
+.ayu-cell-d.is-empty { color: rgba(255, 255, 255, 0.12); }
+
+.ayu-reel-in {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: none;
+  /* 16px keeps iOS from zooming the viewport on focus. */
+  font-size: 16px;
+  color: transparent;
+  caret-color: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.ayu-reel-lbl {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  cursor: pointer;
+}
+
+.ayu-sep {
+  padding-bottom: 32px;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.18);
+}
+
+.ayu-err {
+  margin: 4px 0 0;
+  min-height: 1.2em;
+  font-size: 0.74rem;
+  color: oklch(72% 0.17 24);
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.ayu-err.is-shown { opacity: 1; transform: none; }
+
+/* ── HOLD TO UNLOCK ──────────────────────────────────────────────────
+   --p is written straight onto the button from rAF (0 → 1). The ring is
+   a conic gradient masked to its own border, the fill is a scaled bar
+   behind the label, and both read the same variable — one number drives
+   the whole control. */
+
+.ayu-unlock-row {
+  margin-top: auto;
+  padding-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ayu-unlock {
+  position: relative;
+  isolation: isolate;
+  padding: 15px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--ay-ink);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+}
+.ayu-unlock:hover { border-color: rgba(255, 255, 255, 0.3); }
+.ayu-unlock.is-holding { transform: scale(0.975); }
+.ayu-unlock.is-refused { animation: ayuShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+@keyframes ayuShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px);  }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+.ayu-unlock-ring {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 99px;
+  padding: 2px;
+  background: conic-gradient(
+    from -90deg,
+    var(--ay-gold-hi) 0deg,
+    var(--ay-gold) calc(var(--p) * 360deg),
+    transparent calc(var(--p) * 360deg));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  filter: drop-shadow(0 0 8px oklch(84% 0.115 86 / calc(var(--p) * 0.65)));
+}
+
+.ayu-unlock-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(var(--p));
+  transform-origin: left;
+  background: linear-gradient(to right,
+    oklch(84% 0.115 86 / 0.30),
+    oklch(84% 0.115 86 / 0.12));
+}
+
+.ayu-unlock-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.ayu-lockicon { width: 15px; height: 15px; color: var(--ay-gold); }
+/* The shackle lifts as the charge completes — the one bit of the button
+   that tells you it is nearly open without reading the label. */
+.ayu-shackle {
+  transform-origin: 8px 7px;
+  transform: translateY(calc(var(--p) * -1.6px)) rotate(calc(var(--p) * -12deg));
+}
+
+.ayu-hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+/* ── DECODE ──────────────────────────────────────────────────────────── */
+
+.ayu-decode {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 6, 9, 0.9);
+  animation: ayuScrimIn 0.24s ease forwards;
+}
+.ayu-decode-beam {
+  position: absolute;
+  left: 0; right: 0;
+  height: 140px;
+  background: linear-gradient(to bottom,
+    transparent,
+    oklch(84% 0.115 86 / 0.16) 46%,
+    oklch(93% 0.085 90 / 0.5) 50%,
+    oklch(84% 0.115 86 / 0.16) 54%,
+    transparent);
+  animation: ayuBeam 1.75s cubic-bezier(0.5, 0, 0.5, 1) forwards;
+}
+@keyframes ayuBeam {
+  0%   { top: -140px; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.ayu-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ayu-readout {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  font-family: 'SF Mono', ui-monospace, 'JetBrains Mono', monospace;
+}
+.ayu-readout-li {
+  color: var(--ay-gold);
+  opacity: 0;
+  animation: ayuLineIn 0.4s ease var(--d) forwards;
+}
+.ayu-readout-li::before { content: '› '; color: rgba(255, 255, 255, 0.35); }
+@keyframes ayuLineIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── DOSSIER FACE ────────────────────────────────────────────────────── */
+
+.ayu-doss {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Follows the pointer, so the finished file reads as a laminated card. */
+.ayu-doss-sheen {
+  position: absolute;
+  inset: -34px;
+  pointer-events: none;
+  background: radial-gradient(200px 200px at var(--mx, 70%) var(--my, 20%),
+              rgba(255, 255, 255, 0.055), transparent 70%);
+}
+
+.ayu-doss-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.ayu-stamp {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  color: var(--ay-gold);
+  animation: ayuStamp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s backwards;
+}
+.ayu-stamp svg { width: 100%; height: 100%; }
+@keyframes ayuStamp {
+  from { opacity: 0; transform: scale(2.2) rotate(-24deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ayu-doss-kicker {
+  margin: 0 0 6px;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: rgba(255, 255, 255, 0.42);
+}
+.ayu-doss-name {
+  margin: 0;
+  font-size: clamp(1.35rem, 5vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.ayu-doss-ch {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  animation: ayuChIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--d) forwards;
+}
+@keyframes ayuChIn {
+  from { opacity: 0; transform: translateY(12px) rotateX(-70deg); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+.ayu-doss-born {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--ay-dim);
+}
+.ayu-doss-born strong { color: var(--ay-gold); font-weight: 600; }
+
+/* ── TABS ────────────────────────────────────────────────────────────
+   Five pages instead of one long scroll. Only the page between the tab
+   strip and the actions moves; everything else stays where the eye put
+   it, which is what makes flicking through the file feel like a file. */
+
+.ayu-tabs {
+  display: flex;
+  gap: 2px;
+  margin: 16px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ayu-tabs::-webkit-scrollbar { display: none; }
+
+.ayu-tab {
+  position: relative;
+  padding: 9px 12px;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.4);
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.22s ease;
+}
+.ayu-tab:hover { color: var(--ay-ink); }
+.ayu-tab.is-on { color: var(--ay-gold); }
+.ayu-tab.is-on::after {
+  content: '';
+  position: absolute;
+  left: 9px; right: 9px; bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ay-gold);
+  box-shadow: 0 0 12px oklch(84% 0.115 86 / 0.7);
+  animation: ayuTabIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ayuTabIn {
+  from { opacity: 0; transform: scaleX(0.25); }
+}
+
+.ayu-tabbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 2px 16px;
+}
+.ayu-tabbody:focus-visible { outline: none; }
+
+/* Each page deals itself in. The delay is per position rather than per
+   element so a page of rows and a page of cards land the same way. */
+.ayu-tabbody > * { animation: ayuPageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.ayu-tabbody > *:nth-child(1) { animation-delay: 0.02s; }
+.ayu-tabbody > *:nth-child(2) { animation-delay: 0.07s; }
+.ayu-tabbody > *:nth-child(3) { animation-delay: 0.12s; }
+.ayu-tabbody > *:nth-child(4) { animation-delay: 0.17s; }
+.ayu-tabbody > *:nth-child(5) { animation-delay: 0.22s; }
+.ayu-tabbody > *:nth-child(n+6) { animation-delay: 0.27s; }
+@keyframes ayuPageIn {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+}
+
+/* ── PAGE FURNITURE ──────────────────────────────────────────────────── */
+
+.ayu-hero {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 16px;
+  border: 1px solid var(--ay-line);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 200% at 0% 50%, oklch(84% 0.115 86 / 0.10), transparent 62%),
+    rgba(255, 255, 255, 0.028);
+}
+.ayu-hero-glyph {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--ay-gold);
+  text-shadow: 0 0 22px oklch(84% 0.115 86 / 0.5);
+}
+.ayu-hero-n {
+  min-width: 1.6ch;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: var(--ay-gold);
+  text-shadow: 0 0 24px oklch(84% 0.115 86 / 0.4);
+}
+.ayu-hero-t { margin: 0; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.015em; }
+.ayu-hero-s { margin: 4px 0 0; font-size: 0.71rem; line-height: 1.45; color: var(--ay-dim); }
+
+.ayu-read {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+.ayu-read--dim { color: rgba(255, 255, 255, 0.5); font-size: 0.78rem; }
+
+.ayu-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ayu-block {
+  padding: 12px 14px;
+  border: 1px solid var(--ay-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.026);
+}
+.ayu-block + .ayu-block, .ayu-tabbody > .ayu-block { margin-top: 10px; }
+.ayu-block-h {
+  margin: 0 0 7px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ay-gold);
+}
+.ayu-block p {
+  margin: 0;
+  font-size: 0.81rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+/* The month reading is stored without its "Born in March —" prefix so
+   the clipboard can add its own; on screen the heading supplies it, and
+   the sentence just needs its capital back. */
+.ayu-cap::first-letter { text-transform: capitalize; }
+
+.ayu-rhyme {
+  margin-bottom: 8px !important;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.ayu-nums {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+.ayu-num {
+  padding: 12px 8px;
+  border: 1px solid var(--ay-line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+  text-align: center;
+}
+.ayu-num-n {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ay-gold);
+}
+.ayu-num-l {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+.ayu-num-k {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.6rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.ayu-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.ayu-tile {
+  padding: 14px 12px;
+  border: 1px solid var(--ay-line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+.ayu-tile-v {
+  display: block;
+  font-size: clamp(1.15rem, 4.2vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+.ayu-tile-l {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ayu-rows { margin: 14px 0 0; display: grid; }
+.ayu-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.79rem;
+}
+.ayu-row dt {
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.ayu-row dd { margin: 0; text-align: right; color: rgba(255, 255, 255, 0.86); }
+
+.ayu-era {
+  margin: 16px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--ay-gold);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ay-dim);
+  font-style: italic;
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────── */
+
+.ayu-doss-foot {
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ayu-disclaimer {
+  margin: 0 0 11px;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.ayu-doss-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+
+.ayu-btn {
+  padding: 11px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ay-ink);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+}
+.ayu-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
+.ayu-btn--solid {
+  background: linear-gradient(180deg, var(--ay-gold-hi), var(--ay-gold));
+  border-color: transparent;
+  color: #14100a;
+}
+.ayu-btn--solid:hover { filter: brightness(1.06); }
+.ayu-btn--solid.is-fail {
+  background: none;
+  border-color: oklch(72% 0.17 24 / 0.5);
+  color: oklch(78% 0.15 24);
+}
+.ayu-btn--quiet { border-color: transparent; background: none; color: rgba(255, 255, 255, 0.45); }
+.ayu-btn--quiet:hover { color: var(--ay-ink); background: none; }
+
+/* Outlines follow each control's own border-radius, so the pill buttons
+   and the round close get rings that fit them. The name field is the
+   exception — its underline already lights up, and a box around it
+   fights the treatment. */
+.ayu-scrim :focus-visible {
+  outline: 2px solid var(--ay-gold);
+  outline-offset: 3px;
+}
+.ayu-name:focus-visible,
+.ayu-panel:focus-visible { outline: none; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────── */
+
+@media (max-width: 520px) {
+  .ayu-flip { min-height: 600px; }
+  .ayu-face { padding: 30px 20px 24px; }
+  .ayu-tiles { grid-template-columns: 1fr 1fr; }
+  .ayu-tiles .ayu-tile:last-child { grid-column: 1 / -1; }
+  .ayu-nums  { grid-template-columns: 1fr 1fr; }
+  .ayu-split { grid-template-columns: 1fr; }
+  .ayu-tab { padding: 9px 10px; font-size: 0.62rem; letter-spacing: 0.1em; }
+  .ayu-row { font-size: 0.76rem; }
+  .ayu-unlock { flex: 1 1 auto; text-align: center; }
+  .ayu-hint { flex-basis: 100%; }
+}
+
+/* Room to breathe when the window has it — the file is the taller of
+   the two faces, so it is the one that benefits. */
+@media (min-height: 820px) {
+  .ayu-flip { min-height: 646px; }
+}
+
+/* A short window (a laptop in landscape) matters more than a narrow one
+   here: the panel is capped at 90vh, so the page inside it scrolls
+   rather than the file growing past the screen. */
+@media (max-height: 720px) {
+  .ayu-flip { min-height: 0; height: 100%; }
+  .ayu-face--front { min-height: 500px; }
+}
+
+/* ── REDUCED MOTION ──────────────────────────────────────────────────
+   The panel still opens, the file still reads — the scanline sweep, the
+   flip, the roll and the flash all stop. */
+@media (prefers-reduced-motion: reduce) {
+  .ayu-scrim, .ayu-panel, .ayu-flare, .ayu-decode, .ayu-decode-beam,
+  .ayu-cell-d, .ayu-doss-ch, .ayu-stamp, .ayu-readout-li, .ayu-dot,
+  .ayu-tabbody > *, .ayu-tab.is-on::after {
+    animation: none !important;
+  }
+  .ayu-flare { opacity: 0; }
+  .ayu-doss-ch, .ayu-readout-li { opacity: 1; }
+  .ayu-flip { transition: none; }
+  .ayu-panel { clip-path: none; }
+  .ayu-close:hover { transform: none; }
+}

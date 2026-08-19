@@ -122,6 +122,19 @@ export const DEFAULT_CONTENT = {
       { value: '200+', label: 'Projects Completed' },
       { value: '1M+',  label: 'Views Generated'    },
     ],
+    /* The strip under the About button. Everything below the fold of it
+       — the decoded numbers, the sign, the era line — is worked out from
+       what the visitor types, so only the invitation is editable here. */
+    dossier: {
+      title:      'PERSONAL DOSSIER',
+      titleValue: 'SEALED',
+      sub:        'Your name and your birthday — I decode the rest in about ten seconds',
+      cta:        'About You',
+      more:       'Learn more',
+      titleBack:  'WELCOME BACK',
+      ctaBack:    'Open my file',
+      aria:       'About you',
+    },
   },
 
   bento: {
@@ -978,6 +991,19 @@ export const SCHEMA = [
       { path: 'about.stats.1.label', label: 'Stat 2 caption',   type: 'text' },
       { path: 'about.stats.2.value', label: 'Stat 3 value',     type: 'text' },
       { path: 'about.stats.2.label', label: 'Stat 3 caption',   type: 'text' },
+    ],
+  },
+  {
+    id: 'about-dossier',
+    title: 'About — "About You" strip',
+    fields: [
+      { path: 'about.dossier.title',      label: 'Title',            type: 'text' },
+      { path: 'about.dossier.titleValue', label: 'Title gold word',  type: 'text', hint: 'The part in gold, after the dot' },
+      { path: 'about.dossier.sub',        label: 'Subtitle',         type: 'text', hint: 'Replaced by the visitor\u2019s own numbers once unlocked' },
+      { path: 'about.dossier.cta',        label: 'Button label',     type: 'text' },
+      { path: 'about.dossier.more',       label: 'Secondary button', type: 'text' },
+      { path: 'about.dossier.titleBack',  label: 'Title — returning visitor', type: 'text' },
+      { path: 'about.dossier.ctaBack',    label: 'Button — returning visitor', type: 'text' },
     ],
   },
   {

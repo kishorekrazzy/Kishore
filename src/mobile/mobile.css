@@ -1,0 +1,3314 @@
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE APP — STYLESHEET
+
+   The phone build's entire visual layer. Nothing in here is shared with
+   the desktop stylesheets and nothing in here can reach them: every rule
+   is prefixed .mb- and every one of them lives inside #mb-app, so this
+   file is inert unless the phone shell is mounted.
+
+   It DOES use the site's colour system (theme.css), because the phone
+   version is the same brand, not a different one. Each screen and
+   section sets --h and the OKLCH tokens recompose against it — the same
+   warm→cool hue journey the desktop scroll has, just re-cut for a
+   400-point-wide screen.
+
+   ── THE SHAPE ────────────────────────────────────────────────────────
+   A native-feeling app rather than a long page: a fixed chrome (status
+   bar on top, tab bar at the bottom) with five screens swapping between
+   them, and overlay sheets that rise from the bottom edge.
+
+   Everything vertical is measured in dvh and every fixed edge is padded
+   by env(safe-area-inset-*), which is what keeps the layout correct on a
+   notched phone with a shrinking URL bar.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Tokens ─────────────────────────────────────────────────────────── */
+#mb-app {
+  --mb-pad: 20px;                       /* the page gutter, everywhere */
+  --mb-r: 20px;                         /* card radius */
+  --mb-r-sm: 13px;
+  --mb-r-lg: 28px;
+  --mb-bar: 62px;                       /* tab bar height, chrome only */
+  --mb-top: 54px;                       /* status bar height */
+  --mb-safe-b: env(safe-area-inset-bottom, 0px);
+  --mb-safe-t: env(safe-area-inset-top, 0px);
+  /* Total space the bottom chrome occupies — every scroll region ends
+     with this much padding so nothing is ever parked under the bar. */
+  --mb-bottom: calc(var(--mb-bar) + var(--mb-safe-b) + 10px);
+
+  --mb-ease: cubic-bezier(0.32, 0.72, 0, 1);      /* iOS sheet curve */
+  --mb-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mb-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --mb-fast: 180ms;
+  --mb-mid: 340ms;
+  --mb-slow: 620ms;
+
+  --mb-glass: rgba(var(--ground-rgb), 0.62);
+  /* A heavier glass for bars that sit still while content scrolls under
+     them. The chrome's 0.62 works because it is over the page ground;
+     a filter bar is over photographs, and at that alpha the tile behind
+     it stayed legible through the labels and the whole bar read as a
+     rendering fault. */
+  --mb-glass-solid: rgba(var(--ground-rgb), 0.93);
+  /* Where a sticky bar parks. It tracks the status bar, which slides
+     away on a downward scroll — pinning to a constant left a gap of
+     exactly the status bar's height with live content showing through
+     it. Set here, overridden on the shell when the chrome hides. */
+  --mb-sticky-top: calc(var(--mb-safe-t) + var(--mb-top));
+  --mb-hair: rgba(var(--ink-rgb), 0.10);
+  --mb-hair-2: rgba(var(--ink-rgb), 0.06);
+  --mb-fill: rgba(var(--ink-rgb), 0.045);
+  --mb-fill-2: rgba(var(--ink-rgb), 0.08);
+
+  --mb-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --mb-text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mb-serif: 'Playfair Display', Georgia, serif;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HUE SCOPES
+
+   theme.css builds the palette in two layers: hue-free scalars at :root,
+   then a list of selectors that re-declare the real tokens so each one
+   composes those scalars against its OWN --h. That second list names the
+   desktop's sections by class.
+
+   A custom property is substituted using the values on the element where
+   it is DECLARED — so setting --h on a phone section without repeating
+   the composition does nothing at all: --acc was already resolved at
+   :root and the section just inherits the root's amber. (It did exactly
+   that until this block existed: five differently-hued screens all came
+   out hero-amber.)
+
+   This is theme.css's LAYER 2, re-declared for the elements the phone
+   build owns. The scalars themselves are NOT copied — they still come
+   from theme.css, so retuning the palette there retunes this too.
+   ══════════════════════════════════════════════════════════════════════ */
+#mb-app,
+.mb-sec,
+.mb-hero,
+.mb-reel,
+.mb-footer {
+  --h-surface: var(--h);
+
+  --bg:        oklch(var(--l-bg)   var(--c-bg)   var(--h-surface));
+  --bg-deep:   oklch(var(--l-deep) var(--c-deep) var(--h-surface));
+  --surface-1: oklch(var(--l-s1)   var(--c-s1)   var(--h-surface));
+  --surface-2: oklch(var(--l-s2)   var(--c-s2)   var(--h-surface));
+  --surface-3: oklch(var(--l-s3)   var(--c-s3)   var(--h-surface));
+
+  --line:      oklch(var(--l-line)  var(--c-line)  var(--h-surface) / var(--a-line));
+  --line-soft: oklch(var(--l-line)  var(--c-line)  var(--h-surface) / var(--a-line-soft));
+  --line-hard: oklch(var(--l-lineh) var(--c-lineh) var(--h-surface) / var(--a-lineh));
+
+  --ink:       oklch(var(--l-ink)  var(--c-ink)  var(--h-surface));
+  --ink-2:     oklch(var(--l-ink2) var(--c-ink2) var(--h-surface));
+  --ink-3:     oklch(var(--l-ink3) var(--c-ink3) var(--h-surface));
+  --ink-faint: oklch(var(--l-inkf) var(--c-inkf) var(--h-surface));
+
+  --acc:       oklch(var(--l-acc)  var(--c-acc)  var(--h));
+  --acc-hi:    oklch(var(--l-acch) var(--c-acch) var(--h));
+  --acc-lo:    oklch(var(--l-accl) var(--c-accl) var(--h));
+  --acc-ink:   oklch(var(--l-acci) var(--c-acci) var(--h));
+  --acc-wash:  oklch(var(--l-acc)  var(--c-acc)  var(--h) / var(--a-wash));
+  --acc-glow:  oklch(var(--l-acc)  var(--c-acc)  var(--h) / var(--a-glow));
+
+  --on-media:  rgb(var(--on-media-rgb));
+}
+
+/* Contact runs yellow, and yellow is the one hue the shared accent
+   scalars cannot serve: OKLCH lightness is perceptually uniform but
+   sRGB's yellow corner is not, so at the shared L75 it clips out of
+   gamut and lands on mustard. theme.css corrects this for the desktop's
+   .ct-section; the phone needs the same correction, and it is applied at
+   the SHELL rather than at the section so the chrome — the tab pill, the
+   status dot, the assistant button — turns yellow with the screen
+   instead of staying on the previous section's hue. */
+#mb-app[data-screen='contact'] {
+  --l-acc:  88%;   --c-acc:  0.170;
+  --l-acch: 94%;   --c-acch: 0.130;
+  --l-accl: 32%;   --c-accl: 0.070;
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────── */
+#mb-app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mb-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* A phone app does not rubber-band its whole document, and it never
+     shows a text-selection loupe on a nav label. */
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  /* iOS enlarges text in landscape unless told otherwise, which breaks
+     every line-length decision made here. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prose is selectable — the ban above is for chrome, not for content
+   somebody might want to quote or copy. */
+#mb-app p, #mb-app h1, #mb-app h2, #mb-app h3,
+#mb-app .mb-selectable, #mb-app input, #mb-app textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+:where(#mb-app) * { box-sizing: border-box; }
+
+/* The button reset.
+
+   :where() rather than a bare `#mb-app button`. An ID selector scores
+   higher than any single class, so the plain form would beat every
+   component class in this file — .mb-chip, .mb-tile, .mb-filter and the
+   rest would all silently lose their padding, border and colour to the
+   reset and render as bare text. :where() contributes nothing to
+   specificity, so this lands at 0-0-1 and any class at all overrides it,
+   which is what a reset is supposed to do. */
+:where(#mb-app) button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;   /* kills the 300ms double-tap-zoom wait */
+  text-align: inherit;
+}
+
+/* Every interactive control gets a real press state. On a touch screen
+   this is the only feedback there is — there is no hover to fall back
+   on, so its absence reads as the tap not having registered. */
+#mb-app .mb-press { transition: transform 140ms var(--mb-ease-out), opacity 140ms linear; }
+#mb-app .mb-press:active { transform: scale(0.965); opacity: 0.86; }
+
+/* Anything that can be tapped is at least 44pt in both axes. */
+#mb-app .mb-hit { min-width: 44px; min-height: 44px; }
+
+/* ── Grain ──────────────────────────────────────────────────────────── */
+/* The same film grain the desktop carries, so the two builds share a
+   surface texture. Fixed, so it does not travel with the scroll. */
+.mb-grain {
+  position: fixed;
+  inset: -10%;
+  z-index: 900;
+  pointer-events: none;
+  opacity: var(--grain-opacity, 0.05);
+  mix-blend-mode: var(--grain-blend, overlay);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TYPE SCALE
+
+   Sized in clamp() against vw so the same three styles serve a 320pt
+   iPhone SE and a 430pt Pro Max without a single breakpoint. The upper
+   bounds are the point at which a line stops being comfortable to read
+   on a phone, not the point at which it stops fitting.
+   ══════════════════════════════════════════════════════════════════════ */
+#mb-app .mb-eyebrow {
+  font-family: var(--mb-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--acc);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+#mb-app .mb-eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+#mb-app .mb-eyebrow--plain::before { display: none; }
+
+#mb-app .mb-h1 {
+  font-family: var(--mb-display);
+  font-size: clamp(2.5rem, 12.4vw, 3.7rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-wrap: balance;
+}
+#mb-app .mb-h2 {
+  font-family: var(--mb-display);
+  font-size: clamp(1.85rem, 8.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.028em;
+  margin: 0;
+  text-wrap: balance;
+}
+#mb-app .mb-h3 {
+  font-family: var(--mb-display);
+  font-size: 1.16rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+#mb-app .mb-body {
+  font-size: 0.945rem;
+  line-height: 1.62;
+  color: var(--ink-3);
+  margin: 0;
+  text-wrap: pretty;
+}
+#mb-app .mb-small {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+  margin: 0;
+}
+#mb-app .mb-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+#mb-app .mb-accent { color: var(--acc); }
+
+/* ── Reveal ─────────────────────────────────────────────────────────── */
+.mb-rv {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity var(--mb-slow) var(--mb-ease-out) var(--rv-delay, 0ms),
+    transform var(--mb-slow) var(--mb-ease-out) var(--rv-delay, 0ms);
+  will-change: transform, opacity;
+}
+.mb-rv--in {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* ── Images ─────────────────────────────────────────────────────────── */
+.mb-img {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  isolation: isolate;
+}
+.mb-img > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 520ms ease, transform 900ms var(--mb-ease-out);
+  filter: var(--media-filter);
+}
+.mb-img--on > img { opacity: 1; transform: none; }
+/* A quiet shimmer while the bytes are in flight, so an empty card reads
+   as loading rather than as broken. */
+.mb-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(var(--ink-rgb), 0.055) 50%, transparent 80%);
+  background-size: 220% 100%;
+  animation: mb-shimmer 1.5s linear infinite;
+}
+.mb-img--on::after { display: none; }
+@keyframes mb-shimmer { from { background-position: 140% 0; } to { background-position: -60% 0; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   BOOT
+
+   Roughly a second of held attention while the first screen's images
+   decode. It is not a fake progress bar: it dismisses on a timer that is
+   shorter than the hero plate takes to arrive on any real connection, so
+   what it actually hides is the half-rendered state, not the wait.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--bg-deep);
+  transition: opacity 460ms ease, visibility 460ms;
+}
+.mb-boot--out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.mb-boot-in { display: grid; justify-items: center; gap: 22px; }
+
+.mb-boot-mark {
+  font-family: var(--mb-display);
+  font-size: 2.35rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: var(--ink);
+  display: flex;
+}
+/* Letters rise in sequence. The stagger is set inline per span. */
+.mb-boot-mark span {
+  display: inline-block;
+  animation: mb-boot-letter 620ms var(--mb-ease-out) both;
+  animation-delay: var(--d);
+}
+.mb-boot-mark i {
+  font-style: normal;
+  color: var(--acc);
+  animation: mb-boot-letter 620ms var(--mb-ease-out) both;
+  animation-delay: var(--d);
+}
+@keyframes mb-boot-letter {
+  from { opacity: 0; transform: translateY(24px) rotate(6deg); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+.mb-boot-rule {
+  width: 120px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(var(--ink-rgb), 0.12);
+  overflow: hidden;
+}
+.mb-boot-rule i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--acc);
+  transform-origin: left;
+  animation: mb-boot-fill 1000ms var(--mb-ease) both;
+}
+@keyframes mb-boot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.mb-boot-sub {
+  font-size: 0.66rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  animation: mb-fade-in 700ms 320ms both;
+}
+@keyframes mb-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   STATUS BAR
+
+   Fixed to the top: the wordmark, the name of the screen you are on, and
+   the two always-reachable controls. It hides on a downward scroll and
+   comes straight back on an upward one, which is the convention every
+   phone browser and app already teaches.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 700;
+  height: calc(var(--mb-top) + var(--mb-safe-t));
+  padding: var(--mb-safe-t) 12px 0 var(--mb-pad);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(to bottom, rgba(var(--ground-rgb), 0.92) 30%, rgba(var(--ground-rgb), 0));
+  transition: transform var(--mb-mid) var(--mb-ease), opacity var(--mb-mid) linear;
+}
+/* Solid glass once the screen has scrolled — a gradient over moving
+   content is not enough contrast for the wordmark to survive. */
+.mb-top--stuck {
+  background: var(--mb-glass);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  border-bottom: 1px solid var(--mb-hair-2);
+}
+.mb-top--hide { transform: translateY(-100%); opacity: 0; }
+
+.mb-top-mark {
+  font-family: var(--mb-display);
+  font-size: 1.02rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+}
+.mb-top-mark i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-wash);
+  /* The dot is the one live thing in the chrome — it tells you the page
+     is awake, and its colour is the hue of the section you are in. */
+  animation: mb-pulse 2.6s ease-in-out infinite;
+  transition: background 620ms ease;
+}
+@keyframes mb-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--acc-wash); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* The screen name, which cross-fades when the screen changes. */
+.mb-top-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: mb-title-in 420ms var(--mb-ease-out);
+}
+@keyframes mb-title-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.mb-top-btns { display: flex; align-items: center; gap: 2px; flex: none; }
+.mb-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--ink-2);
+  transition: background var(--mb-fast) ease, color var(--mb-fast) ease, transform 140ms var(--mb-ease-out);
+}
+.mb-icon-btn:active { background: var(--mb-fill-2); transform: scale(0.9); }
+.mb-icon-btn--on { color: var(--acc); background: var(--acc-wash); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SCREENS
+
+   One scroll container per screen, all of them mounted, only the active
+   one displayed. Keeping them mounted is what lets each screen remember
+   its own scroll position — going Work → Notes → Work returns you to
+   where you were, the way a tab bar is supposed to behave.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-screens { position: relative; flex: 1; min-height: 0; }
+
+.mb-screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: var(--mb-bottom);
+  /* No content-visibility here. It was added to skip work for the four
+     screens that are not on show — but those carry [hidden], so they are
+     display:none and already cost nothing. What it did do was imply
+     `contain: paint`, which makes an element a stacking context AND the
+     containing block for fixed-position descendants. Sheets render
+     inside a screen, so both effects landed on them: a sheet at z-index
+     810 painted *under* the status bar at 700, because its z-index was
+     scoped to the screen rather than to the shell. */
+}
+.mb-screen[hidden] { display: none; }
+
+/* While a sheet is open. Overflow, not display — hiding the screen would
+   throw away its scroll position, and the sheet does not cover the whole
+   viewport while it is being dragged. */
+.mb-app--locked .mb-screen { overflow: hidden; }
+
+/* The status bar has slid away, so anything sticking below it comes up
+   to meet the top edge. */
+#mb-app[data-chrome='hidden'] { --mb-sticky-top: var(--mb-safe-t); }
+
+/* Screens arrive with a short push in the direction of travel: forward
+   through the tab bar comes from the right, backward from the left. */
+.mb-screen--enter-r { animation: mb-screen-r var(--mb-mid) var(--mb-ease); }
+.mb-screen--enter-l { animation: mb-screen-l var(--mb-mid) var(--mb-ease); }
+@keyframes mb-screen-r {
+  from { opacity: 0; transform: translate3d(26px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes mb-screen-l {
+  from { opacity: 0; transform: translate3d(-26px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Standard block of a screen. --h is set per section so the OKLCH tokens
+   recompose: each one owns its colour the way the desktop sections do. */
+.mb-sec {
+  position: relative;
+  padding: 46px var(--mb-pad) 42px;
+  background: var(--bg);
+}
+.mb-sec--tight { padding-top: 26px; padding-bottom: 26px; }
+.mb-sec--flush { padding-left: 0; padding-right: 0; }
+.mb-sec--flush > .mb-head,
+.mb-sec--flush > .mb-sec-pad { padding-left: var(--mb-pad); padding-right: var(--mb-pad); }
+
+/* The seam. Sections meet through a gradient rather than an edge, which
+   is the whole reason the desktop's hue journey reads as one page
+   instead of as a stack of unrelated blocks. */
+.mb-sec::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -54px;
+  height: 54px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  pointer-events: none;
+  opacity: var(--seam, 1);
+  z-index: 1;
+}
+
+.mb-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 24px; }
+.mb-head .mb-body { max-width: 34ch; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   TAB BAR
+
+   Five destinations, thumb-height, floating clear of the bottom edge so
+   the home indicator has its own room. The active pill slides between
+   items rather than each tab lighting up independently — one moving
+   object is easier to follow than five changing ones.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-tabs {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: calc(var(--mb-safe-b) + 8px);
+  z-index: 720;
+  height: var(--mb-bar);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: stretch;
+  border-radius: 22px;
+  background: var(--mb-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid var(--mb-hair);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(var(--ink-rgb), 0.07);
+  transition: transform var(--mb-mid) var(--mb-ease), opacity var(--mb-mid) linear;
+  isolation: isolate;
+}
+/* Slides away with the sheet that covers it, so a full-screen reader is
+   genuinely full-screen. */
+.mb-tabs--hide {
+  transform: translateY(calc(100% + var(--mb-safe-b) + 20px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The travelling pill. Its position is one custom property, set from the
+   active index — no per-tab classes, no layout reads. */
+.mb-tabs::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc((100% - 12px) / 5);
+  border-radius: 17px;
+  background: var(--acc-wash);
+  border: 1px solid var(--acc-glow);
+  transform: translateX(calc(var(--tab-i, 0) * 100%));
+  transition: transform 440ms var(--mb-spring), background 520ms ease, border-color 520ms ease;
+}
+
+.mb-tab {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  color: var(--ink-faint);
+  transition: color 260ms ease;
+  position: relative;
+}
+.mb-tab--on { color: var(--acc); }
+.mb-tab-ic {
+  display: grid;
+  place-items: center;
+  transition: transform 440ms var(--mb-spring);
+}
+.mb-tab--on .mb-tab-ic { transform: translateY(-1px) scale(1.08); }
+.mb-tab:active .mb-tab-ic { transform: scale(0.86); }
+.mb-tab span {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── Floating ask button ────────────────────────────────────────────── */
+/* Sits above the tab bar's right end. It is the one thing on the phone
+   build that is not a destination — it opens the assistant over
+   whatever you are reading. */
+.mb-fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--mb-bar) + var(--mb-safe-b) + 22px);
+  z-index: 715;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--acc-ink);
+  background: var(--acc);
+  box-shadow: 0 10px 26px var(--acc-glow), 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 300ms var(--mb-spring), opacity var(--mb-mid) linear, background 520ms ease;
+  /* `backwards`, not `both`. A forwards fill keeps applying the
+     animation's end state after it finishes, and an animation in its
+     fill state outranks ordinary declarations — so .mb-fab--hide was
+     being overruled and the button stayed visible over every open
+     sheet. Backwards fill still holds the `from` state through the
+     delay, which is all the entrance actually needs. */
+  animation: mb-fab-in 520ms 900ms var(--mb-spring) backwards;
+}
+@keyframes mb-fab-in {
+  from { opacity: 0; transform: scale(0.4) translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+.mb-fab:active { transform: scale(0.88); }
+.mb-fab--hide { opacity: 0; transform: scale(0.5) translateY(24px); pointer-events: none; }
+/* A slow ring, so the button reads as live without demanding attention. */
+.mb-fab::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid var(--acc);
+  animation: mb-ring 3.4s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes mb-ring {
+  0%       { transform: scale(1);    opacity: 0.55; }
+  60%,100% { transform: scale(1.42); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HERO — the story deck
+
+   Four full-bleed panels, one per discipline, advanced by swipe, by tap
+   on the progress bars, or on their own after nine seconds. It is the
+   phone's answer to the desktop's four hero layouts: the same four
+   sections, the same copy and statistics, in the one interaction pattern
+   every phone user already has muscle memory for.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-hero {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--bg-deep);
+  isolation: isolate;
+  --h: var(--h-hero);
+}
+
+/* Plates are stacked and cross-faded; only the active one is opaque, and
+   only it runs its slow drift. */
+.mb-hero-plate {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+  will-change: opacity;
+}
+.mb-hero-plate--on { opacity: 1; }
+.mb-hero-plate .mb-img,
+.mb-hero-plate .mb-img > img { width: 100%; height: 100%; }
+.mb-hero-plate--on .mb-img > img {
+  animation: mb-kenburns 15s ease-out both;
+}
+@keyframes mb-kenburns {
+  from { transform: scale(1.14) translate3d(0, 1.5%, 0); }
+  to   { transform: scale(1.0) translate3d(0, -1%, 0); }
+}
+/* Per-section plate grade, straight off the desktop's theme tokens, so
+   the four panels are the four colours the desktop hero uses. */
+.mb-hero-plate[data-id='video'] .mb-img > img { filter: var(--plate-video); }
+.mb-hero-plate[data-id='ai']    .mb-img > img { filter: var(--plate-ai); }
+.mb-hero-plate[data-id='color'] .mb-img > img { filter: var(--plate-color); }
+.mb-hero-plate[data-id='web']   .mb-img > img { filter: var(--plate-web); }
+
+/* Two scrims. The top one protects the chrome; the bottom one is deep
+   and tall, because that is where all the type lives. */
+.mb-hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(var(--shade-rgb), 0.66) 0%, transparent 26%),
+    linear-gradient(to top, rgba(var(--shade-rgb), 0.94) 0%, rgba(var(--shade-rgb), 0.72) 26%, transparent 62%);
+}
+/* A wash of the section's own hue over the photograph, which is what
+   makes four unrelated stock plates read as one graded set. */
+.mb-hero-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(120% 80% at 50% 100%, var(--acc) 0%, transparent 70%);
+  opacity: 0.5;
+  transition: background 700ms ease;
+}
+
+/* ── Progress bars ── */
+.mb-hero-bars {
+  position: absolute;
+  top: calc(var(--mb-safe-t) + var(--mb-top) + 4px);
+  left: var(--mb-pad);
+  right: var(--mb-pad);
+  z-index: 4;
+  display: flex;
+  gap: 5px;
+}
+.mb-hero-bar {
+  flex: 1;
+  height: 20px;                 /* a 3px bar is not a 44pt target — the */
+  display: flex;                /* hit area is padding around the line  */
+  align-items: center;
+  padding: 0;
+}
+.mb-hero-bar i {
+  display: block;
+  width: 100%;
+  height: 2.5px;
+  border-radius: 2px;
+  background: rgba(var(--on-media-rgb), 0.24);
+  overflow: hidden;
+  position: relative;
+}
+.mb-hero-bar i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--on-media-rgb));
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.mb-hero-bar--done i::after { transform: scaleX(1); }
+.mb-hero-bar--on i::after {
+  animation: mb-bar var(--dur, 9s) linear forwards;
+}
+/* Paused while a finger is down, so reading is never interrupted by the
+   panel changing underneath. */
+.mb-hero--held .mb-hero-bar--on i::after { animation-play-state: paused; }
+@keyframes mb-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ── Hero copy ── */
+.mb-hero-body {
+  grid-template-columns: minmax(0, 1fr);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  /* Clears the floating tab bar. Without this the chips row and the CTA
+     sit underneath it — visible, but untappable, which is worse than
+     being off screen. */
+  padding: 0 var(--mb-pad) calc(var(--mb-bar) + var(--mb-safe-b) + 22px);
+  display: grid;
+  gap: 16px;
+  color: rgb(var(--on-media-rgb));
+}
+/* Re-keyed on every panel change so the whole block replays its
+   entrance — the cross-fade alone was not enough to signal a change. */
+.mb-hero-body > * {
+  animation: mb-hero-up 620ms var(--mb-ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes mb-hero-up {
+  from { opacity: 0; transform: translate3d(0, 26px, 0); filter: blur(3px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+.mb-hero-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--acc-hi);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mb-hero-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: currentColor;
+}
+
+.mb-hero-title {
+  font-family: var(--mb-display);
+  font-size: clamp(2.7rem, 14.2vw, 4.3rem);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  margin: 0;
+  text-transform: uppercase;
+}
+/* The desktop pushes this headline through a glass shader. A WebGL
+   canvas per headline is the wrong trade on a phone, so the same
+   intention — light moving across the letters — is done with a clipped
+   gradient sweep that costs one compositor layer. */
+.mb-hero-title span {
+  display: block;
+  background: linear-gradient(
+    100deg,
+    rgb(var(--on-media-rgb)) 0%,
+    rgb(var(--on-media-rgb)) 38%,
+    var(--acc-hi) 50%,
+    rgb(var(--on-media-rgb)) 62%,
+    rgb(var(--on-media-rgb)) 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: mb-sheen 6.5s ease-in-out infinite;
+  animation-delay: calc(var(--l, 0) * 220ms);
+}
+@keyframes mb-sheen {
+  0%, 55%, 100% { background-position: 130% 0; }
+  80%           { background-position: -30% 0; }
+}
+
+.mb-hero-prose {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(var(--on-media-rgb), 0.76);
+  margin: 0;
+  max-width: 33ch;
+}
+
+.mb-hero-stats { display: flex; gap: 18px; flex-wrap: wrap; }
+.mb-hero-stat { display: flex; align-items: center; gap: 8px; }
+.mb-hero-stat i {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--acc-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.mb-hero-stat b {
+  display: block;
+  font-family: var(--mb-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.mb-hero-stat em {
+  display: block;
+  font-style: normal;
+  font-size: 0.63rem;
+  letter-spacing: 0.05em;
+  color: rgba(var(--on-media-rgb), 0.6);
+}
+
+.mb-hero-cta { display: flex; gap: 10px; align-items: center; }
+
+/* ── Chips: the four disciplines ── */
+.mb-hero-chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(var(--mb-pad) * -1);
+  padding: 2px var(--mb-pad) 4px;
+  scroll-snap-type: x proximity;
+}
+.mb-hero-chips::-webkit-scrollbar { display: none; }
+.mb-chip {
+  flex: none;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 17px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: rgba(var(--on-media-rgb), 0.7);
+  background: rgba(var(--shade-rgb), 0.34);
+  border: 1px solid rgba(var(--on-media-rgb), 0.14);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: all 300ms var(--mb-ease-out);
+}
+.mb-chip svg { opacity: 0.8; }
+.mb-chip--on {
+  color: var(--acc-ink);
+  background: var(--acc);
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--acc-glow);
+}
+.mb-chip--on svg { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════════════════ */
+#mb-app .mb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 23px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: transform 150ms var(--mb-ease-out), background 240ms ease, opacity 200ms;
+}
+#mb-app .mb-btn:active { transform: scale(0.955); }
+#mb-app .mb-btn:disabled { opacity: 0.45; pointer-events: none; }
+
+#mb-app .mb-btn--fill {
+  background: var(--acc);
+  color: var(--acc-ink);
+  box-shadow: 0 6px 20px var(--acc-glow);
+}
+#mb-app .mb-btn--ghost {
+  background: var(--mb-fill);
+  color: var(--ink);
+  border: 1px solid var(--mb-hair);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+#mb-app .mb-btn--wide { width: 100%; }
+#mb-app .mb-btn--sm { height: 38px; padding: 0 15px; font-size: 0.78rem; border-radius: 19px; }
+
+/* A text link that carries its own arrow and underline. */
+#mb-app .mb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--acc);
+  padding: 6px 0;
+}
+#mb-app .mb-link svg { transition: transform 260ms var(--mb-ease-out); }
+#mb-app .mb-link:active svg { transform: translateX(4px); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   CARDS & SURFACES
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-card {
+  position: relative;
+  border-radius: var(--mb-r);
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  overflow: hidden;
+  isolation: isolate;
+}
+.mb-card--glass {
+  background: var(--mb-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+.mb-card--pad { padding: 18px; }
+/* A lit top edge. It is one gradient and it is what separates a card
+   from the page on a near-black ground where a border alone disappears. */
+.mb-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(var(--ink-rgb), 0.055), transparent 42%);
+}
+
+/* ── Horizontal rails ────────────────────────────────────────────────
+   The phone's answer to every desktop grid. Snap points, momentum, and
+   the gutter carried inside the padding so the first and last card sit
+   flush with the page margin rather than against the screen edge. */
+.mb-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 4px var(--mb-pad) 14px;
+  margin: 0 calc(var(--mb-pad) * -1);
+}
+.mb-rail::-webkit-scrollbar { display: none; }
+/* The negative margin exists to let a rail bleed out of a padded
+   section. A flush section has no padding to escape, so it must not be
+   applied twice — that put the first card hard against the screen edge. */
+.mb-sec--flush > .mb-rail { margin-left: 0; margin-right: 0; }
+.mb-rail > * { scroll-snap-align: center; flex: none; }
+.mb-rail--start > * { scroll-snap-align: start; }
+
+/* Page dots for a rail. Driven by scroll position, so they are a report
+   rather than a control. */
+.mb-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+.mb-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(var(--ink-rgb), 0.2);
+  transition: all 320ms var(--mb-ease-out);
+}
+.mb-dots i.on { width: 18px; background: var(--acc); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   STAT ROW
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--mb-hair);
+  border: 1px solid var(--mb-hair);
+  border-radius: var(--mb-r);
+  overflow: hidden;
+}
+.mb-stat {
+  background: var(--bg);
+  padding: 16px 10px;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  text-align: center;
+}
+.mb-stat b {
+  font-family: var(--mb-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.mb-stat span {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.3;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MARQUEE
+
+   Two identical tracks, the second sitting exactly one track-width
+   behind, both translated by the same animation. When the first has
+   travelled its own width the pair is pixel-identical to the start, so
+   the loop has no seam.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-marquee {
+  display: flex;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+.mb-marquee-track {
+  display: flex;
+  gap: var(--gap, 26px);
+  padding-right: var(--gap, 26px);
+  flex: none;
+  animation: mb-marquee var(--dur, 26s) linear infinite;
+  will-change: transform;
+}
+.mb-marquee--rev .mb-marquee-track { animation-direction: reverse; }
+@keyframes mb-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-100%, 0, 0); }
+}
+.mb-marquee-word {
+  font-family: var(--mb-display);
+  font-size: 2.1rem;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(var(--ink-rgb), 0.30);
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+.mb-marquee-word em {
+  font-style: normal;
+  color: var(--acc);
+  -webkit-text-stroke: 0;
+}
+.mb-marquee-word i {
+  font-style: normal;
+  font-size: 0.9rem;
+  color: var(--acc);
+  -webkit-text-stroke: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SHEETS
+
+   The one overlay pattern the phone build uses. It rises from the bottom
+   edge, it is dragged down by its grab handle, and it releases past a
+   third of its height or on a fast flick.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  animation: mb-fade-in 280ms ease forwards;
+}
+.mb-scrim--out { animation: mb-fade-out 240ms ease forwards; }
+@keyframes mb-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+.mb-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 810;
+  display: flex;
+  flex-direction: column;
+  max-height: 100dvh;
+  height: var(--sheet-h, 92dvh);
+  border-radius: var(--mb-r-lg) var(--mb-r-lg) 0 0;
+  background: var(--bg);
+  border-top: 1px solid var(--mb-hair);
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  transform: translate3d(0, 100%, 0);
+  animation: mb-sheet-in 460ms var(--mb-ease) forwards;
+  will-change: transform;
+}
+.mb-sheet--full {
+  height: 100dvh;
+  border-radius: 0;
+  border-top: 0;
+  /* It covers the status bar, so it inherits the status bar's job of
+     keeping the grab handle and the close button out of the notch. */
+  padding-top: var(--mb-safe-t);
+}
+.mb-sheet--out { animation: mb-sheet-out 300ms var(--mb-ease) forwards; }
+/* While a finger owns it, the sheet is positioned by transform and must
+   not be fighting an animation for the same property. */
+.mb-sheet--drag { animation: none; transition: none; }
+.mb-sheet--settle { animation: none; transition: transform 340ms var(--mb-ease); }
+
+@keyframes mb-sheet-in  { to   { transform: translate3d(0, 0, 0); } }
+@keyframes mb-sheet-out { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 100%, 0); } }
+
+.mb-sheet-grab {
+  flex: none;
+  padding: 10px 0 6px;
+  display: grid;
+  justify-items: center;
+  touch-action: none;      /* the handle drags; it does not scroll */
+  cursor: grab;
+}
+.mb-sheet-grab i {
+  width: 38px;
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(var(--ink-rgb), 0.24);
+}
+
+.mb-sheet-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px var(--mb-pad) 12px;
+  border-bottom: 1px solid var(--mb-hair-2);
+}
+.mb-sheet-head h2 {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mb-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mb-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: calc(var(--mb-safe-b) + 28px);
+}
+/* The reel is its own scroller and has to fill the sheet exactly, so the
+   sheet stops scrolling and hands its remaining height down. */
+.mb-sheet-body--bare {
+  overflow: hidden;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* A progress line across the top of a reading sheet. */
+.mb-sheet-prog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 3;
+  background: transparent;
+}
+.mb-sheet-prog i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  transition: transform 90ms linear;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   HOME — about block
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-about { --h: var(--h-about); }
+
+/* The portrait stack. Three cards fanned behind each other; the top one
+   cycles on a timer. It is the phone's version of the desktop's
+   hover-to-align triptych — same three images, same idea, driven by
+   time instead of by a cursor that does not exist here. */
+.mb-fan {
+  position: relative;
+  height: 300px;
+  margin-bottom: 26px;
+  perspective: 900px;
+}
+.mb-fan-card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 62%;
+  height: 100%;
+  margin-left: -31%;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  border: 1px solid var(--mb-hair);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5);
+  transform-origin: 50% 100%;
+  transition: transform 780ms var(--mb-ease), opacity 780ms ease, filter 780ms ease;
+  will-change: transform;
+}
+.mb-fan-card .mb-img, .mb-fan-card .mb-img > img { width: 100%; height: 100%; }
+/* Depth 0 is the face; 1 and 2 are stepped back and rotated. */
+.mb-fan-card[data-d='0'] { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); z-index: 3; }
+.mb-fan-card[data-d='1'] { transform: translate3d(-19%, 4%, 0) rotate(-8deg) scale(0.9); z-index: 2; filter: brightness(0.66); }
+.mb-fan-card[data-d='2'] { transform: translate3d(19%, 7%, 0) rotate(8deg) scale(0.84); z-index: 1; filter: brightness(0.48); }
+
+.mb-fan-label {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(var(--on-media-rgb), 0.16);
+}
+
+/* The paragraph set, with the first line lifted to display size. */
+.mb-about-lede {
+  font-family: var(--mb-display);
+  font-size: 1.28rem;
+  font-weight: 500;
+  line-height: 1.34;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+  margin: 0 0 16px;
+  text-wrap: pretty;
+}
+.mb-about-lede b { font-weight: 800; color: var(--acc); }
+
+/* ── Dossier strip — the About You entry ── */
+.mb-dossier {
+  position: relative;
+  margin-top: 26px;
+  padding: 20px 18px;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 100% 0%, var(--acc-wash), transparent 60%),
+    var(--surface-1);
+  border: 1px solid var(--acc-glow);
+  display: grid;
+  gap: 14px;
+}
+.mb-dossier::after {
+  /* A slow diagonal sheen so the strip reads as sealed rather than as
+     just another card. */
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -30%;
+  width: 40%;
+  height: 220%;
+  background: linear-gradient(to right, transparent, rgba(var(--ink-rgb), 0.07), transparent);
+  transform: rotate(18deg);
+  animation: mb-sweep 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes mb-sweep {
+  0%, 65%, 100% { transform: translateX(-40%) rotate(18deg); opacity: 0; }
+  80%           { transform: translateX(320%) rotate(18deg); opacity: 1; }
+}
+.mb-dossier-top { display: flex; align-items: baseline; gap: 10px; }
+.mb-dossier-top h3 {
+  font-family: var(--mb-display);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--ink-2);
+}
+.mb-dossier-val {
+  font-family: var(--mb-display);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--acc);
+  margin-left: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   WORK
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-work { --h: var(--h-bento); }
+
+/* Filter row — sticky under the status bar so the set you are browsing
+   can always be changed without scrolling back. */
+.mb-filters {
+  position: sticky;
+  top: var(--mb-sticky-top);
+  /* Matches the status bar's own slide, so the two move as one piece
+     rather than the bar appearing to jump when the chrome leaves. */
+  transition: top var(--mb-mid) var(--mb-ease);
+  z-index: 40;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 10px var(--mb-pad);
+  margin: 0 calc(var(--mb-pad) * -1) 6px;
+  background: var(--mb-glass-solid);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border-bottom: 1px solid var(--mb-hair);
+}
+.mb-filters::-webkit-scrollbar { display: none; }
+.mb-filter {
+  flex: none;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-3);
+  background: var(--mb-fill);
+  border: 1px solid var(--mb-hair);
+  transition: all 240ms var(--mb-ease-out);
+}
+.mb-filter--on {
+  color: var(--acc-ink);
+  background: var(--acc);
+  border-color: transparent;
+}
+
+/* The tile grid. Every third tile spans both columns, which gives the
+   scroll a rhythm instead of an even wall of squares. */
+.mb-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Dense, because the full-width tiles orphan a cell without it: a wide
+     tile cannot start in the second column, so auto-placement pushes it
+     to the next row and leaves the cell beside the previous tile empty.
+     With nine tiles and two wide ones that showed as a hole in the
+     middle of the board.
+
+     Dense lets a later small tile backfill that cell, which means the
+     visual order can differ from the DOM order by one position. That is
+     an acceptable trade here — the tiles are independent links rather
+     than a sequence where order carries meaning — and screen readers
+     still get a sensible order because they follow the DOM. */
+  grid-auto-flow: row dense;
+  gap: 12px;
+}
+.mb-tile {
+  position: relative;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  aspect-ratio: 1 / 1.16;
+  display: flex;
+  align-items: flex-end;
+  text-align: left;
+  isolation: isolate;
+  transition: transform 200ms var(--mb-ease-out);
+}
+.mb-tile:active { transform: scale(0.972); }
+.mb-tile--wide { grid-column: 1 / -1; aspect-ratio: 16 / 10; }
+.mb-tile > .mb-img { position: absolute; inset: 0; z-index: -2; }
+.mb-tile > .mb-img > img { width: 100%; height: 100%; }
+.mb-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgba(var(--shade-rgb), 0.92) 0%, rgba(var(--shade-rgb), 0.35) 46%, rgba(var(--shade-rgb), 0.1) 100%);
+}
+.mb-tile-body {
+  position: relative;
+  padding: 14px;
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  color: rgb(var(--on-media-rgb));
+}
+.mb-tile-body h3 {
+  font-family: var(--mb-display);
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin: 0;
+}
+.mb-tile--wide .mb-tile-body h3 { font-size: 1.42rem; }
+.mb-tile-body p {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(var(--on-media-rgb), 0.66);
+  margin: 0;
+}
+.mb-tile-badge {
+  position: absolute;
+  top: 11px;
+  left: 11px;
+  z-index: 2;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 20px;
+  color: var(--acc-ink);
+  background: var(--acc);
+}
+.mb-tile-go {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.42);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--on-media-rgb), 0.16);
+}
+.mb-tile-go svg { transform: rotate(-45deg); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SYNDICATE
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-team { --h: var(--h-team); }
+.mb-member {
+  width: 76vw;
+  max-width: 320px;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  display: grid;
+  grid-template-rows: 220px auto;
+}
+.mb-member .mb-img { height: 100%; }
+.mb-member-top { position: relative; overflow: hidden; }
+.mb-member-num {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 2;
+  font-family: var(--mb-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(var(--on-media-rgb), 0.6);
+}
+.mb-member-body { padding: 15px; display: grid; gap: 9px; }
+.mb-member-body h3 {
+  font-family: var(--mb-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.mb-member-tag {
+  font-size: 0.73rem;
+  color: var(--acc);
+  font-weight: 600;
+  margin: 0;
+}
+.mb-member-bio {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mb-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.mb-tags span {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 4px 9px;
+  border-radius: 12px;
+  color: var(--ink-3);
+  background: var(--mb-fill);
+  border: 1px solid var(--mb-hair);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   NOTES
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-notes { --h: var(--h-notes); }
+
+/* The lead piece gets a full-bleed cover; everything after it is a
+   compact row, because a feed of twelve identical hero cards is a lot of
+   scrolling for very little information. */
+.mb-note-lead {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  margin-bottom: 14px;
+  transition: transform 200ms var(--mb-ease-out);
+}
+.mb-note-lead:active { transform: scale(0.98); }
+.mb-note-lead .mb-img { aspect-ratio: 16 / 9; }
+.mb-note-lead-body { padding: 15px; display: grid; gap: 8px; }
+
+.mb-note-row {
+  display: grid;
+  grid-template-columns: 1fr 84px;
+  gap: 13px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--mb-hair-2);
+  transition: opacity 160ms;
+}
+.mb-note-row:active { opacity: 0.6; }
+.mb-note-row .mb-img {
+  width: 84px;
+  height: 62px;
+  border-radius: var(--mb-r-sm);
+}
+.mb-note-row h3 {
+  font-family: var(--mb-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin: 0 0 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mb-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.63rem;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+.mb-note-kicker {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+.mb-note-meta i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+
+/* ── Reader ── */
+.mb-read { padding: 0 0 40px; }
+.mb-read-cover { position: relative; }
+.mb-read-cover .mb-img { aspect-ratio: 16 / 10; }
+.mb-read-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--bg) 2%, transparent 55%);
+  pointer-events: none;
+}
+.mb-read-head {
+  position: relative;
+  z-index: 2;
+  margin-top: -44px;
+  padding: 0 var(--mb-pad);
+  display: grid;
+  gap: 12px;
+}
+.mb-read-head h1 {
+  font-family: var(--mb-display);
+  font-size: 1.86rem;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-wrap: balance;
+}
+.mb-read-prose { padding: 22px var(--mb-pad) 0; display: grid; gap: 17px; }
+.mb-read-prose p {
+  font-size: 1.02rem;
+  line-height: 1.72;
+  color: var(--ink-2);
+  margin: 0;
+  text-wrap: pretty;
+}
+/* The opening paragraph is set larger, which is the one typographic
+   signal that says "the article starts here". */
+.mb-read-prose p:first-child {
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.mb-read-end {
+  margin: 30px var(--mb-pad) 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--mb-hair);
+  display: grid;
+  gap: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   STUDIO — the phone's Personal OS
+
+   The desktop has a full macOS pastiche with draggable windows. None of
+   that translates to a touch screen, so the same content arrives as a
+   widget board: the things the desktop widgets actually SAY, in the
+   format a phone home screen uses.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-studio { --h: var(--h-mind); }
+
+.mb-widgets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.mb-w {
+  position: relative;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 132px;
+  text-align: left;
+  isolation: isolate;
+}
+.mb-w--wide { grid-column: 1 / -1; }
+.mb-w--tall { grid-row: span 2; }
+.mb-w-cap {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mb-w-cap svg { color: var(--acc); }
+.mb-w-val {
+  font-family: var(--mb-display);
+  font-size: 1.72rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.mb-w-sub { font-size: 0.72rem; color: var(--ink-3); line-height: 1.4; margin: 0; }
+.mb-w-plate { position: absolute; inset: 0; z-index: -2; }
+.mb-w-plate > .mb-img, .mb-w-plate > .mb-img > img { width: 100%; height: 100%; }
+.mb-w--media::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgba(var(--shade-rgb), 0.9), rgba(var(--shade-rgb), 0.42));
+}
+.mb-w--media, .mb-w--media .mb-w-val { color: rgb(var(--on-media-rgb)); }
+.mb-w--media .mb-w-sub { color: rgba(var(--on-media-rgb), 0.7); }
+
+/* Clock face — real time, ticking. */
+.mb-clock {
+  font-family: var(--mb-display);
+  font-size: 2.5rem;
+  font-weight: 200;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.mb-clock em { font-style: normal; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.04em; margin-left: 4px; color: var(--ink-3); }
+
+/* Brainwave — two copies of one path. The faint one is the trace; the
+   second is a short dash whose offset scrolls along it, which reads as a
+   pulse travelling the line and costs one animated property rather than
+   a per-frame path rebuild.
+
+   The first attempt animated a single path with `stroke-dasharray: 5 220`
+   and no base line, which drew two 5px ticks and nothing else. */
+.mb-wave { width: 100%; height: 42px; overflow: visible; color: var(--acc); }
+.mb-wave path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.mb-wave-base { opacity: 0.24; }
+.mb-wave-pulse {
+  /* Dash + gap comfortably exceeds the path length, so exactly one pulse
+     is on the trace at a time. */
+  stroke-dasharray: 52 420;
+  stroke-dashoffset: 472;
+  animation: mb-wave 3.2s linear infinite;
+  filter: drop-shadow(0 0 5px var(--acc-glow));
+}
+@keyframes mb-wave { to { stroke-dashoffset: -52; } }
+
+/* The thought ticker: one line at a time, replaced on a timer. */
+.mb-think {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  min-height: 2.6em;
+  animation: mb-think-in 620ms var(--mb-ease-out);
+}
+@keyframes mb-think-in {
+  from { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+/* Hobby pills. */
+.mb-hobbies { display: flex; flex-wrap: wrap; gap: 6px; }
+.mb-hobbies span {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 14px;
+  color: var(--ink-2);
+  background: var(--mb-fill);
+  border: 1px solid var(--mb-hair);
+}
+
+/* Equaliser bars for the now-playing widget. */
+.mb-eq { display: flex; align-items: flex-end; gap: 3px; height: 22px; }
+.mb-eq i {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--acc);
+  animation: mb-eq 900ms ease-in-out infinite alternate;
+  animation-delay: var(--d);
+  height: 40%;
+}
+@keyframes mb-eq { from { height: 22%; } to { height: 100%; } }
+
+/* Arcade launcher row. */
+.mb-arcade { display: flex; gap: 10px; overflow: hidden; }
+.mb-arcade-cover {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--mb-hair);
+}
+.mb-arcade-cover .mb-img, .mb-arcade-cover .mb-img > img { width: 100%; height: 100%; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   TIMELINE
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-timeline { display: grid; gap: 0; position: relative; padding-left: 24px; }
+/* The spine. */
+.mb-timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--acc), var(--mb-hair) 40%, transparent);
+}
+.mb-tl-item { position: relative; padding: 0 0 22px; }
+.mb-tl-item::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 5px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--acc);
+}
+.mb-tl-date {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 4px;
+}
+.mb-tl-item h3 {
+  font-family: var(--mb-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 5px;
+}
+.mb-tl-item p { font-size: 0.79rem; line-height: 1.55; color: var(--ink-3); margin: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   CONTACT
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-contact { --h: var(--h-contact); }
+
+.mb-field { display: grid; gap: 7px; margin-bottom: 15px; }
+.mb-field label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+#mb-app .mb-field input,
+#mb-app .mb-field textarea {
+  width: 100%;
+  /* 16px exactly. Anything smaller and iOS zooms the viewport on focus,
+     which leaves the page at the wrong scale after the keyboard closes. */
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  border-radius: 14px;
+  padding: 13px 14px;
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+#mb-app .mb-field textarea { min-height: 128px; resize: none; }
+#mb-app .mb-field input::placeholder,
+#mb-app .mb-field textarea::placeholder { color: var(--ink-faint); opacity: 0.7; }
+#mb-app .mb-field input:focus,
+#mb-app .mb-field textarea:focus {
+  outline: none;
+  border-color: var(--acc);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 3px var(--acc-wash);
+}
+#mb-app .mb-field--bad input,
+#mb-app .mb-field--bad textarea { border-color: oklch(64% 0.19 25); }
+.mb-field-err {
+  font-size: 0.7rem;
+  color: oklch(72% 0.17 25);
+  animation: mb-fade-in 240ms ease;
+}
+.mb-field-count {
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* The honeypot. Off-screen rather than display:none — some bots skip
+   hidden fields but happily fill positioned ones. */
+.mb-trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mb-facts {
+  display: grid;
+  gap: 1px;
+  background: var(--mb-hair);
+  border: 1px solid var(--mb-hair);
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.mb-fact {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 15px;
+  background: var(--bg);
+}
+.mb-fact svg { color: var(--acc); flex: none; }
+.mb-fact span {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: 1;
+}
+.mb-fact b { font-size: 0.84rem; font-weight: 700; color: var(--ink); }
+
+/* The email row, which copies on tap. */
+.mb-email {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  border-radius: var(--mb-r);
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  margin-bottom: 22px;
+  transition: transform 160ms var(--mb-ease-out), border-color 240ms ease;
+}
+.mb-email:active { transform: scale(0.98); }
+.mb-email--done { border-color: var(--acc); }
+.mb-email-txt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.mb-email-txt b {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.mb-email-txt span { font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+.mb-email-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--acc);
+  background: var(--acc-wash);
+}
+
+/* Sent state — the form is replaced rather than reset, so the outcome is
+   unambiguous. */
+.mb-sent {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  animation: mb-sent-in 520ms var(--mb-ease-out);
+}
+@keyframes mb-sent-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+.mb-sent-ic {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--acc-ink);
+  background: var(--acc);
+  box-shadow: 0 0 0 10px var(--acc-wash);
+}
+.mb-form-err {
+  padding: 12px 14px;
+  border-radius: 13px;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: oklch(80% 0.10 25);
+  background: oklch(28% 0.08 25 / 0.4);
+  border: 1px solid oklch(50% 0.14 25 / 0.5);
+  margin-bottom: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-footer {
+  padding: 44px var(--mb-pad) 30px;
+  background: var(--bg-deep);
+  display: grid;
+  /* minmax(0,…), not 1fr. `1fr` floors the track at the widest child's
+     min-content, and the tool marquee's min-content is the full
+     un-wrapped strip — which stretched this track to 3516px and pushed
+     every heading and paragraph in the footer off the right edge. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 26px;
+  position: relative;
+}
+.mb-footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+.mb-footer-links button {
+  text-align: left;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--mb-hair-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mb-footer-links button svg { color: var(--ink-faint); }
+.mb-footer-bottom {
+  display: grid;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--mb-hair);
+}
+.mb-socials { display: flex; gap: 9px; flex-wrap: wrap; }
+.mb-social {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--mb-fill);
+  border: 1px solid var(--mb-hair);
+}
+.mb-wordmark {
+  font-family: var(--mb-display);
+  font-size: clamp(2.6rem, 15vw, 4.2rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(var(--ink-rgb), 0.24);
+  text-align: center;
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MENU SHEET
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-menu { display: grid; gap: 4px; padding: 10px var(--mb-pad) 0; }
+.mb-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--mb-hair-2);
+  transition: opacity 150ms;
+}
+.mb-menu-row:active { opacity: 0.55; }
+.mb-menu-row > svg:first-child { color: var(--acc); flex: none; }
+.mb-menu-row b { flex: 1; font-size: 0.92rem; font-weight: 600; }
+.mb-menu-row small { font-size: 0.7rem; color: var(--ink-faint); display: block; font-weight: 400; margin-top: 2px; }
+.mb-menu-row > svg:last-child { color: var(--ink-faint); flex: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   GALLERY SHEET — the detail view behind every work tile
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-detail { padding-bottom: 30px; }
+.mb-detail-hero { position: relative; }
+.mb-detail-hero .mb-img { aspect-ratio: 4 / 3; }
+.mb-detail-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Solid at the bottom, not merely tending towards it. The body copy
+     overlaps the cover by 30px, and on a bright cover — a certificate,
+     say — a gradient that is still half transparent there leaves the
+     eyebrow unreadable. */
+  background: linear-gradient(to top, var(--bg) 14%, transparent 62%);
+  pointer-events: none;
+}
+.mb-detail-body { padding: 0 var(--mb-pad); margin-top: -30px; position: relative; z-index: 2; display: grid; gap: 16px; }
+.mb-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mb-detail-grid .mb-img { aspect-ratio: 1; border-radius: var(--mb-r-sm); }
+.mb-detail-grid > *:nth-child(3n+1) { grid-column: span 2; }
+.mb-detail-grid > *:nth-child(3n+1) .mb-img { aspect-ratio: 16 / 10; }
+.mb-detail-list { display: grid; gap: 1px; background: var(--mb-hair); border-radius: var(--mb-r); overflow: hidden; border: 1px solid var(--mb-hair); }
+.mb-detail-list li {
+  list-style: none;
+  background: var(--bg);
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 0.84rem;
+}
+.mb-detail-list li b { flex: 1; font-weight: 600; }
+.mb-detail-list li span { font-size: 0.72rem; color: var(--ink-faint); }
+.mb-detail-list li em {
+  font-style: normal;
+  font-family: var(--mb-display);
+  font-weight: 800;
+  color: var(--acc);
+  font-size: 0.8rem;
+}
+
+/* Lightbox — a tapped gallery picture, full width, on black. */
+.mb-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 860;
+  background: rgba(0, 0, 0, 0.94);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: mb-fade-in 220ms ease;
+}
+.mb-lightbox img {
+  max-width: 100%;
+  max-height: 78dvh;
+  object-fit: contain;
+  border-radius: 10px;
+  animation: mb-zoom-in 320ms var(--mb-ease-out);
+}
+@keyframes mb-zoom-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: none; }
+}
+.mb-lightbox-cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--mb-safe-b) + 22px);
+  text-align: center;
+  display: grid;
+  gap: 3px;
+  color: rgb(var(--on-media-rgb));
+}
+.mb-lightbox-cap b { font-family: var(--mb-display); font-size: 0.95rem; font-weight: 700; }
+.mb-lightbox-cap span { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+.mb-lightbox-x {
+  position: absolute;
+  top: calc(var(--mb-safe-t) + 12px);
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   PROMO STRIP
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-promo {
+  position: relative;
+  margin: 0 var(--mb-pad);
+  border-radius: var(--mb-r-lg);
+  overflow: hidden;
+  padding: 30px 20px;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+  color: var(--acc-ink);
+  background: linear-gradient(150deg, var(--acc-hi), var(--acc) 55%, var(--acc-lo));
+  isolation: isolate;
+}
+.mb-promo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.13;
+  mix-blend-mode: overlay;
+}
+.mb-promo-badge {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.16);
+}
+.mb-promo h2 {
+  font-family: var(--mb-display);
+  font-size: 1.7rem;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-transform: uppercase;
+}
+.mb-promo p { font-size: 0.8rem; line-height: 1.5; margin: 0; opacity: 0.78; max-width: 30ch; }
+#mb-app .mb-promo .mb-btn--fill {
+  background: var(--acc-ink);
+  color: var(--acc);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   REEL — the full-bleed video block
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-reel {
+  position: relative;
+  height: 74svh;
+  min-height: 420px;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: flex-end;
+}
+.mb-reel video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.mb-reel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to bottom, var(--bg) 0%, transparent 22%),
+    linear-gradient(to top, var(--bg) 0%, rgba(var(--shade-rgb), 0.5) 34%, transparent 62%);
+  pointer-events: none;
+}
+.mb-reel-body {
+  position: relative;
+  z-index: 2;
+  padding: 0 var(--mb-pad) 34px;
+  display: grid;
+  gap: 13px;
+  width: 100%;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SKELETON — shown while a lazily-loaded overlay is fetched
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-skel { padding: 26px var(--mb-pad); display: grid; gap: 14px; }
+.mb-skel i {
+  display: block;
+  height: 13px;
+  border-radius: 7px;
+  background: linear-gradient(100deg, var(--surface-1) 20%, var(--surface-2) 50%, var(--surface-1) 80%);
+  background-size: 220% 100%;
+  animation: mb-shimmer 1.4s linear infinite;
+}
+.mb-skel i.tall { height: 180px; border-radius: var(--mb-r); }
+.mb-skel i.w7 { width: 70%; }
+.mb-skel i.w4 { width: 40%; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ══════════════════════════════════════════════════════════════════════ */
+#mb-app .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* Focus is invisible on touch and essential on a paired keyboard or
+   switch control, so it is drawn only when the browser says the input
+   was not a pointer. */
+#mb-app :focus { outline: none; }
+#mb-app :focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+
+   Everything decorative stops. What remains is the sheet slide and the
+   screen change, at a length short enough not to read as animation but
+   long enough that the interface does not appear to teleport — removing
+   those entirely makes it much harder to tell what just happened.
+   ══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  #mb-app *,
+  #mb-app *::before,
+  #mb-app *::after,
+  .mb-sheet, .mb-scrim, .mb-boot {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mb-rv { opacity: 1; transform: none; }
+  .mb-hero-plate--on .mb-img > img { animation: none; transform: none; }
+  .mb-marquee-track { animation: none; }
+  .mb-img > img { opacity: 1; transform: none; }
+  .mb-hero-bar--on i::after { transform: scaleX(1); animation: none; }
+  .mb-sheet { animation: none; transform: none; }
+  .mb-scrim { animation: none; opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SIZE ADAPTATIONS
+
+   Three real cases, not a ladder of breakpoints: the small phone where
+   the type scale has to give ground, the large phone where the grids can
+   take a third column, and landscape where vertical space is the scarce
+   resource rather than horizontal.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Small phones (iPhone SE and below) ── */
+@media (max-width: 360px) {
+  #mb-app { --mb-pad: 15px; --mb-r: 17px; }
+  .mb-tab span { font-size: 8.5px; }
+  .mb-stat b { font-size: 1.28rem; }
+  .mb-tiles { gap: 9px; }
+  .mb-widgets { gap: 9px; }
+  /* Tightens the stack, but must NOT touch padding-bottom — that is the
+     tab bar's clearance, and overriding it here put the primary CTA
+     behind the bar on exactly the screens with the least room. */
+  .mb-hero-body { gap: 12px; }
+  .mb-hero-title { font-size: 2.35rem; }
+  .mb-hero-prose { font-size: 0.83rem; }
+  .mb-note-row { grid-template-columns: 1fr 68px; }
+  .mb-note-row .mb-img { width: 68px; height: 52px; }
+}
+
+/* ── Large phones and small tablets ── */
+@media (min-width: 600px) {
+  #mb-app { --mb-pad: 30px; }
+  .mb-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mb-tile--wide { grid-column: span 2; }
+  .mb-widgets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mb-footer-links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mb-hero-body { max-width: 620px; }
+  .mb-read-prose, .mb-detail-body { max-width: 640px; margin-inline: auto; }
+  .mb-tabs { left: 50%; right: auto; width: min(460px, calc(100% - 24px)); transform: translateX(-50%); }
+  .mb-tabs--hide { transform: translateX(-50%) translateY(calc(100% + var(--mb-safe-b) + 20px)); }
+  .mb-sheet { left: 50%; right: auto; width: min(620px, 100%); transform: translate3d(-50%, 100%, 0); }
+  @keyframes mb-sheet-in  { to   { transform: translate3d(-50%, 0, 0); } }
+  @keyframes mb-sheet-out { from { transform: translate3d(-50%, 0, 0); } to { transform: translate3d(-50%, 100%, 0); } }
+  .mb-sheet--full { border-radius: var(--mb-r-lg) var(--mb-r-lg) 0 0; }
+}
+
+/* ── Landscape ──
+   A phone on its side has roughly 350pt of height. The full-bleed hero
+   and reel would each eat the entire viewport and then some, so they are
+   capped and the type comes down with them. */
+@media (orientation: landscape) and (max-height: 520px) {
+  #mb-app { --mb-top: 46px; --mb-bar: 54px; }
+  .mb-hero {
+    height: auto;
+    min-height: 0;
+    padding-top: calc(var(--mb-safe-t) + var(--mb-top) + 22px);
+    /* The hero stops filling the viewport here, so its copy no longer
+       ends at the screen's bottom edge — the clearance for the tab bar
+       has to move onto the hero itself or the primary CTA opens the site
+       already half-covered. */
+    padding-bottom: calc(var(--mb-bar) + var(--mb-safe-b) + 18px);
+  }
+  .mb-hero-body {
+    position: relative;
+    padding-top: 10px;
+    padding-bottom: 0;
+    /* A phone on its side is 844pt wide. Full-width lines at that
+       measure are unreadable, and the plate's subject is on the right. */
+    max-width: 60%;
+  }
+  /* Everything that is not load-bearing comes out, so the headline and
+     the primary CTA both fit above the tab bar in ~390pt of height. The
+     paragraph and the statistics are both repeated in the About block a
+     screen further down, so nothing is actually lost. */
+  .mb-hero-body { gap: 10px; }
+  .mb-hero-title { font-size: 1.95rem; line-height: 0.92; }
+  .mb-hero-prose,
+  .mb-hero-stats { display: none; }
+  .mb-reel { height: 96svh; min-height: 0; }
+  .mb-sec { padding-top: 30px; padding-bottom: 28px; }
+  .mb-fan { height: 210px; }
+  .mb-tiles { grid-template-columns: repeat(3, 1fr); }
+  .mb-widgets { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ── Light theme ──
+   The site's light mode flips --ink-rgb and --ground-rgb; the phone's
+   glass and hairlines are written against those triplets, so they follow
+   automatically. These are the few places that need a real correction:
+   scrims over photography stay dark in both themes by design, so the
+   chrome sitting on them needs its own ground rather than an inverted
+   one. */
+:root[data-theme='light'] #mb-app,
+.light #mb-app {
+  --mb-glass: rgba(var(--ground-rgb), 0.74);
+  --mb-hair: rgba(var(--ink-rgb), 0.14);
+  --mb-hair-2: rgba(var(--ink-rgb), 0.08);
+  --mb-fill: rgba(var(--ink-rgb), 0.05);
+  --mb-fill-2: rgba(var(--ink-rgb), 0.09);
+}
+:root[data-theme='light'] .mb-tabs,
+.light .mb-tabs { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.14); }
+:root[data-theme='light'] .mb-sheet,
+.light .mb-sheet { box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.2); }
+
+/* ── Hover-capable pointers ──
+   A phone-width window on a laptop still gets this build, and there a
+   cursor exists. Hover states are additive only: nothing here is
+   required to understand or operate anything. */
+@media (hover: hover) and (pointer: fine) {
+  #mb-app .mb-btn--fill:hover { filter: brightness(1.08); }
+  #mb-app .mb-btn--ghost:hover { background: var(--mb-fill-2); }
+  .mb-tile:hover .mb-img > img { transform: scale(1.05); }
+  .mb-tile:hover { border-color: var(--acc-glow); }
+  .mb-note-row:hover h3 { color: var(--acc); }
+  .mb-icon-btn:hover { background: var(--mb-fill-2); }
+  .mb-menu-row:hover { background: var(--mb-fill); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ASK
+
+   A messaging layout: a transcript that grows upward from the composer,
+   and a composer pinned to the bottom of the sheet above the keyboard.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-ask {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.mb-ask-empty {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 20px var(--mb-pad);
+}
+.mb-ask-orb {
+  width: 62px;
+  height: 62px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--acc-ink);
+  background: var(--acc);
+  box-shadow: 0 10px 30px var(--acc-glow);
+  animation: mb-orb 4s ease-in-out infinite;
+}
+@keyframes mb-orb {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(4deg); }
+}
+.mb-ask-openers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 4px;
+}
+/* The openers reuse the hero chip, but here they sit on a surface rather
+   than on a photograph, so they need the surface treatment. */
+.mb-ask-openers .mb-chip {
+  background: var(--surface-1);
+  border-color: var(--mb-hair);
+  color: var(--ink-2);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.mb-ask-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px var(--mb-pad) 14px;
+}
+
+.mb-bubble {
+  max-width: 84%;
+  padding: 11px 14px;
+  border-radius: 18px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;   /* a pasted URL must not widen the sheet */
+  animation: mb-bubble-in 320ms var(--mb-ease-out);
+}
+@keyframes mb-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.mb-bubble--user {
+  align-self: flex-end;
+  background: var(--acc);
+  color: var(--acc-ink);
+  border-bottom-right-radius: 6px;
+  font-weight: 500;
+}
+.mb-bubble--assistant {
+  align-self: flex-start;
+  background: var(--surface-1);
+  color: var(--ink-2);
+  border: 1px solid var(--mb-hair);
+  border-bottom-left-radius: 6px;
+}
+
+.mb-typing { display: inline-flex; gap: 4px; padding: 3px 0; }
+.mb-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  animation: mb-typing 1.1s ease-in-out infinite;
+}
+.mb-typing i:nth-child(2) { animation-delay: 0.16s; }
+.mb-typing i:nth-child(3) { animation-delay: 0.32s; }
+@keyframes mb-typing {
+  0%, 60%, 100% { opacity: 0.28; transform: translateY(0); }
+  30%           { opacity: 1;    transform: translateY(-4px); }
+}
+
+.mb-ask-bar {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 10px var(--mb-pad) calc(var(--mb-safe-b) + 12px);
+  border-top: 1px solid var(--mb-hair-2);
+  background: var(--bg);
+}
+#mb-app .mb-ask-bar textarea {
+  flex: 1;
+  min-width: 0;
+  /* 16px, or iOS zooms the viewport when it takes focus. */
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+  border-radius: 22px;
+  padding: 11px 15px;
+  resize: none;
+  max-height: 132px;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 200ms ease;
+}
+#mb-app .mb-ask-bar textarea:focus { outline: none; border-color: var(--acc); }
+.mb-ask-send {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--acc-ink);
+  background: var(--acc);
+  transition: opacity 200ms, transform 150ms var(--mb-ease-out);
+}
+.mb-ask-send:active { transform: scale(0.9); }
+.mb-ask-send:disabled { opacity: 0.34; pointer-events: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE REEL
+
+   A vertical feed of full-height video pages, snapped one per screen.
+   The gesture is the one every phone already teaches; what is different
+   is that each page carries the piece's own credits rather than a
+   caption.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-reelfeed {
+  position: relative;
+  /* Fills whatever the sheet has left after the header and the lede.
+     It was a calc() against the viewport with a negative margin to
+     escape a page gutter that does not exist inside a sheet — so it
+     overhung both edges and its own height was a guess. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  background: #000;
+}
+.mb-reelfeed::-webkit-scrollbar { display: none; }
+.mb-reelfeed-page { height: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+
+.mb-reelfeed-hint {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 5;
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--on-media-rgb), 0.7);
+  background: rgba(var(--shade-rgb), 0.45);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 5px 10px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.mb-reelpage {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+.mb-reelpage-vid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The clip is the tap target for play/pause — the whole frame, which
+     is the only affordance that needs no explaining. */
+  cursor: pointer;
+}
+.mb-reelpage-still { position: absolute; inset: 0; }
+.mb-reelpage-still .mb-img,
+.mb-reelpage-still .mb-img > img { width: 100%; height: 100%; }
+.mb-reelpage-soon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.6);
+  border: 1px solid rgba(var(--on-media-rgb), 0.2);
+  padding: 8px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.mb-reelpage-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.4) 34%, transparent 62%);
+}
+
+.mb-reelpage-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.5);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--on-media-rgb), 0.22);
+  animation: mb-pop 260ms var(--mb-spring);
+}
+@keyframes mb-pop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.mb-reelpage-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 0 var(--mb-pad) 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  color: rgb(var(--on-media-rgb));
+  pointer-events: none;   /* the frame underneath stays tappable */
+}
+.mb-reelpage-body .mb-tags { pointer-events: auto; }
+.mb-reelpage-body h3 {
+  font-family: var(--mb-display);
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin: 0;
+}
+.mb-reelpage-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: rgba(var(--on-media-rgb), 0.72);
+}
+.mb-reelpage-meta i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+.mb-reelpage-genre {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+.mb-reelpage-rating { margin-left: auto; font-weight: 700; color: var(--acc); }
+.mb-reelpage-sub { margin: 0; font-size: 0.76rem; color: rgba(var(--on-media-rgb), 0.7); }
+.mb-reelpage-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(var(--on-media-rgb), 0.82);
+  max-width: 36ch;
+}
+.mb-reelpage-body .mb-tags span {
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.42);
+  border-color: rgba(var(--on-media-rgb), 0.2);
+}
+
+.mb-reelpage-mute {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.45);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--on-media-rgb), 0.16);
+}
+.mb-reelpage-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  height: 2.5px;
+  background: rgba(var(--on-media-rgb), 0.18);
+}
+.mb-reelpage-bar i {
+  display: block;
+  height: 100%;
+  background: var(--acc);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE ROOM — surveillance wall
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-cctv {
+  --cctv: oklch(78% 0.17 150);        /* phosphor green, its own world */
+  background: #050706;
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--mb-r);
+  padding: 10px;
+  overflow: hidden;
+}
+.mb-cctv-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 10px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  color: var(--cctv);
+}
+.mb-cctv-head .mb-mono { color: var(--cctv); opacity: 0.72; }
+.mb-cctv-head .mb-mono:last-child { margin-left: auto; }
+.mb-cctv-live { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.mb-cctv-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: oklch(64% 0.22 25);
+  animation: mb-blink 1.4s steps(1, end) infinite;
+}
+@keyframes mb-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.15; } }
+
+.mb-cctv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mb-cam {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(120, 255, 180, 0.14);
+  display: block;
+  width: 100%;
+  isolation: isolate;
+}
+.mb-cam--big { aspect-ratio: 16 / 10; }
+.mb-cam video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Cameras are not colourists. Desaturating and lifting contrast is
+     what makes six unrelated clips read as one security system. */
+  filter: saturate(0.55) contrast(1.16) brightness(0.9);
+}
+.mb-cam--off { border-color: rgba(255, 90, 90, 0.24); }
+.mb-cam-lost {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: oklch(64% 0.2 25);
+  /* Static, drawn rather than fetched. */
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 3px),
+    #0a0a0a;
+  animation: mb-static 0.35s steps(2, end) infinite;
+}
+@keyframes mb-static { 0% { opacity: 0.85; } 50% { opacity: 1; } 100% { opacity: 0.9; } }
+
+/* Scanlines, over everything, one gradient. */
+.mb-cam-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.28) 0 1px, transparent 1px 3px);
+}
+
+.mb-cam-top,
+.mb-cam-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  color: var(--cctv, oklch(78% 0.17 150));
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+.mb-cam-top { top: 0; font-size: 0.56rem; letter-spacing: 0.1em; }
+.mb-cam-bottom {
+  bottom: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  font-size: 0.53rem;
+  letter-spacing: 0.06em;
+}
+.mb-cam-bottom b { font-weight: 700; letter-spacing: 0.1em; }
+.mb-cam-bottom span { opacity: 0.66; }
+.mb-cam-rec {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: oklch(62% 0.23 25);
+  animation: mb-blink 1.4s steps(1, end) infinite;
+}
+.mb-cam--big .mb-cam-top { font-size: 0.68rem; padding: 9px 11px; }
+.mb-cam--big .mb-cam-bottom { font-size: 0.62rem; padding: 9px 11px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   COLOUR — the wipe
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-grades { display: grid; gap: 22px; }
+.mb-wipe-fig { margin: 0; display: grid; gap: 9px; }
+.mb-wipe-fig figcaption { display: grid; gap: 2px; }
+.mb-wipe-fig figcaption b { font-size: 0.86rem; font-weight: 700; }
+.mb-wipe-fig figcaption span { font-size: 0.74rem; color: var(--ink-faint); }
+
+.mb-wipe {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  border: 1px solid var(--mb-hair);
+  /* The drag is horizontal and so is the page's scroll-to-dismiss; the
+     browser gives the gesture to whichever declares it, and without this
+     the handle never moves because the sheet claimed it first. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: ew-resize;
+  background: var(--surface-2);
+}
+.mb-wipe img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.mb-wipe-top { position: absolute; inset: 0; }
+
+.mb-wipe-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: rgb(var(--on-media-rgb));
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+.mb-wipe-handle i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgb(var(--on-media-rgb));
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+/* Two chevrons, drawn with borders so the handle needs no icon import. */
+.mb-wipe-handle i::before,
+.mb-wipe-handle i::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-top: 2px solid rgba(var(--shade-rgb), 0.75);
+  border-right: 2px solid rgba(var(--shade-rgb), 0.75);
+}
+.mb-wipe-handle i::before { left: 9px;  transform: translateY(-50%) rotate(-135deg); }
+.mb-wipe-handle i::after  { right: 9px; transform: translateY(-50%) rotate(45deg); }
+
+.mb-wipe-tag {
+  position: absolute;
+  bottom: 10px;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  padding: 4px 9px;
+  border-radius: 20px;
+  color: rgb(var(--on-media-rgb));
+  background: rgba(var(--shade-rgb), 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.mb-wipe-tag--l { left: 10px; }
+.mb-wipe-tag--r { right: 10px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   WEBSITES
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-sites { display: grid; gap: 16px; }
+.mb-site {
+  border-radius: var(--mb-r);
+  overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+}
+.mb-site .mb-img { aspect-ratio: 16 / 9; }
+.mb-site-body { padding: 15px; display: grid; gap: 9px; }
+.mb-site-top { display: flex; align-items: center; gap: 10px; }
+.mb-site-top h3 {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mb-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.mb-site-status {
+  flex: none;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 20px;
+  color: var(--ink-3);
+  background: var(--mb-fill);
+  border: 1px solid var(--mb-hair);
+}
+.mb-site-status--live {
+  color: oklch(84% 0.16 150);
+  background: oklch(40% 0.10 150 / 0.28);
+  border-color: oklch(60% 0.14 150 / 0.4);
+}
+.mb-site-tag { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--acc); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   TOOLKIT & CERTIFICATES
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-kit { display: grid; gap: 20px; }
+
+.mb-certs { display: grid; gap: 10px; }
+.mb-cert {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 11px;
+  border-radius: var(--mb-r-sm);
+  background: var(--surface-1);
+  border: 1px solid var(--mb-hair);
+}
+.mb-cert img {
+  width: 76px;
+  height: 54px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.mb-cert span { display: grid; gap: 3px; min-width: 0; }
+.mb-cert b { font-size: 0.88rem; font-weight: 700; }
+.mb-cert em { font-style: normal; font-size: 0.7rem; color: var(--ink-faint); }
+
+/* ── Detail tweaks for the bare views ── */
+.mb-detail--bare {
+  padding-bottom: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mb-detail--bare .mb-detail-lede { flex: none; }
+/* The camera wall is not a bare view — it scrolls with the sheet — so it
+   keeps the page gutter. */
+.mb-detail--bare .mb-cctv { margin: 0 var(--mb-pad) 24px; }
+.mb-detail-lede {
+  padding: 12px var(--mb-pad) 16px;
+  font-size: 0.86rem;
+}
+
+/* ── Lightbox navigation ── */
+.mb-lightbox-back {
+  position: absolute;
+  inset: 0;
+  background: none;
+  border: 0;
+}
+.mb-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.mb-lightbox-nav--prev { left: 10px; }
+.mb-lightbox-nav--next { right: 10px; }
+
+/* ── Filter counts ── */
+.mb-filter em {
+  font-style: normal;
+  margin-left: 6px;
+  font-size: 0.62rem;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TIMECODE
+
+   Takes the screen-title slot once you start scrolling. Tabular figures
+   and a fixed width, because a readout that changes size as the digits
+   change makes the whole bar twitch.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-top-tc {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acc);
+  animation: mb-title-in 320ms var(--mb-ease-out);
+}
+.mb-top-tc i {
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--acc);
+  animation: mb-blink 1.2s steps(1, end) infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FILM STRIP
+
+   The divider between the home page's chapters. Sprocket holes are two
+   repeating gradients — no image, no DOM per perforation — and the strip
+   travels slowly sideways so the page reads as running rather than
+   stacked.
+   ══════════════════════════════════════════════════════════════════════ */
+.mb-strip {
+  position: relative;
+  height: 30px;
+  overflow: hidden;
+  background: var(--bg-deep);
+  border-top: 1px solid var(--mb-hair-2);
+  border-bottom: 1px solid var(--mb-hair-2);
+}
+/* Sprocket holes. One SVG tile carries the pair — top and bottom — as
+   rounded rectangles, which is the shape they actually are; a radial
+   gradient can only give you an ellipse, and at this size that reads as
+   a row of dots rather than as film.
+
+   One tile, repeated: no image request, no element per perforation. */
+.mb-strip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='30'%3E%3Cg fill='%23ffffff' fill-opacity='0.26'%3E%3Crect x='5' y='4' width='10' height='6' rx='1.6'/%3E%3Crect x='5' y='20' width='10' height='6' rx='1.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 20px 30px;
+  animation: mb-strip-run 6s linear infinite;
+}
+@keyframes mb-strip-run {
+  from { background-position-x: 0; }
+  to   { background-position-x: 20px; }
+}
+/* A frame edge travelling through, so the band reads as running film
+   rather than as a dotted rule. */
+.mb-strip::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--acc);
+  box-shadow: 0 0 12px var(--acc-glow);
+  opacity: 0.75;
+  animation: mb-strip-frame 6s linear infinite;
+}
+@keyframes mb-strip-frame {
+  from { left: -3%; }
+  to   { left: 103%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mb-strip::before, .mb-strip::after { animation: none; }
+  .mb-strip::after { display: none; }
+}

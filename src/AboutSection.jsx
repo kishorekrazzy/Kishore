@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import './AboutSection.css';
 import { useContent } from './content/store';
 import { showSpidey, hideSpidey } from './spideyBus';
+import AboutYouBanner from './AboutYouBanner';
 
 // ── DATA ────────────────────────────────────────────────────────────────────
 
@@ -562,6 +563,12 @@ export default function AboutSection() {
           </a>
 
         </div>
+
+        {/* Full width under both columns rather than inside the text one:
+            the strip is a wide format, and squeezed into the 58% column it
+            would lose the proportion it is built on. It spans the grid
+            (grid-column: 1 / -1) and clears the card stack's overrun. */}
+        <AboutYouBanner />
       </div>
     </section>
   );
